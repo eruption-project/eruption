@@ -27,6 +27,7 @@ use noise::NoiseFn;
 use palette::convert::FromColor;
 use palette::{Hsl, LinSrgb};
 use rand::Rng;
+use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::convert::TryFrom;
 use std::fmt::Write;
 use std::sync::atomic::Ordering;
@@ -37,6 +38,7 @@ use std::{cell::RefCell, thread};
 use tracing::*;
 
 use crate::scripting::script::LAST_RENDERED_LED_MAP;
+use crate::util::ratelimited;
 use crate::{
     constants,
     hwdevices::RGBA,
@@ -59,6 +61,8 @@ pub enum CallbacksError {
 
     #[error("Could not parse param value")]
     ParseParamError {},
+    // #[error("The specified color map is not valid")]
+    // InvalidColorMap {},
 }
 
 fn seed() -> u32 {
@@ -756,47 +760,50 @@ pub(crate) fn get_local_color_map() -> Vec<u32> {
     result
 }
 
-/// Submit LED color map for later realization, as soon as the
-/// next frame is rendered
+/// Submit LED color map for later realization, as soon as the next frame is rendered
 pub(crate) fn submit_color_map(map: &[u32]) -> Result<()> {
-    // trace!("submit_color_map: {}/{}", map.len(), constants::CANVAS_SIZE);
+    if map.len() != constants::CANVAS_SIZE {
+        ratelimited::warn!(
+            "In submit_color_map(): Length of {} not exactly matching canvas size {}",
+            map.len(),
+            constants::CANVAS_SIZE
+        );
 
-    // assert!(
-    //     map.len() == constants::CANVAS_SIZE,
-    //     format!(
-    //         "Assertion 'map.len() == constants::CANVAS_SIZE' failed: {} != {}",
-    //         map.len(),
-    //         constants::CANVAS_SIZE
-    //     )
-    // );
-
-    let mut led_map = [RGBA {
-        r: 0,
-        g: 0,
-        b: 0,
-        a: 0,
-    }; constants::CANVAS_SIZE];
+        // Err(CallbacksError::InvalidColorMap {}.into())
+    }
 
     if !map.is_empty() {
-        let mut i = 0;
-        loop {
-            led_map[i] = RGBA {
-                a: u8::try_from((map[i] >> 24) & 0xff).unwrap_or(0),
-                r: u8::try_from((map[i] >> 16) & 0xff).unwrap_or(0),
-                g: u8::try_from((map[i] >> 8) & 0xff).unwrap_or(0),
-                b: u8::try_from(map[i] & 0xff)?,
+        LOCAL_LED_MAP.with(|local_map| {
+            let mut tmp_map = map
+                .par_iter()
+                .map(|color| RGBA {
+                    a: u8::try_from((color >> 24) & 0xff).unwrap_or(0x00),
+                    r: u8::try_from((color >> 16) & 0xff).unwrap_or(0x00),
+                    g: u8::try_from((color >> 8) & 0xff).unwrap_or(0x00),
+                    b: u8::try_from(color & 0xff).unwrap_or(0x00),
+                })
+                .collect::<Vec<_>>();
+
+            let start_index = if tmp_map.len() < constants::CANVAS_SIZE {
+                tmp_map.len()
+            } else {
+                constants::CANVAS_SIZE
             };
 
-            i += 1;
-            if i >= led_map.len() || i >= map.len() {
-                break;
-            }
-        }
+            tmp_map[start_index..constants::CANVAS_SIZE].fill(RGBA {
+                r: 0x00,
+                g: 0x00,
+                b: 0x00,
+                a: 0x00,
+            });
 
-        LOCAL_LED_MAP.with(|local_map| local_map.borrow_mut().copy_from_slice(&led_map));
-        LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
+            local_map
+                .borrow_mut()
+                .copy_from_slice(&tmp_map[..constants::CANVAS_SIZE]);
 
-        FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+            LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
+            FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+        });
     }
 
     Ok(())

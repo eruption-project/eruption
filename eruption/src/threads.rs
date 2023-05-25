@@ -35,6 +35,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 use tracing::{debug, error, info, trace, warn};
 
+use crate::plugins::sdk_support::FRAME_GENERATION_COUNTER_ERUPTION_SDK;
 use crate::util::ratelimited;
 use crate::{
     constants, dbus_interface::DbusApi, dbus_interface::Message, hwdevices, macros, plugins,
@@ -841,6 +842,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
         // stores the generation number of the frame that is currently visible on the keyboard
         let saved_frame_generation = AtomicUsize::new(0);
+        let saved_frame_generation_eruption_sdk = AtomicUsize::new(0);
 
         // used to calculate frames per second
         let mut fps_counter: i32 = 0;
@@ -896,9 +898,6 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                             // this will happen most likely during switching of profiles
                                             ratelimited::debug!("Send error during realization of color maps: {}", e);
                                             FAILED_TXS.write().insert(index);
-
-                                            // break all locks by re-entering the main loop
-                                            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                         });
 
 
@@ -955,10 +954,13 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             }
 
                             // finally, blend the LED map of the SDK support plugin
-                            let sdk_led_map = sdk_support::LED_MAP.read();
-                            script::LED_MAP.write().par_chunks_exact_mut(constants::CANVAS_SIZE).for_each(|chunks| {
-                                alpha_blend(&sdk_led_map, chunks, 0.5);
-                            });
+                            let current_frame_generation_eruption_sdk = FRAME_GENERATION_COUNTER_ERUPTION_SDK.load(Ordering::SeqCst);
+                            if saved_frame_generation_eruption_sdk.load(Ordering::SeqCst) < current_frame_generation_eruption_sdk {
+                                let sdk_led_map = sdk_support::LED_MAP.read();
+                                script::LED_MAP.write().par_chunks_exact_mut(constants::CANVAS_SIZE).for_each(|chunks| {
+                                    alpha_blend(&sdk_led_map, chunks, 0.5);
+                                });
+                            }
 
                             if ULEDS_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
                                 // blend the LED map of the Userspace LEDs support plugin

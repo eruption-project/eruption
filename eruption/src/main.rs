@@ -588,6 +588,29 @@ pub fn switch_profile(
                     // everything is fine, finally assign the globally active profile
                     debug!("Switch successful");
 
+                    // now clear all led maps, so that we don't get leftover artifacts in
+                    // case the new scripts don't paint the whole canvas
+                    script::LED_MAP.write().fill(RGBA {
+                        r: 0x00,
+                        g: 0x00,
+                        b: 0x00,
+                        a: 0x00,
+                    });
+
+                    script::LAST_RENDERED_LED_MAP.write().fill(RGBA {
+                        r: 0x00,
+                        g: 0x00,
+                        b: 0x00,
+                        a: 0x00,
+                    });
+
+                    sdk_support::LED_MAP.write().fill(RGBA {
+                        r: 0x00,
+                        g: 0x00,
+                        b: 0x00,
+                        a: 0x00,
+                    });
+
                     let fade_millis = crate::CONFIG
                         .read()
                         .as_ref()

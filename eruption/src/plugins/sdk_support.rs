@@ -20,6 +20,7 @@
 */
 
 use crate::scripting::script::LAST_RENDERED_LED_MAP;
+use crate::util::ratelimited;
 use crate::{
     constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
     spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread, DbusApiEvent,
@@ -32,6 +33,7 @@ use nix::poll::{poll, PollFd, PollFlags};
 use nix::unistd::unlink;
 use parking_lot::RwLock;
 use prost::Message;
+use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::any::Any;
 use std::io::Cursor;
@@ -39,7 +41,7 @@ use std::mem::MaybeUninit;
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::io::AsRawFd;
 use std::path::PathBuf;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 use std::{fs, thread};
@@ -72,6 +74,9 @@ lazy_static! {
         b: 0x00,
         a: 0x00,
     }; constants::CANVAS_SIZE]));
+
+    /// Frame generation counter, used to detect if an SDK client updated the color map
+    pub static ref FRAME_GENERATION_COUNTER_ERUPTION_SDK: AtomicUsize = AtomicUsize::new(0);
 }
 
 lazy_static! {
@@ -709,40 +714,32 @@ impl SdkSupportPlugin {
 
                                                         let payload_map = message.canvas;
 
-                                                        let mut led_map = [RGBA {
-                                                            r: 0,
-                                                            g: 0,
-                                                            b: 0,
-                                                            a: 0,
-                                                        };
-                                                            constants::CANVAS_SIZE];
-
-                                                        let mut i = 0;
-                                                        let mut cntr = 0;
-
-                                                        loop {
-                                                            led_map[cntr] = RGBA {
-                                                                r: payload_map[i],
-                                                                g: payload_map[i + 1],
-                                                                b: payload_map[i + 2],
-                                                                a: payload_map[i + 3],
-                                                            };
-
-                                                            i += 4;
-                                                            cntr += 1;
-
-                                                            if cntr >= led_map.len()
-                                                                || i >= payload_map.len()
-                                                            {
-                                                                break;
-                                                            }
+                                                        if payload_map.len() != constants::CANVAS_SIZE {
+                                                            ratelimited::warn!(
+                                                                "Length of payload: {} not matching canvas size {}",
+                                                                payload_map.len(),
+                                                                constants::CANVAS_SIZE
+                                                            );
                                                         }
 
-                                                        LED_MAP.write().copy_from_slice(&led_map);
+                                                        if !payload_map.is_empty() {
+                                                            let mut local_map = LED_MAP.write();
 
+                                                            local_map.copy_from_slice(
+                                                                &payload_map.par_iter().copied().chunks(4)
+                                                                    .map(|map| RGBA {
+                                                                        r: map[0],
+                                                                        g: map[1],
+                                                                        b: map[2],
+                                                                        a: map[3],
+                                                                    })
+                                                                    .collect::<Vec<_>>(),
+                                                            );
 
-                                                        script::FRAME_GENERATION_COUNTER
-                                                            .fetch_add(1, Ordering::SeqCst);
+                                                            script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+                                                            FRAME_GENERATION_COUNTER_ERUPTION_SDK
+                                                                .fetch_add(1, Ordering::SeqCst);
+                                                        }
 
                                                         let response = protocol::Response {
                                                             response_message: Some(
