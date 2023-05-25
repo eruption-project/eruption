@@ -22,6 +22,7 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
+- On profile switch to profile without submit_canvas, artifacts are displayed
 - Update all DBus interfaces in rust code
 - keyboard and misc gui pages: make battery/signal controls same as on mice page
 - *dim profiles not dimmed
@@ -34,4 +35,5 @@ _This is a non-exhaustive listing of planned features:_
 - Fix directory/file permissions in packaging
 - Update Python SDK (get_canvas)
 - Undo/redo ops in the GUI?
-- Simplify handling of internal device data structures for representation of devices; maybe use a slotmap of Box<dyn Device> instead of integer-indices
+- Simplify handling of internal data structures for representation of devices; maybe use a slotmap of Box<dyn Device> instead of integer-indices
+- Improve wording of identifiers: LED_MAP -> CANVAS
