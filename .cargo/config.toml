@@ -25,8 +25,8 @@ frequency = "always"
 
 [build]
 rustflags = [
-  # "--cfg",
-  # "tokio_unstable",
+  "--cfg",
+  "tokio_unstable",
   # "-Clink-arg=-fuse-ld=mold",
   "-Ctarget-cpu=native",
   # "-Zshare-generics=y",
