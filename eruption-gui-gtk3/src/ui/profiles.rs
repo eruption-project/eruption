@@ -905,12 +905,16 @@ cfg_if::cfg_if! {
             context.add_class("small-font");
 
             let style_scheme = sourceview4::StyleSchemeManager::builder()
-                .search_path(["/usr/share/gtksourceview-3.0/styles/",
+                .search_path(["/usr/share/gtksourceview-4/styles/",
+                              "/usr/share/gtksourceview-3.0/styles/",
                               "/usr/share/gnome/gtksourceview-3.0/styles/"])
                 .build()
                 .scheme("cobalt")
                 .unwrap();
-            let language_manager = sourceview4::LanguageManager::builder().search_path(["/usr/share/gtksourceview-3.0/language-specs/", "/usr/share/gnome/gtksourceview-3.0/language-specs/"]).build();
+
+            let language_manager = sourceview4::LanguageManager::builder().search_path(["/usr/share/gtksourceview-4/language-specs/",
+                                                                                        "/usr/share/gtksourceview-3.0/language-specs/",
+                                                                                        "/usr/share/gnome/gtksourceview-3.0/language-specs/"]).build();
 
             let lua = language_manager.language("lua").unwrap();
             let toml = language_manager.language("toml").unwrap();
