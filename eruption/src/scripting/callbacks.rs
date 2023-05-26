@@ -784,22 +784,17 @@ pub(crate) fn submit_color_map(map: &[u32]) -> Result<()> {
                 })
                 .collect::<Vec<_>>();
 
-            let start_index = if tmp_map.len() < constants::CANVAS_SIZE {
-                tmp_map.len()
-            } else {
-                constants::CANVAS_SIZE
-            };
+            tmp_map.resize(
+                constants::CANVAS_SIZE,
+                RGBA {
+                    r: 0x00,
+                    g: 0x00,
+                    b: 0x00,
+                    a: 0x00,
+                },
+            );
 
-            tmp_map[start_index..constants::CANVAS_SIZE].fill(RGBA {
-                r: 0x00,
-                g: 0x00,
-                b: 0x00,
-                a: 0x00,
-            });
-
-            local_map
-                .borrow_mut()
-                .copy_from_slice(&tmp_map[..constants::CANVAS_SIZE]);
+            local_map.borrow_mut().copy_from_slice(&tmp_map);
 
             LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow_mut() = true);
             FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
