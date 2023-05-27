@@ -27,6 +27,7 @@ _This is a non-exhaustive listing of planned features:_
 - keyboard and misc gui pages: make battery/signal controls same as on mice page
 - *dim profiles not dimmed
 - Improve 2D-primitives drawing/rasterization API
+- Further improve hardware acceleration with Vulkan/WebGPU (GPGPU)
 - eruptionctl: implement effects CLI
 - Update manpages
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
