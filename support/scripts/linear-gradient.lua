@@ -26,7 +26,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = 0x00000000 end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
     -- static gradient
     if not animate_gradient then
@@ -44,9 +44,7 @@ function on_apply_parameter(parameters)
     on_startup(nil)
 end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     if not animate_gradient then return end

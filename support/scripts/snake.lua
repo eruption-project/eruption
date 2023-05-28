@@ -49,9 +49,7 @@ function on_startup(config) reset_state() end
 
 function on_key_down(key_index) food_map[key_index] = max_food_ttl end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     ticks = ticks + delta
@@ -84,7 +82,7 @@ function step_and_draw_game_over(ticks)
     -- if frame_counter > 32 delay
 
     if frame_counter <= 32 then
-        for i = 1, canvas_size do color_map[i] = 0x00000000 end
+        for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
         submit_color_map(color_map)
     end

@@ -13,7 +13,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
+#    Copyright (c) 2019-2023, The Eruption Development Team
 
 id = '59c62fc6-d865-55cb-a0cd-e87d29713119'
 name = 'Umbrella'

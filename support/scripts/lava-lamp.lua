@@ -30,7 +30,7 @@ grad = gradient_from_name(stock_gradient)
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = 0x00000000 end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 end
 
 function on_mouse_move(rel_x, rel_y, rel_z)
@@ -39,9 +39,7 @@ function on_mouse_move(rel_x, rel_y, rel_z)
     offsets[3] = offsets[3] - rel_z
 end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     ticks = ticks + delta

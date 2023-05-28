@@ -13,14 +13,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    Copyright (c) 2019-2022, The Eruption Development Team
-
+#    Copyright (c) 2019-2023, The Eruption Development Team
 
 name = "Hardware Acceleration"
-description = "Hardware accelerated effects using GLSL compute shader programs"
-version = "0.0.1"
+description = "Hardware accelerated rendering of effects, using WGSL and GLSL compute shader programs"
+version = "0.0.2"
 author = "The Eruption Development Team"
-min_supported_version = "0.4.0"
+min_supported_version = "0.5.0"
 tags = ['Effect', 'Vendor']
 
 [[config]]
@@ -29,10 +28,10 @@ name = 'opacity'
 description = 'Opacity value in the range 0.0 .. 1.0, where 1.0 is fully opaque'
 min = 0.0
 max = 1.0
-default = 0.5
+default = 1.0
 
 [[config]]
 type = 'string'
 name = 'shader_program'
-description = 'GLSL compute shader program file'
-default = 'shaders/mandelbrot.comp.glsl'
+description = 'WGSL or GLSL compute shader program file'
+default = 'shaders/mandelbrot.comp.spv'

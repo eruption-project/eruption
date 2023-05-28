@@ -21,6 +21,7 @@ id = '5dc62fa6-e966-45cb-a0da-e87d29713118'
 name = 'Color Swirls (Perlin): Blue and Red (dimmed)'
 description = 'Color Swirl effect with high contrast'
 active_scripts = [
+    'solid.lua',
     'swirl-perlin.lua',
     'halo.lua',
     'shockwave.lua',
@@ -31,6 +32,12 @@ active_scripts = [
     'macros.lua',
 #   'stats.lua',
 ]
+
+[[config."Solid Color"]]
+type = 'color'
+name = 'color_background'
+value = 0xff000000
+default = 0xff000000
 
 [[config."Perlin Swirl"]]
 type = 'float'

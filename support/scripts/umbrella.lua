@@ -33,7 +33,6 @@ function on_startup(config)
     fill_rectangle(layer1, 0, 0, canvas_width, canvas_height)
 end
 
--- event handler functions --
 function on_mouse_move(rel_x, rel_y, rel_z)
     offsets[1] = offsets[1] - rel_x
     offsets[2] = offsets[2] - rel_y

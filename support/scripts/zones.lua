@@ -27,7 +27,7 @@ effect_ttl = max_effect_ttl
 
 function realize()
     -- clear the color map
-    for i = 1, canvas_size do color_map[i] = 0x00000000 end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
     -- render each zone in a different color
     for z = 0, #zones do

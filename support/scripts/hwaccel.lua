@@ -15,48 +15,50 @@
 -- You should have received a copy of the GNU General Public License
 -- along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 --
--- Copyright (c) 2019-2022, The Eruption Development Team
+-- Copyright (c) 2019-2023, The Eruption Development Team
 --
 require "declarations"
 require "utilities"
 require "debug"
 
 -- global state variables --
-color_map = {}
-ticks = 0
-max_effect_ttl = target_fps * 8
-effect_ttl = max_effect_ttl
 bail_out = true
+color_map = {}
+offsets = {0, 0, 0}
+ticks = 0
+shader = nil
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = 0x00000000 end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
+    -- verify that the hwaccel interface is available
     local accel_status = hwaccel_status()
     debug("Hwaccel status: " .. stringify(accel_status))
 
     bail_out = not toboolean(accel_status["acceleration-available"])
+
+    if not bail_out then
+        -- hwaccel seems to be available, e.g. Vulkan or OpenGL/OpenCL are available
+        shader = load_shader_program(shader_program)
+    end
 end
 
-function on_key_down(key_index) effect_ttl = max_effect_ttl end
-
-function on_key_up(key_index) effect_ttl = max_effect_ttl end
+function on_mouse_move(rel_x, rel_y, rel_z)
+    offsets[1] = offsets[1] - rel_x
+    offsets[2] = offsets[2] - rel_y
+    offsets[3] = offsets[3] - rel_z
+end
 
 function on_render()
-    if effect_ttl > 0 then
-        color_map = color_map_from_render_surface()
-        submit_color_map(color_map)
-    end
+    set_uniform(shader, "time", ticks)
+    set_uniform(shader, "mouse", {offsets[1], offsets[2]})
+
+    hwaccel_render(shader)
 end
 
 function on_tick(delta)
     if bail_out then return end
 
     ticks = ticks + delta
-
-    if effect_ttl <= 0 then return end
-
-    effect_ttl = effect_ttl - 1
-
-    hwaccel_tick(delta)
 end

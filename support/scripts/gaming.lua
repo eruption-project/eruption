@@ -27,7 +27,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = 0x00000000 end
+    for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
     -- highlight WASD keys
     color_map[key_name_to_index("W")] = color_highlight
