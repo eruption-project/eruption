@@ -23,7 +23,6 @@ pub mod animal;
 pub mod audio;
 pub mod canvas;
 pub mod hwaccel;
-pub mod image_processing;
 pub mod introspection;
 pub mod keyboard;
 pub mod macros;
@@ -31,6 +30,7 @@ pub mod mouse;
 pub mod persistence;
 pub mod plugin;
 pub mod profiles;
+pub mod rasterops;
 pub mod sdk_support;
 pub mod sensors;
 pub mod system;
@@ -39,8 +39,7 @@ pub mod uleds;
 pub use animal::AnimalPlugin;
 pub use audio::AudioPlugin;
 pub use canvas::CanvasPlugin;
-pub use hwaccel::HwAccelerationPlugin;
-pub use image_processing::ImageProcessingPlugin;
+pub use hwaccel::HwAccelPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
 pub use macros::MacrosPlugin;
@@ -48,6 +47,7 @@ pub use mouse::MousePlugin;
 pub use persistence::PersistencePlugin;
 pub use plugin::Plugin;
 pub use profiles::ProfilesPlugin;
+pub use rasterops::RasterOpsPlugin;
 pub use sdk_support::SdkSupportPlugin;
 pub use sensors::SensorsPlugin;
 pub use system::SystemPlugin;
@@ -80,7 +80,7 @@ pub fn register_plugins() -> Result<()> {
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     let _ = plugin_manager
-        .register_plugin(Box::new(ImageProcessingPlugin::new()))
+        .register_plugin(Box::new(RasterOpsPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     let _ = plugin_manager
@@ -128,7 +128,7 @@ pub fn register_plugins() -> Result<()> {
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     let _ = plugin_manager
-        .register_plugin(Box::new(HwAccelerationPlugin::new()))
+        .register_plugin(Box::new(HwAccelPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     // Additional plugins

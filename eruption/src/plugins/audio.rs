@@ -458,8 +458,8 @@ mod backends {
                                 if result > 0 {
                                     if poll_fds[0].revents().unwrap().contains(PollFlags::POLLIN) {
                                         // read data
-                                        let mut tmp =
-                                            [MaybeUninit::zeroed(); constants::NET_BUFFER_CAPACITY];
+                                        let mut tmp = [MaybeUninit::zeroed();
+                                            constants::NET_AUDIO_BUFFER_CAPACITY];
                                         match socket.recv(&mut tmp) {
                                             Ok(0) => {
                                                 info!("Audio proxy disconnected");
@@ -472,7 +472,8 @@ mod backends {
 
                                                 let tmp = unsafe { assume_init(&tmp[..tmp.len()]) };
 
-                                                if tmp.len() != constants::NET_BUFFER_CAPACITY {
+                                                if tmp.len() != constants::NET_AUDIO_BUFFER_CAPACITY
+                                                {
                                                     error!("Buffer length differs from BUFFER_CAPACITY! Length: {}", tmp.len());
                                                 }
 

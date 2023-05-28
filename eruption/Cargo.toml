@@ -37,7 +37,7 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = []                      #["mimalloc_allocator"]
+default = [] #["mimalloc_allocator"]
 mimalloc_allocator = ["mimalloc"]
 profiling = ["coz"]
 debug-async = []
@@ -121,12 +121,10 @@ rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 same-file = "1"
-vulkano = "0.33.0"
-vulkano-shaders = "0.33.0"
-vulkano-util = "0.33.0"
-shaderc = "0.8.2"
 bytemuck = "1.13.1"
 bitfield-struct = "0.4.2"
+gpgpu = { git = "https://github.com/UpsettingBoy/gpgpu-rs.git", branch = "dev" }
+shaderc = "0.8.2"
 
 # ubuntu bionic
 # sysinfo = "=0.14.2"

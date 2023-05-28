@@ -16,31 +16,19 @@
     You should have received a copy of the GNU General Public License
     along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
 
-    Copyright (c) 2019-2022, The Eruption Development Team
+    Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use bytemuck::{Pod, Zeroable};
 use lazy_static::lazy_static;
-use mlua::prelude::*;
 use parking_lot::RwLock;
-use shaderc::CompilationArtifact;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
 use std::sync::Arc;
 use std::{any::Any, sync::atomic::Ordering};
-// use vulkano::buffer::{Buffer, BufferCreateInfo, BufferUsage};
-// use vulkano::command_buffer::allocator::StandardCommandBufferAllocator;
-// use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
-// use vulkano::descriptor_set::allocator::StandardDescriptorSetAllocator;
-// use vulkano::descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet};
-use vulkano::device::physical::PhysicalDeviceType;
-use vulkano::device::{Device, DeviceCreateInfo, DeviceExtensions, QueueCreateInfo, QueueFlags};
-use vulkano::instance::{Instance, InstanceCreateInfo};
-// use vulkano::memory::allocator::{AllocationCreateInfo, MemoryUsage, StandardMemoryAllocator};
-// use vulkano::pipeline::{ComputePipeline, Pipeline, PipelineBindPoint};
 
-// use vulkano::sync::GpuFuture;
-use vulkano::VulkanLibrary;
+use gpgpu::*;
+use mlua::prelude::*;
+use mlua::Lua;
 
 use crate::constants;
 use crate::plugins::{self, Plugin};
@@ -54,257 +42,136 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub enum HwAccelerationPluginError {
     #[error("Initialization failed: {}", description)]
     InitError { description: String },
+
     // #[error("No devices found")]
     // NoDevicesFound,
+
     // #[error("Compilation failed: {}", description)]
     // ShaderCompilationError { description: String },
+    #[error("Invalid shader specified")]
+    InvalidShader {},
     // #[error("Unknown error: {}", description)]
     // UnknownError { description: String },
 }
 
 lazy_static! {
-    pub static ref HWACCEL_STATE: Arc<RwLock<Option<State>>> = Arc::new(RwLock::new(None));
+    /// GPGPU framework handle
+    pub static ref FRAMEWORK: gpgpu::Framework = gpgpu::Framework::default();
+
+    /// Loaded SPIR-V shader programs and their associated state
+    pub static ref SHADERS: Arc<RwLock<HashMap<usize, Box<ShaderState<'static>>>>> =
+        Arc::new(RwLock::new(HashMap::new()));
 }
 
-pub struct State {
-    device: Arc<Device>,
+pub struct ShaderState<'fw> {
+    pub shader: Box<Shader>,
+    pub uniforms: HashMap<String, UniformVariant>,
+    pub input_buffers: Vec<Box<GpuBuffer<'fw, u8>>>,
+    pub output_buffer: Box<GpuBuffer<'fw, u32>>,
 }
 
-// here we derive all these traits to ensure the data behaves as simple as possible
-#[repr(C)]
-#[derive(Default, Copy, Clone, Zeroable, Pod)]
-struct DataStruct {
-    a: u32,
-    b: u32,
-}
+impl<'fw> ShaderState<'fw> {
+    pub fn new(shader: Shader) -> Self {
+        let fw = &FRAMEWORK;
 
-/// A plugin that provides access to hardware acceleration APIs
-pub struct HwAccelerationPlugin {}
-
-impl HwAccelerationPlugin {
-    pub fn new() -> Self {
-        HwAccelerationPlugin {}
-    }
-
-    pub fn initialize_hwaccel() -> Result<()> {
-        let library = VulkanLibrary::new()?;
-
-        let instance = Instance::new(
-            library,
-            InstanceCreateInfo {
-                engine_name: Some("Eruption Hwaccel".to_string()),
-                enumerate_portability: false,
-                ..Default::default()
-            },
-        )?;
-
-        let device_extensions = DeviceExtensions {
-            khr_storage_buffer_storage_class: true,
-            ..DeviceExtensions::empty()
-        };
-
-        if let Some((physical_device, queue_family_index)) = instance
-            .enumerate_physical_devices()?
-            .filter(|p| p.supported_extensions().contains(&device_extensions))
-            .filter_map(|p| {
-                // The Vulkan specs guarantee that a compliant implementation must provide at least one
-                // queue that supports compute operations.
-                p.queue_family_properties()
-                    .iter()
-                    .position(|q| q.queue_flags.intersects(QueueFlags::COMPUTE))
-                    .map(|i| (p, i as u32))
-            })
-            .min_by_key(|(p, _)| match p.properties().device_type {
-                PhysicalDeviceType::DiscreteGpu => 0,
-                PhysicalDeviceType::IntegratedGpu => 1,
-                PhysicalDeviceType::VirtualGpu => 2,
-                PhysicalDeviceType::Cpu => 3,
-                PhysicalDeviceType::Other => 4,
-                _ => 5,
-            })
-        {
-            tracing::info!(
-                "Hwaccel using device: {} (type: {:?})",
-                physical_device.properties().device_name,
-                physical_device.properties().device_type
-            );
-
-            // Now initializing the device
-            let (device, mut queues) = Device::new(
-                physical_device,
-                DeviceCreateInfo {
-                    enabled_extensions: device_extensions,
-                    queue_create_infos: vec![QueueCreateInfo {
-                        queue_family_index,
-                        ..Default::default()
-                    }],
-                    ..Default::default()
-                },
-            )?;
-
-            let _queue = queues
-                .next()
-                .ok_or_else(|| HwAccelerationPluginError::InitError {
-                    description: "Could not request a queue".to_string(),
-                })?;
-
-            // Now let's get to the actual example.
-            //
-            // What we are going to do is very basic: we are going to fill a buffer with 64k integers and
-            // ask the GPU to multiply each of them by 12.
-            //
-            // GPUs are very good at parallel computations (SIMD-like operations), and thus will do this
-            // much more quickly than a CPU would do. While a CPU would typically multiply them one by one
-            // or four by four, a GPU will do it by groups of 32 or 64.
-            //
-            // Note however that in a real-life situation for such a simple operation the cost of accessing
-            // memory usually outweighs the benefits of a faster calculation. Since both the CPU and the
-            // GPU will need to access data, there is no other choice but to transfer the data through the
-            // slow PCI express bus.
-
-            // We need to create the compute pipeline that describes our operation.
-            //
-            // If you are familiar with graphics pipeline, the principle is the same except that compute
-            // pipelines are much simpler to create.
-            /* let pipeline = {
-                mod cs {
-                    vulkano_shaders::shader! {
-                        ty: "compute",
-                        src: r"
-                        #version 450
-                        layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
-                        layout(set = 0, binding = 0) buffer Data {
-                            uint data[];
-                        };
-                        void main() {
-                            uint idx = gl_GlobalInvocationID.x;
-                            data[idx] *= 12;
-                        }
-                    ",
-                    }
-                }
-                let shader = cs::load(device.clone()).unwrap();
-
-                ComputePipeline::new(
-                    device.clone(),
-                    shader.entry_point("main").unwrap(),
-                    &(),
-                    None,
-                    |_| {},
-                )
-                .unwrap()
-            };
-
-            let memory_allocator = StandardMemoryAllocator::new_default(device.clone());
-            let descriptor_set_allocator = StandardDescriptorSetAllocator::new(device.clone());
-            let command_buffer_allocator =
-                StandardCommandBufferAllocator::new(device.clone(), Default::default());
-
-            // We start by creating the buffer that will store the data.
-            let data_buffer = Buffer::from_iter(
-                &memory_allocator,
-                BufferCreateInfo {
-                    usage: BufferUsage::STORAGE_BUFFER,
-                    ..Default::default()
-                },
-                AllocationCreateInfo {
-                    usage: MemoryUsage::Upload,
-                    ..Default::default()
-                },
-                // Iterator that produces the data.
-                0..65536u32,
-            )
-            .unwrap();
-
-            // In order to let the shader access the buffer, we need to build a *descriptor set* that
-            // contains the buffer.
-            //
-            // The resources that we bind to the descriptor set must match the resources expected by the
-            // pipeline which we pass as the first parameter.
-            //
-            // If you want to run the pipeline on multiple different buffers, you need to create multiple
-            // descriptor sets that each contain the buffer you want to run the shader on.
-            let layout = pipeline.layout().set_layouts().get(0).unwrap();
-            let set = PersistentDescriptorSet::new(
-                &descriptor_set_allocator,
-                layout.clone(),
-                [WriteDescriptorSet::buffer(0, data_buffer.clone())],
-            )
-            .unwrap();
-
-            // In order to execute our operation, we have to build a command buffer.
-            let mut builder = AutoCommandBufferBuilder::primary(
-                &command_buffer_allocator,
-                queue.queue_family_index(),
-                CommandBufferUsage::OneTimeSubmit,
-            )?;
-
-            builder
-                // The command buffer only does one thing: execute the compute pipeline. This is called a
-                // *dispatch* operation.
-                //
-                // Note that we clone the pipeline and the set. Since they are both wrapped in an `Arc`,
-                // this only clones the `Arc` and not the whole pipeline or set (which aren't cloneable
-                // anyway). In this example we would avoid cloning them since this is the last time we use
-                // them, but in real code you would probably need to clone them.
-                .bind_pipeline_compute(pipeline.clone())
-                .bind_descriptor_sets(
-                    PipelineBindPoint::Compute,
-                    pipeline.layout().clone(),
-                    0,
-                    set,
-                )
-                .dispatch([1024, 1, 1])?;
-
-            // Finish building the command buffer by calling `build`.
-            let command_buffer = builder.build()?;
-
-            // Let's execute this command buffer now.
-            let future = sync::now(device.clone())
-                .then_execute(queue, command_buffer)?
-                // This line instructs the GPU to signal a *fence* once the command buffer has finished
-                // execution. A fence is a Vulkan object that allows the CPU to know when the GPU has
-                // reached a certain point. We need to signal a fence here because below we want to block
-                // the CPU until the GPU has reached that point in the execution.
-                .then_signal_fence_and_flush()?;
-
-            // Blocks execution until the GPU has finished the operation. This method only exists on the
-            // future that corresponds to a signalled fence. In other words, this method wouldn't be
-            // available if we didn't call `.then_signal_fence_and_flush()` earlier. The `None` parameter
-            // is an optional timeout.
-            //
-            // Note however that dropping the `future` variable (with `drop(future)` for example) would
-            // block execution as well, and this would be the case even if we didn't call
-            // `.then_signal_fence_and_flush()`. Therefore the actual point of calling
-            // `.then_signal_fence_and_flush()` and `.wait()` is to make things more explicit. In the
-            // future, if the Rust language gets linear types vulkano may get modified so that only
-            // fence-signalled futures can get destroyed like this.
-            future.wait(None)?;
-
-            // Now that the GPU is done, the content of the buffer should have been modified. Let's check
-            // it out. The call to `read()` would return an error if the buffer was still in use by the
-            // GPU.
-            let data_buffer_content = data_buffer.read().unwrap();
-            for n in 0..65536u32 {
-                assert_eq!(data_buffer_content[n as usize], n * 12);
-            }
-
-            */
-
-            // icecream::ice!(&data_buffer_content);
-
-            *HWACCEL_STATE.write() = Some(State { device });
-
-            Ok(())
-        } else {
-            Err(HwAccelerationPluginError::InitError {
-                description: "".to_owned(),
-            }
-            .into())
+        Self {
+            shader: Box::new(shader),
+            uniforms: HashMap::new(),
+            input_buffers: vec![],
+            output_buffer: Box::new(GpuBuffer::with_capacity(&fw, constants::CANVAS_SIZE as u64)),
         }
     }
 
-    pub fn _compile_shader<P: AsRef<Path>>(shader_path: P) -> Result<CompilationArtifact> {
+    pub fn set_uniform(&mut self, name: String, value: UniformVariant) -> Option<UniformVariant> {
+        self.uniforms.insert(name, value)
+    }
+}
+
+pub enum UniformVariant {
+    F32(f32),
+}
+
+/// A plugin that provides access to hardware acceleration APIs
+pub struct HwAccelPlugin {}
+
+impl HwAccelPlugin {
+    pub fn new() -> Self {
+        HwAccelPlugin {}
+    }
+
+    pub fn initialize_hwaccel() -> Result<()> {
+        Ok(())
+    }
+
+    pub fn hwaccel_status() -> BTreeMap<String, String> {
+        let mut result = BTreeMap::new();
+
+        if crate::EXPERIMENTAL_FEATURES.load(Ordering::SeqCst) {
+            // let state = HWACCEL_STATE.read();
+            // let state = state.as_ref().unwrap();
+
+            let device_name = "<unknown>".to_string();
+
+            result.insert("device".to_string(), device_name);
+            result.insert("backend".to_string(), "Vulkan".to_string());
+            result.insert("acceleration-available".to_string(), "true".to_string());
+        } else {
+            result.insert("device".to_string(), "none".to_string());
+            result.insert("backend".to_string(), "disabled".to_string());
+            result.insert("acceleration-available".to_string(), "false".to_string());
+        }
+
+        result
+    }
+
+    pub fn render(shader: usize) -> Result<()> {
+        match SHADERS.read().get(&shader) {
+            Some(shader) => {
+                let fw = &FRAMEWORK;
+
+                // GPU buffer creation
+                let buf1 = GpuBuffer::<u8>::with_capacity(&fw, constants::CANVAS_SIZE as u64); // Input
+                let buf2 = GpuBuffer::<u8>::with_capacity(&fw, constants::CANVAS_SIZE as u64); // Input
+                let output = GpuBuffer::<u32>::with_capacity(&fw, constants::CANVAS_SIZE as u64); // Output
+
+                // Descriptor set and program creation
+                let desc = DescriptorSet::default()
+                    .bind_buffer(&buf1, GpuBufferUsage::ReadOnly)
+                    .bind_buffer(&buf2, GpuBufferUsage::ReadOnly)
+                    .bind_buffer(&output, GpuBufferUsage::ReadWrite);
+
+                let program =
+                    Box::new(Program::new(&shader.shader, "main").add_descriptor_set(desc));
+
+                // Kernel creation and enqueuing
+                Kernel::new(&fw, *program).enqueue(constants::CANVAS_SIZE as u32, 1, 1);
+
+                Ok(())
+            }
+
+            None => Err(HwAccelerationPluginError::InvalidShader {}.into()),
+        }
+    }
+
+    pub fn set_uniform(shader: usize, name: &str) -> Result<()> {
+        Ok(())
+    }
+
+    /// Load a shader program from a SPIR-V binary file
+    pub fn load_shader<P: AsRef<Path>>(shader_path: P) -> Result<usize> {
+        let fw = &FRAMEWORK;
+
+        let shader = Shader::from_spirv_file(&fw, &shader_path)?;
+        let shader_state = ShaderState::new(shader);
+
+        let index = SHADERS.read().len();
+        SHADERS.write().insert(index, Box::new(shader_state));
+
+        Ok(index)
+    }
+
+    /// Compiles GLSL or WGSL shader code to SPIR-V, and load the binary shader program
+    fn compile_shader<P: AsRef<Path>>(shader_path: P) -> Result<Shader> {
         let compiler = shaderc::Compiler::new().unwrap();
         let mut options = shaderc::CompileOptions::new().unwrap();
 
@@ -320,59 +187,32 @@ impl HwAccelerationPlugin {
             Some(&options),
         )?;
 
-        Ok(binary_result)
+        let fw = &FRAMEWORK;
+
+        let shader = Shader::from_spirv_bytes(
+            &fw,
+            binary_result.as_binary_u8(),
+            Some(
+                &shader_path
+                    .as_ref()
+                    .file_name()
+                    .map(|s| s.to_string_lossy().into_owned())
+                    .unwrap_or_else(|| "<unknown>".to_string()),
+            ),
+        );
+
+        Ok(shader)
     }
-
-    pub fn hwaccel_status() -> BTreeMap<String, String> {
-        let mut result = BTreeMap::new();
-
-        if crate::EXPERIMENTAL_FEATURES.load(Ordering::SeqCst) {
-            let state = HWACCEL_STATE.read();
-            let state = state.as_ref().unwrap();
-
-            let device_name = state
-                .device
-                .physical_device()
-                .properties()
-                .device_name
-                .clone();
-
-            result.insert("device".to_string(), device_name);
-            result.insert("backend".to_string(), "Vulkan".to_string());
-            result.insert("acceleration-available".to_string(), "true".to_string());
-        } else {
-            result.insert("device".to_string(), "none".to_string());
-            result.insert("backend".to_string(), "disabled".to_string());
-            result.insert("acceleration-available".to_string(), "false".to_string());
-        }
-
-        result
-    }
-
-    pub fn hwaccel_tick(_delta: i32) {}
-
-    pub fn color_map_from_render_surface() -> Vec<u32> {
-        let color = 0xff000000;
-        let result = vec![color; constants::CANVAS_SIZE];
-
-        result
-    }
-
-    // pub fn set_uniform_value(_value: u32) {}
-
-    // pub fn get_uniform_value() -> u32 {
-    //     0
-    // }
 }
 
 #[async_trait::async_trait]
-impl Plugin for HwAccelerationPlugin {
+impl Plugin for HwAccelPlugin {
     fn get_name(&self) -> String {
         "Hwaccel".to_string()
     }
 
     fn get_description(&self) -> String {
-        "Hardware accelerated effects using Vulkan".to_string()
+        "Hardware accelerated effects using WGSL and GLSL shader-programs".to_string()
     }
 
     fn initialize(&mut self) -> plugins::Result<()> {
@@ -389,22 +229,24 @@ impl Plugin for HwAccelerationPlugin {
         let globals = lua_ctx.globals();
 
         let hwaccel_status =
-            lua_ctx.create_function(move |_, ()| Ok(HwAccelerationPlugin::hwaccel_status()))?;
+            lua_ctx.create_function(move |_, ()| Ok(HwAccelPlugin::hwaccel_status()))?;
         globals.set("hwaccel_status", hwaccel_status)?;
 
-        let hwaccel_tick = lua_ctx.create_function(move |_, (delta,): (i32,)| {
-            HwAccelerationPlugin::hwaccel_tick(delta);
-            Ok(())
-        })?;
-        globals.set("hwaccel_tick", hwaccel_tick)?;
+        let hwaccel_render = lua_ctx.create_function(move |_, shader: usize| {
+            let result = HwAccelPlugin::render(shader)
+                .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
-        let color_map_from_render_surface = lua_ctx.create_function(move |_, ()| {
-            Ok(HwAccelerationPlugin::color_map_from_render_surface())
+            Ok(result)
         })?;
-        globals.set(
-            "color_map_from_render_surface",
-            color_map_from_render_surface,
-        )?;
+        globals.set("hwaccel_render", hwaccel_render)?;
+
+        let set_uniform = lua_ctx.create_function(move |_, (shader, name): (usize, String)| {
+            let result = HwAccelPlugin::set_uniform(shader, &name)
+                .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
+
+            Ok(result)
+        })?;
+        globals.set("set_uniform", set_uniform)?;
 
         Ok(())
     }

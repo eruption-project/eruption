@@ -38,7 +38,7 @@ use crate::{constants, plugins};
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Debug, Clone, thiserror::Error)]
-pub enum ImageProcessingPluginError {
+pub enum RasterOpsPluginError {
     #[error("Canvas operation failed: {}", description)]
     CanvasOpFailed { description: String },
     //#[error("Unknown error: {}", description)]
@@ -58,12 +58,12 @@ struct CanvasState {
     source_color: u32,
 }
 
-/// A plugin that provides basic image processing and drawing routines for graphics primitives
-pub struct ImageProcessingPlugin {}
+/// A plugin that provides basic image processing and drawing routines for 2d-graphics primitives
+pub struct RasterOpsPlugin {}
 
-impl ImageProcessingPlugin {
+impl RasterOpsPlugin {
     pub fn new() -> Self {
-        ImageProcessingPlugin {}
+        RasterOpsPlugin {}
     }
 
     /// retrieve the handle of the current canvas
@@ -94,7 +94,7 @@ impl ImageProcessingPlugin {
         if let Some(result) = result {
             Ok(result)
         } else {
-            Err(ImageProcessingPluginError::CanvasOpFailed {
+            Err(RasterOpsPluginError::CanvasOpFailed {
                 description: "Could not allocate a canvas".to_string(),
             }
             .into())
@@ -130,7 +130,7 @@ impl ImageProcessingPlugin {
         if let Some(result) = result {
             Ok(result)
         } else {
-            Err(ImageProcessingPluginError::CanvasOpFailed {
+            Err(RasterOpsPluginError::CanvasOpFailed {
                 description: "Could not allocate a canvas".to_string(),
             }
             .into())
@@ -144,7 +144,7 @@ impl ImageProcessingPlugin {
             let mut dts = dts.borrow_mut();
 
             if dts.remove(&canvas).is_none() {
-                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                result = Err(RasterOpsPluginError::CanvasOpFailed {
                     description: "Could not find the specified canvas".to_string(),
                 }
                 .into())
@@ -202,7 +202,7 @@ impl ImageProcessingPlugin {
 
                 result = Ok(())
             } else {
-                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                result = Err(RasterOpsPluginError::CanvasOpFailed {
                     description: "Could not find the specified canvas".to_string(),
                 }
                 .into())
@@ -246,13 +246,13 @@ impl ImageProcessingPlugin {
 
                     result = Ok(())
                 } else {
-                    result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                    result = Err(RasterOpsPluginError::CanvasOpFailed {
                         description: "Could not find the specified canvas".to_string(),
                     }
                     .into())
                 }
             } else {
-                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                result = Err(RasterOpsPluginError::CanvasOpFailed {
                     description: "Could not find the specified canvas".to_string(),
                 }
                 .into())
@@ -273,7 +273,7 @@ impl ImageProcessingPlugin {
 
                 result = Ok(())
             } else {
-                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                result = Err(RasterOpsPluginError::CanvasOpFailed {
                     description: "Could not find the associated state of the specified canvas"
                         .to_string(),
                 }
@@ -320,7 +320,7 @@ impl ImageProcessingPlugin {
 
                 result = Ok(())
             } else {
-                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                result = Err(RasterOpsPluginError::CanvasOpFailed {
                     description: "Could not find the specified canvas".to_string(),
                 }
                 .into())
@@ -367,7 +367,7 @@ impl ImageProcessingPlugin {
 
                 result = Ok(())
             } else {
-                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                result = Err(RasterOpsPluginError::CanvasOpFailed {
                     description: "Could not find the specified canvas".to_string(),
                 }
                 .into())
@@ -432,7 +432,7 @@ impl ImageProcessingPlugin {
 
                 result = Ok(())
             } else {
-                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                result = Err(RasterOpsPluginError::CanvasOpFailed {
                     description: "Could not find the specified canvas".to_string(),
                 }
                 .into())
@@ -500,7 +500,7 @@ impl ImageProcessingPlugin {
 
                 result = Ok(())
             } else {
-                result = Err(ImageProcessingPluginError::CanvasOpFailed {
+                result = Err(RasterOpsPluginError::CanvasOpFailed {
                     description: "Could not find the specified canvas".to_string(),
                 }
                 .into())
@@ -514,13 +514,13 @@ impl ImageProcessingPlugin {
 }
 
 #[async_trait::async_trait]
-impl Plugin for ImageProcessingPlugin {
+impl Plugin for RasterOpsPlugin {
     fn get_name(&self) -> String {
-        "Image Processing".to_string()
+        "Rasterops".to_string()
     }
 
     fn get_description(&self) -> String {
-        "Provide high-level image-processing and 2D primitives rendering functionality".to_string()
+        "2D-primitives rendering and high-level image-processing functionality".to_string()
     }
 
     fn initialize(&mut self) -> plugins::Result<()> {
@@ -532,7 +532,7 @@ impl Plugin for ImageProcessingPlugin {
 
         // canvas related functions
         let get_canvas = lua_ctx.create_function(move |_, ()| {
-            let result = ImageProcessingPlugin::get_canvas()
+            let result = RasterOpsPlugin::get_canvas()
                 .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
             Ok(result)
@@ -540,7 +540,7 @@ impl Plugin for ImageProcessingPlugin {
         globals.set("get_canvas", get_canvas)?;
 
         let create_new_canvas = lua_ctx.create_function(move |_, ()| {
-            let result = ImageProcessingPlugin::create_new_canvas()
+            let result = RasterOpsPlugin::create_new_canvas()
                 .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
             Ok(result)
@@ -548,7 +548,7 @@ impl Plugin for ImageProcessingPlugin {
         globals.set("create_new_canvas", create_new_canvas)?;
 
         let destroy_canvas = lua_ctx.create_function(move |_, canvas: usize| {
-            ImageProcessingPlugin::destroy_canvas(canvas)
+            RasterOpsPlugin::destroy_canvas(canvas)
                 .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
             Ok(())
@@ -556,7 +556,7 @@ impl Plugin for ImageProcessingPlugin {
         globals.set("destroy_canvas", destroy_canvas)?;
 
         let realize_canvas = lua_ctx.create_function(move |_, canvas: usize| {
-            ImageProcessingPlugin::realize_canvas(canvas)
+            RasterOpsPlugin::realize_canvas(canvas)
                 .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
             Ok(())
@@ -565,7 +565,7 @@ impl Plugin for ImageProcessingPlugin {
 
         let alpha_blend = lua_ctx.create_function(
             move |_, (foreground_canvas, background_canvas, alpha): (usize, usize, f32)| {
-                ImageProcessingPlugin::alpha_blend(foreground_canvas, background_canvas, alpha)
+                RasterOpsPlugin::alpha_blend(foreground_canvas, background_canvas, alpha)
                     .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
                 Ok(())
@@ -576,7 +576,7 @@ impl Plugin for ImageProcessingPlugin {
         // state tracking related functions
         let set_source_color =
             lua_ctx.create_function(move |_, (canvas, color): (usize, u32)| {
-                ImageProcessingPlugin::set_source_color(canvas, color)
+                RasterOpsPlugin::set_source_color(canvas, color)
                     .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
                 Ok(())
@@ -586,7 +586,7 @@ impl Plugin for ImageProcessingPlugin {
         // drawing operations
         let fill_rectangle = lua_ctx.create_function(
             move |_, (canvas, x, y, width, height): (usize, f32, f32, f32, f32)| {
-                ImageProcessingPlugin::fill_rectangle(canvas, x, y, width, height)
+                RasterOpsPlugin::fill_rectangle(canvas, x, y, width, height)
                     .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
                 Ok(())
@@ -596,7 +596,7 @@ impl Plugin for ImageProcessingPlugin {
 
         let draw_circle = lua_ctx.create_function(
             move |_, (canvas, x, y, width, height): (usize, f32, f32, f32, f32)| {
-                ImageProcessingPlugin::draw_circle(canvas, x, y, width, height)
+                RasterOpsPlugin::draw_circle(canvas, x, y, width, height)
                     .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
 
                 Ok(())
@@ -618,7 +618,7 @@ impl Plugin for ImageProcessingPlugin {
                 f32,
                 f32,
             )| {
-                ImageProcessingPlugin::draw_simplex_noise(
+                RasterOpsPlugin::draw_simplex_noise(
                     canvas, x, y, width, height, offset_x, offset_y, time, freq,
                 )
                 .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
@@ -640,7 +640,7 @@ impl Plugin for ImageProcessingPlugin {
                 f32,
                 f32,
             )| {
-                ImageProcessingPlugin::draw_turbulence_noise(
+                RasterOpsPlugin::draw_turbulence_noise(
                     canvas, x, y, width, height, offset_x, offset_y, time,
                 )
                 .map_err(|e: eyre::Error| LuaError::RuntimeError(format!("{e}")))?;
