@@ -812,7 +812,9 @@ pub fn spawn_lua_thread(
                 Ok(script::RunScriptResult::TerminatedWithErrors) => {
                     error!("Script execution failed");
 
-                    LUA_TXS.write().get_mut(thread_idx).unwrap().is_failed = true;
+                    if let Some(tx) = LUA_TXS.write().get_mut(thread_idx) {
+                        tx.is_failed = true;
+                    }
                     REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
                     return Err(MainError::ScriptExecError {}.into());
@@ -821,7 +823,9 @@ pub fn spawn_lua_thread(
                 Err(_e) => {
                     error!("Script execution failed due to an unknown error");
 
-                    LUA_TXS.write().get_mut(thread_idx).unwrap().is_failed = true;
+                    if let Some(tx) = LUA_TXS.write().get_mut(thread_idx) {
+                        tx.is_failed = true;
+                    }
                     REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
                     return Err(MainError::ScriptExecError {}.into());
@@ -858,8 +862,12 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
             match dev_io_rx.recv() {
                 Ok(message) => match message {
                     DeviceAction::RenderNow  => {
+                        // If we are in the process of switching between profiles, we need to postpone rendering
+                        // until the switch has been completed, to avoid getting into inconsistent states
+                        let switching_completed = crate::PROFILE_SWITCHING_COMPLETED_CONDITION.0.lock();
                         let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
-                        if saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
+
+                        if *switching_completed && saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
                             // instruct the Lua VMs to realize their color maps, but only if at least one VM
                             // submitted a new color map (performed a frame generation increment)
 
@@ -903,20 +911,17 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                                     if errors_present {
                                         drop_frame = true;
-                                        *pending = 0;
-
                                         ratelimited::debug!("Frame dropped: Error while waiting for the color map");
                                         break;
                                     }
 
                                     let result = COLOR_MAPS_READY_CONDITION.1.wait_for(
                                         &mut pending,
-                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                        Duration::from_millis(constants::TIMEOUT_REALIZE_COLOR_MAP_CONDITION_MILLIS),
                                     );
 
                                     if result.timed_out() {
-                                        drop_frame = true;
-                                        ratelimited::warn!("Frame dropped: Timeout while waiting for a lock");
+                                        ratelimited::debug!("At least one script skipped submitting an updated color map");
                                         break;
                                     }
                                 } else {
@@ -972,13 +977,15 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             }
 
                             // number of pending blend ops should have reached zero by now
-                            // may currently occur during switching of profiles
+                            // this condition may occur during switching of profiles
                             let ops_pending = *COLOR_MAPS_READY_CONDITION.0.lock();
                             if ops_pending > 0 {
                                 ratelimited::warn!(
                                     "Pending blend ops before writing LED map to device: {}",
                                     ops_pending
-                                        );
+                                );
+
+                                drop_frame = true;
                             }
 
                             // apply global post-processing
@@ -1023,15 +1030,14 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
                                                     ratelimited::error!("Error sending LED map to a device: {}", e);
 
-                                                    if device.has_failed().unwrap_or(true) {
-                                                        ratelimited::warn!("Trying to unplug the failed device");
+                                                    ratelimited::warn!("Trying to unplug the failed device");
+                                                    let _ = device.fail();
 
-                                                        // we need to terminate and then re-enter the main loop to update all global state
-                                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                                                    }
+                                                    // we need to terminate and then re-enter the main loop to update all global state
+                                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                                 }
                                             } else {
-                                                ratelimited::warn!("Skipping uninitialized device, trying to re-initialize it now...");
+                                                ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
 
                                                 let hidapi: parking_lot::lock_api::RwLockReadGuard<parking_lot::RawRwLock, Option<hidapi::HidApi>> = crate::HIDAPI.read();
                                                 let hidapi = hidapi.as_ref().unwrap();
@@ -1061,15 +1067,14 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
                                                     ratelimited::error!("Error sending LED map to a device: {}", e);
 
-                                                    if device.has_failed().unwrap_or(true) {
-                                                        ratelimited::warn!("Trying to unplug the failed device");
+                                                    ratelimited::warn!("Trying to unplug the failed device");
+                                                    let _ = device.fail();
 
-                                                        // we need to terminate and then re-enter the main loop to update all global state
-                                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                                                    }
+                                                    // we need to terminate and then re-enter the main loop to update all global state
+                                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                                 }
                                             } else {
-                                                ratelimited::warn!("Skipping uninitialized device, trying to re-initialize it now...");
+                                                ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
 
                                                 let hidapi = crate::HIDAPI.read();
                                                 let hidapi = hidapi.as_ref().unwrap();
@@ -1099,15 +1104,14 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                                 if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
                                                     ratelimited::error!("Error sending LED map to a device: {}", e);
 
-                                                    if device.has_failed().unwrap_or(true) {
-                                                        ratelimited::warn!("Trying to unplug the failed device");
+                                                    ratelimited::warn!("Trying to unplug the failed device");
+                                                    let _ = device.fail();
 
-                                                        // we need to terminate and then re-enter the main loop to update all global state
-                                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                                                    }
+                                                    // we need to terminate and then re-enter the main loop to update all global state
+                                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                                 }
                                             } else {
-                                                ratelimited::warn!("Skipping uninitialized device, trying to re-initialize it now...");
+                                                ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
 
                                                 let hidapi = crate::HIDAPI.read();
                                                 let hidapi = hidapi.as_ref().unwrap();

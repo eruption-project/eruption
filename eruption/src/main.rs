@@ -261,6 +261,10 @@ lazy_static! {
     pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
 
+    // This is the "switch profile fence" condition variable
+    pub static ref PROFILE_SWITCHING_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
+    Arc::new((Mutex::new(true), Condvar::new()));
+
     // All upcalls (event handlers) in Lua VM completed?
     pub static ref UPCALL_COMPLETED_ON_KEY_DOWN: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
@@ -487,6 +491,27 @@ pub fn switch_profile(
         }
     }
 
+    let mut switch_completed = crate::PROFILE_SWITCHING_COMPLETED_CONDITION.0.lock();
+    if !*switch_completed {
+        // wait for previous profile switching requests to complete...
+
+        let result = PROFILE_SWITCHING_COMPLETED_CONDITION.1.wait_for(
+            &mut switch_completed,
+            Duration::from_millis(constants::LONG_TIMEOUT_MILLIS),
+        );
+
+        if result.timed_out() {
+            ratelimited::error!("Invalid state in profile switching code");
+            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+            return Err(MainError::SwitchProfileError {}.into());
+        }
+    }
+
+    // ok, no previous operations pending, begin switching the profile now...
+
+    *switch_completed = false;
+
     if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
         debug!("Preparing to enter failsafe mode...");
 
@@ -510,12 +535,18 @@ pub fn switch_profile(
 
         debug!("Successfully entered failsafe mode");
 
+        *switch_completed = true;
+        crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
+
         Ok(SwitchProfileResult::FallbackToFailsafe)
     } else {
         // we require profile_file to be set in this branch
         let profile_file = if let Some(profile_file) = profile_file {
             profile_file
         } else {
+            *switch_completed = true;
+            crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
+
             error!("Undefined profile");
             return Err(MainError::SwitchProfileError {}.into());
         };
@@ -583,6 +614,9 @@ pub fn switch_profile(
                     );
                     switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
+                    *switch_completed = true;
+                    crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
+
                     Ok(SwitchProfileResult::FallbackToFailsafe)
                 } else {
                     // everything is fine, finally assign the globally active profile
@@ -635,6 +669,9 @@ pub fn switch_profile(
                     let mut slot_profiles = SLOT_PROFILES.write();
                     slot_profiles.as_mut().unwrap()[active_slot] = profile_file.into();
 
+                    *switch_completed = true;
+                    crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
+
                     Ok(SwitchProfileResult::Switched)
                 }
             }
@@ -649,6 +686,9 @@ pub fn switch_profile(
                     );
                     switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
+                    *switch_completed = true;
+                    crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
+
                     Ok(SwitchProfileResult::FallbackToFailsafe)
                 } else {
                     error!(
@@ -656,6 +696,9 @@ pub fn switch_profile(
                         profile_file.display(),
                         e
                     );
+
+                    *switch_completed = true;
+                    crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
 
                     Ok(SwitchProfileResult::InvalidProfile)
                 }
@@ -747,6 +790,7 @@ fn run_main_loop(
                         event.as_ref().unwrap_err()
                     );
 
+                    // TODO: Do we really need to quit here?
                     QUIT.store(true, Ordering::SeqCst);
                 }
             });
@@ -915,10 +959,10 @@ fn run_main_loop(
                 if let Err(e) = switch_profile(None, dbus_api_tx, true) {
                     error!("Could not switch profiles: {}", e);
                 } else {
-                    FAILED_TXS.write().clear();
-
                     // reset the audio backend, it will be enabled again if needed
                     plugins::audio::reset_audio_backend();
+
+                    FAILED_TXS.write().clear();
                 }
             }
         }
@@ -935,6 +979,9 @@ fn run_main_loop(
                 if let Err(e) = switch_profile(Some(&profile_path), dbus_api_tx, false) {
                     error!("Could not switch profiles: {}", e);
                 } else {
+                    // reset the audio backend, it will be enabled again if needed
+                    plugins::audio::reset_audio_backend();
+
                     dbus_api_tx
                         .send(DbusApiEvent::ActiveSlotChanged)
                         .unwrap_or_else(|e| {
@@ -949,9 +996,6 @@ fn run_main_loop(
 
                     saved_slot = active_slot;
                     FAILED_TXS.write().clear();
-
-                    // reset the audio backend, it will be enabled again if needed
-                    plugins::audio::reset_audio_backend();
                 }
             }
         }
@@ -1036,10 +1080,10 @@ fn run_main_loop(
                 if let Err(e) = switch_profile(Some(profile_path), dbus_api_tx, true) {
                     error!("Could not switch profiles: {}", e);
                 } else {
-                    FAILED_TXS.write().clear();
-
                     // reset the audio backend, it will be enabled again if needed
                     plugins::audio::reset_audio_backend();
+
+                    FAILED_TXS.write().clear();
                 }
             }
 
@@ -1062,14 +1106,16 @@ fn run_main_loop(
                     {
                         error!("Could not reload profile: {}", e);
                     } else {
+                        // reset the audio backend, it will be enabled again if needed
+                        plugins::audio::reset_audio_backend();
+
                         // don't notify "active profile changed", since it may deadlock
 
                         // dbus_api_tx
                         //     .send(DbusApiEvent::ActiveProfileChanged)
                         //     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-                        // reset the audio backend, it will be enabled again if needed
-                        plugins::audio::reset_audio_backend();
+                        FAILED_TXS.write().clear();
                     }
                 }
             }
@@ -1257,7 +1303,7 @@ fn run_main_loop(
                 }
             }
 
-            // finally, update the LEDs if necessary
+            // finally, send request to update the LEDs if necessary
             DEV_IO_TX
                 .read()
                 .as_ref()
@@ -1288,15 +1334,15 @@ fn run_main_loop(
                 elapsed_after_sleep,
                 1000 / constants::TARGET_FPS
             );
-        } /* else if elapsed_after_sleep < 5_u128 {
-              warn!("Short loop detected");
-              warn!(
-                  "Loop took: {} milliseconds, goal: {}",
-                  elapsed_after_sleep,
-                  1000 / constants::TARGET_FPS
-              );
-          } */
-        /*
+        }
+        /* else if elapsed_after_sleep < 5_u128 {
+            debug!("Short loop detected");
+            debug!(
+                "Loop took: {} milliseconds, goal: {}",
+                elapsed_after_sleep,
+                1000 / constants::TARGET_FPS
+            );
+        }
         else {
             debug!(
                 "Loop took: {} milliseconds, goal: {}",

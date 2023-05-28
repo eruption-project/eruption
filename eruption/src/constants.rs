@@ -21,8 +21,14 @@
 
 #![allow(dead_code)]
 
+// ****************************************************************************
+// Default filesystem paths and names
+
 /// Default path of eruption master configuration file
 pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
+
+/// Default effect script
+pub const DEFAULT_EFFECT_SCRIPT: &str = "solid.lua";
 
 /// Default profile directory
 pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
@@ -35,6 +41,9 @@ pub const DEFAULT_MACRO_DIR: &str = "/usr/share/eruption/scripts/lib/macros";
 
 /// Default script directory
 pub const DEFAULT_KEYMAP_DIR: &str = "/usr/share/eruption/scripts/lib/keymaps";
+
+/// Default AFK profile
+pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/profiles/blackout.profile";
 
 /// The `/run/eruption/` directory
 pub const RUN_ERUPTION_DIR: &str = "/run/eruption/";
@@ -63,68 +72,29 @@ pub const CONTROL_SOCKET_NAME: &str = "/run/eruption/control.sock";
 /// Eruption daemon audio data UNIX domain socket
 pub const AUDIO_SOCKET_NAME: &str = "/run/eruption/audio.sock";
 
+// ****************************************************************************
+
+// ****************************************************************************
+// Eruption core daemon
+
 /// Number of slots
 pub const NUM_SLOTS: usize = 4;
-
-/// Default effect script
-pub const DEFAULT_EFFECT_SCRIPT: &str = "solid.lua";
 
 /// Default AFK timeout
 pub const AFK_TIMEOUT_SECS: u64 = 0;
 
-/// Default AFK profile
-pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/profiles/blackout.profile";
-
-/// Notify the software watchdog every n milliseconds
-pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
-
-/// eruption-gui: The time to wait before an external process is spawned, after the profile has been switched
-pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
-
-/// Target frames per second
-pub const TARGET_FPS: u64 = 19;
-
-/// Target timer tick events per second
-pub const TICK_FPS: u64 = 19;
-
-/// The width of the canvas (max. reasonable value approx. 128)
-/// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_WIDTH: usize = 92;
-
-/// The height of the canvas (max. reasonable value approx. 128)
-/// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_HEIGHT: usize = 64;
-
-/// The number of "pixels" on the canvas
-pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
-
-/// Fade in on profile switch for n milliseconds
-pub const FADE_MILLIS: u64 = 1333;
-
-/// Fade-in effect duration on startup
-pub const STARTUP_FADE_IN_MILLIS: u64 = 2500;
-
-/// The capacity of the buffer used for exchanging control messages
-pub const NET_BUFFER_CAPACITY: usize = CANVAS_SIZE * 4 + 32;
-
-/// The capacity of the buffer used for receiving audio samples as well as control messages
-pub const NET_AUDIO_BUFFER_CAPACITY: usize = 4096;
-
-/// Timeout for waiting on condition variables of Lua upcalls
-pub const TIMEOUT_CONDITION_MILLIS: u64 = 250;
-
-/// Max number of events that will be processed in each iteration of the main loop
-pub const MAX_EVENTS_PER_ITERATION: u64 = 128;
-
-/// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
-pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 25;
-
 /// Amount of time that has to pass before we retry sending a command to the LED/control USB sub-device
-pub const DEVICE_SETTLE_MILLIS: u64 = 100;
+pub const DEVICE_SETTLE_MILLIS: u64 = 80;
 
 /// Update sensors every n seconds
 /// It is recommended to use a prime number value here
-pub const SENSOR_UPDATE_TICKS: u64 = 19; // TARGET_FPS /* * 1 */;
+pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS / 2;
+
+/// Generic timeout value for fast operations
+pub const SHORT_TIMEOUT_MILLIS: u64 = 500;
+
+/// Generic timeout value for slow operations
+pub const LONG_TIMEOUT_MILLIS: u64 = 1000;
 
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 4000;
@@ -140,14 +110,74 @@ pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = DEVICE_SETTLE_MILLIS as u32;
 /// It is recommended to use a prime number value here
 pub const POLL_TIMER_INTERVAL_MILLIS: u64 = 499;
 
-/// Audio proxy loop sleep time/timeout for poll(2)
-pub const SLEEP_TIME_TIMEOUT: u64 = 2000;
-
 /// Max. supported number of keys on a keyboard
 pub const MAX_KEYS: usize = 144;
 
 /// Max. supported number of mouse buttons
 pub const MAX_MOUSE_BUTTONS: usize = 32;
+
+/// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
+pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 25;
+
+/// Target frames per second
+pub const TARGET_FPS: u64 = 24;
+
+/// Target timer tick events per second
+pub const TICK_FPS: u64 = TARGET_FPS;
+
+/// The width of the canvas (max. reasonable value approx. 128)
+/// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
+pub const CANVAS_WIDTH: usize = 86;
+
+/// The height of the canvas (max. reasonable value approx. 128)
+/// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
+pub const CANVAS_HEIGHT: usize = 64;
+
+/// The number of "pixels" on the canvas
+pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
+
+/// Timeout for waiting on condition variables of Lua upcalls
+pub const TIMEOUT_CONDITION_MILLIS: u64 = 200;
+
+/// Timeout for waiting on ready condition after the RealizeColorMap upcall
+pub const TIMEOUT_REALIZE_COLOR_MAP_CONDITION_MILLIS: u64 = 25;
+
+/// Max number of events that will be processed in each iteration of the main loop
+pub const MAX_EVENTS_PER_ITERATION: u64 = 64;
+
+/// Fade in on profile switch for n milliseconds
+pub const FADE_MILLIS: u64 = 1333;
+
+/// Fade-in effect duration on startup
+pub const STARTUP_FADE_IN_MILLIS: u64 = 2000;
+
+// ****************************************************************************
+
+// ****************************************************************************
+// Networking related
+
+/// The capacity of the buffer used for exchanging control messages
+pub const NET_BUFFER_CAPACITY: usize = CANVAS_SIZE * 4 + 128;
+
+/// The capacity of the buffer used for receiving audio samples as well as control messages
+pub const NET_AUDIO_BUFFER_CAPACITY: usize = 4096;
+
+/// Default X11 display used by the X11 sensor plugin of the eruption-fx-proxy daemon
+pub const DEFAULT_X11_DISPLAY: &str = ":0";
+
+/// Default host name for the eruption-netfx utility
+pub const DEFAULT_HOST: &str = "localhost";
+
+/// Default port number for the eruption-netfx utility
+pub const DEFAULT_PORT: u16 = 2359;
+
+// ****************************************************************************
+
+// ****************************************************************************
+// Session daemons
+
+/// Audio proxy loop sleep time/timeout for poll(2)
+pub const SLEEP_TIME_TIMEOUT: u64 = 2000;
 
 /// Default delay between images, used for animation mode of the eruption-fx-proxy daemon
 pub const DEFAULT_ANIMATION_DELAY_MILLIS: u64 = 83;
@@ -161,11 +191,10 @@ pub const MAIN_LOOP_SLEEP_MILLIS: u64 = 199;
 /// The time for which a notification shall be shown
 pub const NOTIFICATION_TIME_MILLIS: u64 = 4000;
 
-/// Default X11 display used by the X11 sensor plugin of the eruption-fx-proxy daemon
-pub const DEFAULT_X11_DISPLAY: &str = ":0";
+/// Notify the software watchdog every n milliseconds
+pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
 
-/// Default host name for the eruption-netfx utility
-pub const DEFAULT_HOST: &str = "localhost";
+/// eruption-gui: The time to wait before an external process is spawned, after the profile has been switched
+pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
 
-/// Default port number for the eruption-netfx utility
-pub const DEFAULT_PORT: u16 = 2359;
+// ****************************************************************************

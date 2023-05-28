@@ -764,7 +764,7 @@ pub(crate) fn get_local_color_map() -> Vec<u32> {
 pub(crate) fn submit_color_map(map: &[u32]) -> Result<()> {
     if map.len() != constants::CANVAS_SIZE {
         ratelimited::warn!(
-            "In submit_color_map(): Length of {} not exactly matching canvas size {}",
+            "In submit_color_map: Length {} not exactly matching canvas size {}",
             map.len(),
             constants::CANVAS_SIZE
         );
