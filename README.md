@@ -17,9 +17,6 @@
   <a href="https://kernel.org/">
     <img src="docs/assets/tux.svg" height="50" alt="Linux Tux" />
   </a>&nbsp;&nbsp;
-  <a href="https://github.com/vulkano-rs/vulkano">
-    <img src="docs/assets/vulkano-logo.png" height=50 alt="Vulkano" />
-  </a>&nbsp;&nbsp;
   <a href="https://www.khronos.org/">
     <img src="docs/assets/vulkan.svg" height=50 alt="Vulkan" />
   </a>
