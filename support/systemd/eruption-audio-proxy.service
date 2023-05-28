@@ -25,7 +25,7 @@ Requires=sound.target
 PartOf=graphical-session.target
 BindsTo=graphical-session.target
 StartLimitIntervalSec=60
-StartLimitBurst=5
+StartLimitBurst=3
 
 [Service]
 Environment=RUST_LOG=warn

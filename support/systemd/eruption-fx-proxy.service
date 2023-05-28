@@ -24,8 +24,8 @@ Documentation=man:eruption-fx-proxy(1) man:fx-proxy.conf(5) man:eruptionctl(1)
 BindsTo=graphical-session.target
 Wants=graphical-session.target
 After=graphical-session.target
-# StartLimitIntervalSec=60
-# StartLimitBurst=5
+StartLimitIntervalSec=60
+StartLimitBurst=3
 
 [Service]
 Environment=RUST_LOG=warn

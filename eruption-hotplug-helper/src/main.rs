@@ -331,6 +331,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                             Err(e) => {
                                 log::error!("Failed to connect to the Eruption daemon: {}", e);
+
+                                // restart the eruption daemon to be on the safe side
+                                restart_eruption_daemon()?;
                             }
                         }
                     }
