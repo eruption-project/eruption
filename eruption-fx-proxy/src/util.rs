@@ -86,8 +86,8 @@ pub fn process_image_buffer(
 pub fn get_primary_keyboard_device() -> Result<KeyboardDevice> {
     let (keyboards, _mice, _misc) = dbus_client::get_managed_devices()?;
 
-    let usb_vid = keyboards[0].0;
-    let usb_pid = keyboards[0].1;
+    let usb_vid = keyboards.get(0).unwrap_or_else(|| &(0, 0)).0;
+    let usb_pid = keyboards.get(0).unwrap_or_else(|| &(0, 0)).1;
 
     let device = hwdevices::get_keyboard_device(usb_vid, usb_pid)?;
 
