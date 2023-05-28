@@ -68,7 +68,6 @@ pub fn apply_parameters(
             if is_same_file(&active_profile.profile_file, &profile_path) {
                 let new_parameters =
                     update_profile_and_state_file(active_profile, &script_path, parameter_values)?;
-                drop(active_profile);
                 update_parameters_on_active_profile(&script_path, new_parameters)?;
                 return Ok(());
             }
