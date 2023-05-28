@@ -2235,7 +2235,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hotplug-helper"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "cfg-if 1.0.0",
  "clap 4.3.0",
