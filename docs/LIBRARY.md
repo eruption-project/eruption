@@ -16,7 +16,7 @@ the respective file was loaded previously via a call to `require "..."`.
 - System: Basic system information and status, like e.g. running processes. Execute external commands, ...
 - Canvas: Canvas related functions and per-device zone allocation
 - Hwaccel: Hardware accelerated effects using the Vulkan API
-- Image Processing: Accelerated 2D-primitives rasterization API and image processing
+- Rasterops: Accelerated 2D-primitives rasterization API and image processing
 - Sensors: Query system sensor values, like e.g. CPU package temperature
 - Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
 - Introspection: Provides internal status information of the Eruption daemon
@@ -87,7 +87,7 @@ _For all easing functions:_
 
 ## Core Functions
 
-TODO: Last updated 2023-05-23: Add documentation for Lua functions exported by the Canvas, Hwaccel and Image Processing plugins
+TODO: Last updated 2023-05-23: Add documentation for Lua functions exported by the Canvas, Hwaccel and Rasterops plugins
 
 Core functions are written in Rust, and are exported to the Lua VMs.
 Eruption currently ships with the following core functions:

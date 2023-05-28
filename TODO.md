@@ -25,7 +25,6 @@ _This is a non-exhaustive listing of planned features:_
 - On profile switch to profile without submit_canvas, artifacts are displayed
 - Update all DBus interfaces in rust code
 - keyboard and misc gui pages: make battery/signal controls same as on mice page
-- *dim profiles not dimmed
 - Improve 2D-primitives drawing/rasterization API
 - Further improve hardware acceleration with Vulkan/WebGPU (GPGPU)
 - eruptionctl: implement effects CLI

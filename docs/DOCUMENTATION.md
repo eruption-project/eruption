@@ -192,7 +192,7 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 - System: Basic system information and status, like e.g. running processes. Execute external commands, ...
 - Canvas: Canvas related functions and per-device zone allocation
 - Hwaccel: Hardware accelerated effects using the Vulkan API
-- Image Processing: Accelerated 2D-primitives rasterization API and image processing
+- Rasterops: Accelerated 2D-primitives rasterization API and image processing
 - Sensors: Query system sensor values, like e.g. CPU package temperature
 - Audio: Audio related tasks, like playing sounds, also used by audio visualizers, ...
 - Introspection: Provides internal status information of the Eruption daemon
@@ -200,7 +200,6 @@ Eruption 0.1.10 introduced _experimental_ mouse support. The mouse support is ro
 - Profiles: Switch slots, switch profiles based on system state, ...
 - Macros: Programmatically inject key stroke sequences
 - Linux ULEDs: Userspace LEDs interface, support for kernel-based LED-triggers
-- Animal: Simulation of organic movements
 - SDK Support: Support for the Eruption SDK
 
 **Additional Plugins:**
