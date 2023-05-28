@@ -201,7 +201,7 @@ pub mod events {
         /// stores how many consecutive events shall be ignored
         static ref IGNORE_NEXT_DBUS_EVENTS: AtomicUsize = AtomicUsize::new(0);
 
-        /// signals whether we should re-initialize the GUI asap (e.g.: used when hot-plugging new devices)
+        /// signals whether we should reinitialize the GUI asap (e.g.: used when hot-plugging new devices)
         pub static ref UPDATE_MAIN_WINDOW: AtomicBool = AtomicBool::new(false);
 
         /// signals whether we have lost the connection to the Eruption daemon
