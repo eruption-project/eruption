@@ -941,20 +941,20 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                             // alpha blend the color maps of the last active profile with the current canvas
                             let fader_base = crate::FADER_BASE.load(Ordering::SeqCst);
-                            let fader = crate::FADER.load(Ordering::SeqCst);
+                            if fader_base > 0 {
+                                let fader = crate::FADER.load(Ordering::SeqCst);
 
-                            // let alpha = fader as f32 / fader_base as f32;
-                            let alpha = if fader_base > 0 && fader > 0 {
-                                ease_in_out_quad(fader as f32 / fader_base as f32)
-                            } else {
-                                0.0
-                            };
+                                // let alpha = fader_base as f32 / fader as f32;
+                                let alpha = ease_in_out_quad(fader_base as f32 / fader as f32);
 
-                            if alpha > 0.0 {
-                                let saved_led_map = script::SAVED_LED_MAP.read();
+                                if alpha > 0.009 {
+                                    let saved_led_map = script::SAVED_LED_MAP.read();
 
-                                for canvas in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
-                                    alpha_blend(&saved_led_map, canvas,alpha);
+                                    for canvas in script::LED_MAP.write().chunks_exact_mut(constants::CANVAS_SIZE) {
+                                        alpha_blend(&saved_led_map, canvas,alpha);
+                                    }
+                                } else {
+                                    crate::FADER_BASE.store(0, Ordering::SeqCst);
                                 }
                             }
 

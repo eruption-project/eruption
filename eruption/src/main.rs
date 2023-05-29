@@ -1314,10 +1314,9 @@ fn run_main_loop(
                 });
         }
 
-        let fader = crate::FADER.load(Ordering::SeqCst);
-        if fader > 0 {
-            crate::FADER.store(fader - 1, Ordering::SeqCst);
-        }
+        // update the monotonic timer used for fading-effect when switching between profiles
+        let delta = start_time.elapsed().as_millis() as isize;
+        crate::FADER.fetch_add(delta, Ordering::SeqCst);
 
         // compute AFK time
         if afk_timeout_secs > 0 {
