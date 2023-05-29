@@ -36,7 +36,7 @@ default = 2.0
 type = 'color'
 name = 'color_background'
 description = 'Background color'
-default = 0xff111111
+default = 0x00000000
 
 [[config]]
 type = 'color'
