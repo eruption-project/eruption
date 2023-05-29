@@ -36,7 +36,7 @@ pub fn process_image_buffer(buffer: Vec<u8>) -> Result<String> {
     let img = img.resize_exact(
         constants::CANVAS_WIDTH as u32,
         constants::CANVAS_HEIGHT as u32,
-        FilterType::Nearest,
+        FilterType::Lanczos3,
     );
 
     for y in 0..constants::CANVAS_HEIGHT {

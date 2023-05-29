@@ -40,7 +40,7 @@ pub fn process_image_buffer(buffer: ImageBuffer<Rgba<u8>, Vec<u8>>) -> Result<Ca
     let img = img.resize_exact(
         constants::CANVAS_WIDTH as u32,
         constants::CANVAS_HEIGHT as u32,
-        FilterType::Nearest,
+        FilterType::Lanczos3,
     );
 
     // apply post-processing filters
