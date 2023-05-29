@@ -1,34 +1,43 @@
 # Project Roadmap
 
-## Preliminary Roadmap
+## Roadmap
 
 - Widen the scope of the project: Add support for more hardware devices
   Please find the list of most requested hardware here: <https://github.com/X3n0m0rph59/eruption/issues>
+- Update the `develop` branch, merge `unified-canvas`
+
+### TODO before merging the `unified-canvas` branch into the `develop` branch
+
+- Wherever possible, convert handling of mem-copies and per-pixel routines in Lua code: Push the inner loop down into Rust code and use high-level graphics-primitives instead. Having the inner loop in Lua code becomes infeasible with higher canvas resolutions.
+  Convert all existing effects scripts to make use of the hwaccel API (GPU acceleration) or at least use the
+  2D-rasterization library (rasterops plugin)
 
 ## Planned Features
 
 _This is a non-exhaustive listing of planned features:_
 
 - GUI support: Improve the GTK3+ based GUI
-- Improve the `Eruption SDK` that allows 3rd party applications to communicate with Eruption
 - Improve i18n and l10n: Add more translations
-- GUI support: Improve the Pyroclasm UI
+- Improve the `Eruption SDK` that allows 3rd party applications to communicate with Eruption
 - Add a KDE Plasma widget
 - Add a MATE Desktop Applet
+- GUI support: Improve the Pyroclasm UI
 
 ## Bugs and known Problems
 
-- Wayland support is still lacking: AmbientFx support is currently not available on Wayland-based compositors
+- Wayland support is still lacking: The Ambient-Effect support is currently not available on Wayland-based compositors,
+  since screenshot APIs are not fully settled on the Wayland side
 
 ## TODO
 
-- On profile switch to profile without submit_canvas, artifacts are displayed
+- Cursor movement influences fader
 - Update all DBus interfaces in rust code
+- Update all manpages
+- On profile switch to profile without submit_canvas: Artifacts are displayed
 - keyboard and misc gui pages: make battery/signal controls same as on mice page
 - Improve 2D-primitives drawing/rasterization API
-- Further improve hardware acceleration with Vulkan/WebGPU (GPGPU)
+- Improve hardware acceleration with Vulkan/WebGPU (GPGPU)
 - eruptionctl: implement effects CLI
-- Update manpages
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
 - Allocated Zones: Add allocated zones support to scripts where applicable
 - Add Lua event: function on_hotplug(new_device) on_update_zones(...)
