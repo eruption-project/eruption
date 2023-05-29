@@ -37,7 +37,7 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = [] #["mimalloc_allocator"]
+default = ["mimalloc_allocator"]
 mimalloc_allocator = ["mimalloc"]
 profiling = ["coz"]
 debug-async = []
@@ -92,7 +92,7 @@ raqote = "0.8.2"
 resize = "0.7.4"
 palette = "0.7.2"
 nalgebra = "0.32.2"
-ndarray = "0.15.6"
+ndarray = { version = "0.15.6", features = ["rayon"] }
 transpose = "0.2.2"
 noise = "0.8.2"
 simdnoise = "3.1.6"
@@ -133,7 +133,12 @@ shaderc = "0.8.2"
 pretty_assertions = "1.3.0"
 thiserror = "1.0.40"
 tokio = { version = "1.28.2", features = ["full", "tracing", "test-util"] }
+criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [build-dependencies]
 build-data = "0.1"
 prost-build = "0.11.9"
+
+[[bench]]
+name = "benchmark"
+harness = false

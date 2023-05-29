@@ -68,6 +68,13 @@ mod ui;
 mod util;
 mod zone;
 
+#[cfg(feature = "mimalloc_allocator")]
+use mimalloc::MiMalloc;
+
+#[cfg(feature = "mimalloc_allocator")]
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
 #[derive(RustEmbed)]
 #[folder = "i18n"] // path to the compiled localization resources
 struct Localizations;

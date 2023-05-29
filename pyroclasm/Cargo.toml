@@ -37,10 +37,12 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = []
+default = ["mimalloc_allocator"]
+mimalloc_allocator = ["mimalloc"]
 debug-async = []
 
 [dependencies]
+mimalloc = { version = "0.1.37", optional = true, default-features = false }
 cfg-if = "1.0.0"
 clap = { version = "4.3.0", features = ["derive"] }
 clap_complete = "4.3.0"
