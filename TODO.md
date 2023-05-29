@@ -30,10 +30,8 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
-- Cursor movement influences fader
 - Update all DBus interfaces in rust code
 - Update all manpages
-- On profile switch to profile without submit_canvas: Artifacts are displayed
 - keyboard and misc gui pages: make battery/signal controls same as on mice page
 - Improve 2D-primitives drawing/rasterization API
 - Improve hardware acceleration with Vulkan/WebGPU (GPGPU)
@@ -43,6 +41,6 @@ _This is a non-exhaustive listing of planned features:_
 - Add Lua event: function on_hotplug(new_device) on_update_zones(...)
 - Fix directory/file permissions in packaging
 - Update Python SDK (get_canvas)
-- Undo/redo ops in the GUI?
+- Implement Undo/redo ops in the GUI?
 - Simplify handling of internal data structures for representation of devices; maybe use a slotmap of Box<dyn Device> instead of integer-indices
 - Improve wording of identifiers: LED_MAP -> CANVAS
