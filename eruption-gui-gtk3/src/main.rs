@@ -46,7 +46,7 @@ use ui::main_window::set_application_state;
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
-use std::{env, process};
+use std::{env, process, thread};
 
 use util::RGBA;
 
@@ -841,16 +841,28 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     });
 
     // global timer support
-    glib::timeout_add_local(
-        Duration::from_millis(1),
+    glib::idle_add_local(
         clone!(@weak application => @default-return Continue(true), move || {
             if let Err(e) = timers::handle_timers() {
                 ratelimited::error!("An error occurred in a timer callback: {}", e);
             }
 
+            thread::sleep(Duration::from_millis(1));
+
             Continue(true)
         }),
     );
+
+    // glib::timeout_add_local(
+    //     Duration::from_millis(1),
+    //     clone!(@weak application => @default-return Continue(true), move || {
+    //         if let Err(e) = timers::handle_timers() {
+    //             ratelimited::error!("An error occurred in a timer callback: {}", e);
+    //         }
+
+    //         Continue(true)
+    //     }),
+    // );
 
     application.run_with_args(&args().collect::<Vec<_>>());
 
