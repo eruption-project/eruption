@@ -2354,7 +2354,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-gui-gtk3"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "atty",
  "byteorder",
@@ -2384,6 +2384,7 @@ dependencies = [
  "i18n-embed-fl",
  "icecream",
  "indexmap",
+ "itertools 0.10.5",
  "lazy_static",
  "libc",
  "mimalloc",
@@ -2396,6 +2397,7 @@ dependencies = [
  "parking_lot",
  "paste 1.0.12",
  "pretty_assertions",
+ "rayon",
  "rust-embed",
  "serde",
  "serde_json",

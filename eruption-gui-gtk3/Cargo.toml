@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-gui-gtk3"
-version = "0.2.5"
+version = "0.2.6"
 build = "build.rs"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -70,6 +70,8 @@ toml = "0.7.4"
 byteorder = "1.4.3"
 lazy_static = "1.4.0"
 palette = "0.7.2"
+itertools = "0.10.5"
+rayon = "1.7.0"
 nalgebra = "0.32.2"
 ndarray = { version = "0.15.6", features = ["rayon"] }
 transpose = "0.2.2"
