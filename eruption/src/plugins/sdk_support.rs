@@ -430,8 +430,8 @@ impl SdkSupportPlugin {
             if #[cfg(not(target_os = "windows"))] {
                 // set permissions of the control socket, allow only root
                 let mut perms = fs::metadata(constants::CONTROL_SOCKET_NAME)?.permissions();
-                perms.set_mode(0o660); // don't allow others, only user and group rw
-                // perms.set_mode(0o666);
+                // perms.set_mode(0o660); // don't allow others, only user and group rw
+                perms.set_mode(0o666);
                 fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
             }
         }
