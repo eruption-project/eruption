@@ -4,13 +4,21 @@
 
 - Widen the scope of the project: Add support for more hardware devices
   Please find the list of most requested hardware here: <https://github.com/X3n0m0rph59/eruption/issues>
-- Update the `develop` branch, merge `unified-canvas`
+- Update the `develop` branch, merge `unified-canvas` as soon as it is ready
 
 ### TODO before merging the `unified-canvas` branch into the `develop` branch
 
 - Wherever possible, convert handling of mem-copies and per-pixel routines in Lua code: Push the inner loop down into Rust code and use high-level graphics-primitives instead. Having the inner loop in Lua code becomes infeasible with higher canvas resolutions.
   Convert all existing effects scripts to make use of the hwaccel API (GPU acceleration) or at least use the
   2D-rasterization library (rasterops plugin)
+
+### Status of the Eruption porting effort to Microsoft Windows
+
+- WIP support code for Microsoft Windows was merged to the `unified-canvas` branch
+- Cross-compilation on Linux host (in a Fedora 38 `podman` container) is up and running
+- Successful compilation of selected binaries has been achieved
+- Deployment to Windows via an NSIS-based installer binary
+- Eruption GTK3+ GUI is able to start but is unable to connect to the Eruption daemon
 
 ## Planned Features
 
