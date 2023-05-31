@@ -802,9 +802,9 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cbindgen"
-version = "0.24.5"
+version = "0.24.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b922faaf31122819ec80c4047cc684c6979a087366c069611e33649bf98e18d"
+checksum = "987cbf881b3fbac73b144b05c73a282638f656070c185bec27173154722a027e"
 dependencies = [
  "clap 3.2.25",
  "heck",
@@ -873,9 +873,9 @@ dependencies = [
 
 [[package]]
 name = "chrono"
-version = "0.4.25"
+version = "0.4.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdbc37d37da9e5bce8173f3a41b71d9bf3c674deebbaceacd0ebdabde76efb03"
+checksum = "ec837a71355b28f6556dbd569b37b3f363091c0bd4b2e735674521b4c5fd9bc5"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
@@ -1415,7 +1415,7 @@ dependencies = [
  "bitflags 1.3.2",
  "crossterm_winapi",
  "libc",
- "mio 0.8.7",
+ "mio 0.8.8",
  "parking_lot",
  "signal-hook",
  "signal-hook-mio",
@@ -1469,9 +1469,9 @@ dependencies = [
 
 [[package]]
 name = "ctrlc"
-version = "3.3.1"
+version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7394a21d012ce5c850497fb774b167d81b99f060025fbf06ee92b9848bd97eb2"
+checksum = "2a011bbe2c35ce9c1f143b7af6f94f29a167beb4cd1d29e6740ce836f723120e"
 dependencies = [
  "nix 0.26.2",
  "windows-sys 0.48.0",
@@ -1788,7 +1788,7 @@ dependencies = [
  "egui 0.21.0",
  "egui-winit",
  "egui_glow",
- "glow 0.12.1",
+ "glow 0.12.2",
  "glutin",
  "glutin-winit",
  "js-sys",
@@ -1945,7 +1945,7 @@ checksum = "8257332fb168a965b3dca81d6a344e053153773c889cabdba0b3b76f1629ae81"
 dependencies = [
  "bytemuck",
  "egui 0.21.0",
- "glow 0.12.1",
+ "glow 0.12.2",
  "memoffset 0.6.5",
  "tracing",
  "wasm-bindgen",
@@ -2371,7 +2371,7 @@ dependencies = [
  "tracing-log",
  "tracing-subscriber",
  "unic-langid",
- "wayland-client 0.30.1",
+ "wayland-client 0.30.2",
  "wayland-protocols 0.30.0",
  "wayland-protocols-wlr",
  "x11",
@@ -2650,7 +2650,7 @@ dependencies = [
  "tracing-log",
  "tracing-subscriber",
  "unic-langid",
- "wayland-client 0.30.1",
+ "wayland-client 0.30.2",
  "x11",
  "x11rb 0.12.0",
 ]
@@ -2700,7 +2700,7 @@ dependencies = [
  "tracing-subscriber",
  "unic-langid",
  "walkdir",
- "wayland-client 0.30.1",
+ "wayland-client 0.30.2",
  "wayland-protocols 0.30.0",
  "wayland-protocols-wlr",
  "x11rb 0.12.0",
@@ -3552,9 +3552,9 @@ dependencies = [
 
 [[package]]
 name = "glow"
-version = "0.12.1"
+version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e007a07a24de5ecae94160f141029e9a347282cfe25d1d58d85d845cf3130f1"
+checksum = "807edf58b70c0b5b2181dd39fe1839dbdb3ba02645630dc5f753e23da307f762"
 dependencies = [
  "js-sys",
  "slotmap",
@@ -4849,9 +4849,9 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.8.7"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eebffdb73fe72e917997fad08bdbf31ac50b0fa91cec93e69a0662e4264d454c"
+checksum = "927a765cd3fc26206e66b296465fa9d3e5ab003e651c1b3c060e7956d96b19d2"
 dependencies = [
  "libc",
  "log",
@@ -6809,7 +6809,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29ad2e15f37ec9a6cc544097b78a1ec90001e9f71b81338ca39f430adaca99af"
 dependencies = [
  "libc",
- "mio 0.8.7",
+ "mio 0.8.8",
  "signal-hook",
 ]
 
@@ -6951,7 +6951,7 @@ dependencies = [
  "pkg-config",
  "thiserror",
  "wayland-backend",
- "wayland-client 0.30.1",
+ "wayland-client 0.30.2",
  "wayland-cursor 0.30.0",
  "wayland-protocols 0.30.0",
  "wayland-protocols-wlr",
@@ -7400,7 +7400,7 @@ dependencies = [
  "autocfg",
  "bytes",
  "libc",
- "mio 0.8.7",
+ "mio 0.8.8",
  "num_cpus",
  "parking_lot",
  "pin-project-lite",
@@ -8126,9 +8126,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-client"
-version = "0.30.1"
+version = "0.30.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85bde68449abab1a808e5227b6e295f4ae3680911eb7711b4a2cb90141edb780"
+checksum = "489c9654770f674fc7e266b3c579f4053d7551df0ceb392f153adb1f9ed06ac8"
 dependencies = [
  "bitflags 1.3.2",
  "calloop",
@@ -8168,7 +8168,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2d0c3a0d5b4b688b07b0442362d3ed6bf04724fcc16cd69ab6285b90dbc487aa"
 dependencies = [
  "nix 0.26.2",
- "wayland-client 0.30.1",
+ "wayland-client 0.30.2",
  "xcursor",
 ]
 
@@ -8192,7 +8192,7 @@ checksum = "7fefbeb8a360abe67ab7c2efe1d297a1a50ee011f5460791bc18870c26bb84e2"
 dependencies = [
  "bitflags 1.3.2",
  "wayland-backend",
- "wayland-client 0.30.1",
+ "wayland-client 0.30.2",
  "wayland-scanner 0.30.0",
 ]
 
@@ -8204,7 +8204,7 @@ checksum = "fce991093320e4a6a525876e6b629ab24da25f9baef0c2e0080ad173ec89588a"
 dependencies = [
  "bitflags 1.3.2",
  "wayland-backend",
- "wayland-client 0.30.1",
+ "wayland-client 0.30.2",
  "wayland-protocols 0.30.0",
  "wayland-scanner 0.30.0",
 ]
@@ -8645,7 +8645,7 @@ dependencies = [
  "instant",
  "libc",
  "log",
- "mio 0.8.7",
+ "mio 0.8.8",
  "ndk",
  "objc2",
  "once_cell",

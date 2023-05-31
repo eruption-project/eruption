@@ -68,7 +68,7 @@ async-trait = "0.1.68"
 byteorder = "1.4.3"
 clap = { version = "4.3.0", features = ["derive"] }
 clap_complete = "4.3.0"
-ctrlc = { version = "3.3.1", features = ["termination"] }
+ctrlc = { version = "3.4.0", features = ["termination"] }
 config = "0.13.3"
 dbus = "0.9.7"
 # dbus-tokio = "0.7.5"
@@ -106,7 +106,7 @@ procmon-sys = { version = "0.0.3", path = "src/procmon-sys", optional = true }
 x11rb = { version = "0.12.0", optional = true, features = [
   "allow-unsafe-code",
 ] }
-wayland-client = { version = "0.30.1", features = ["log"], optional = true }
+wayland-client = { version = "0.30.2", features = ["log"], optional = true }
 wayland-protocols = { version = "0.30.0", features = [
   "unstable",
 ], optional = true }

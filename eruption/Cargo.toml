@@ -70,7 +70,7 @@ tokio = { version = "1.28.2", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.3", features = ["all"] }
 windows-named-pipe = { git = "https://github.com/X3n0m0rph59/windows-named-pipe", branch = "main", optional = true }
 winapi = { version = "0.3.9", features =["namedpipeapi"], optional = true}
-ctrlc = { version = "3.3.1", features = ["termination"] }
+ctrlc = { version = "3.4.0", features = ["termination"] }
 clap = "4.3.0"
 hotwatch = "0.4.6"
 config = "0.13.3"
