@@ -131,6 +131,7 @@ pub fn register_plugins() -> Result<()> {
         .register_plugin(Box::new(UledsPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
+    #[cfg(not(target_os = "windows"))]
     let _ = plugin_manager
         .register_plugin(Box::new(SdkSupportPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));

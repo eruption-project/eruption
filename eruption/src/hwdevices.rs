@@ -1988,27 +1988,29 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
 
 #[cfg(target_os = "windows")]
 pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
-    use usb_enumeration::{Event, Observer};
+    // use usb_enumeration::{Event, Observer};
 
-    let sub = Observer::new()
-        // .with_poll_interval(2)
-        .with_vendor_id(usb_vid)
-        .with_product_id(usb_pid)
-        .subscribe();
+    // let sub = Observer::new()
+    //     .with_poll_interval(2)
+    //     .with_vendor_id(usb_vid)
+    //     .with_product_id(usb_pid)
+    //     .subscribe();
 
-    for event in sub.rx_event.iter() {
-        match event {
-            Event::Initial(d) => println!("Initial devices: {:?}", d),
-            Event::Connect(d) => println!("Connected device: {:?}", d),
-            Event::Disconnect(d) => println!("Disconnected device: {:?}", d),
-        }
-    }
+    // for event in sub.rx_event.iter() {
+    //     match event {
+    //         Event::Initial(d) => println!("Initial devices: {:?}", d),
+    //         Event::Connect(d) => println!("Connected device: {:?}", d),
+    //         Event::Disconnect(d) => println!("Disconnected device: {:?}", d),
+    //     }
+    // }
 
-    if usb_pid == 0x343b {
-        Ok(DeviceClass::Misc)
-    } else {
-        Ok(DeviceClass::Unknown)
-    }
+    // if usb_pid == 0x343b {
+    //     Ok(DeviceClass::Misc)
+    // } else {
+    //     Ok(DeviceClass::Unknown)
+    // }
+
+    Ok(DeviceClass::Unknown)
 }
 
 /// Queries udev for the device class of an USB input device

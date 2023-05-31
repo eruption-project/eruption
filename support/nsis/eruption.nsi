@@ -1,8 +1,10 @@
 name Eruption
 
+SetCompressor /solid lzma
+
 !include MUI2.nsh
 
-!define SOURCE_VERSION "0.1.24"
+!define SOURCE_VERSION "0.5.0"
 
 # Defines
 !define URL https://eruption-project.org/
@@ -19,9 +21,9 @@ VIAddVersionKey FileVersion      "${Version}.0"
 VIAddVersionKey ProductVersion   "${Version}.0"
 VIAddVersionKey Comments         "Realtime RGB LED Software for Linux and Windows"
 VIAddVersionKey CompanyName      "The Eruption Development Team"
-VIAddVersionKey LegalCopyright   "Copyright (c) 2019-2022, The Eruption Development Team"
+VIAddVersionKey LegalCopyright   "Copyright (c) 2019-2023, The Eruption Development Team"
 VIAddVersionKey InternalName     "eruption"
-VIAddVersionKey LegalTrademarks  "PTY LTD"
+VIAddVersionKey LegalTrademarks  "GPLv3"
 VIAddVersionKey OriginalFilename "Eruption.exe"
 
 # MUI defines
@@ -43,7 +45,7 @@ VIAddVersionKey OriginalFilename "Eruption.exe"
 # Installer pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE ../../LICENSE
-#!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 #!insertmacro MUI_PAGE_STARTMENU Application $StartMenuGroup
 !insertmacro MUI_PAGE_INSTFILES
@@ -65,38 +67,39 @@ InstallDir $PROGRAMFILES\Eruption
 CRCCheck on
 XPStyle on
 ShowInstDetails show
- 
+
 RequestExecutionLevel admin
- 
+
 # start default section
 Section
     SectionIn RO    # this section cannot be deselected
     SetOverwrite on
- 
+
     # set the installation directory as the destination for the following actions
     SetOutPath $INSTDIR
 
     File "${SOURCEDIR}\*.exe"
-    
+
     File /r "..\redist\redist-x86_64-windows\*.*"
- 
+    File /r "..\shell\windows\*.bat"
+
     # create the uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
- 
+
 SectionEnd
- 
+
 # uninstaller section start
 Section "uninstall"
- 
+
     # Remove the link from the start menu
     # Delete "$SMPROGRAMS\new shortcut.lnk"
- 
+
     Delete $INSTDIR\*.exe
     Delete $INSTDIR\*.dll
- 
+
     # Delete the uninstaller
     Delete $INSTDIR\uninstall.exe
- 
+
     RMDir $INSTDIR
 
 # uninstaller section end

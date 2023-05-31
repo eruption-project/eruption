@@ -222,6 +222,7 @@ pub mod events {
 /// Print license information
 #[allow(dead_code)]
 fn print_header() {
+    #[cfg(not(target_os = "windows"))]
     println!(
         r#"Eruption is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -241,7 +242,21 @@ Copyright (c) 2019-2023, The Eruption Development Team
     );
 }
 
+#[cfg(target_os = "windows")]
 /// Update the global color map vector
+pub fn update_color_map() -> Result<()> {
+    let mut led_colors = dbus_client::get_led_colors()?;
+
+    let mut color_map = crate::COLOR_MAP.lock();
+
+    color_map.clear();
+    color_map.append(&mut led_colors);
+
+    Ok(())
+}
+
+/// Update the global color map vector
+#[cfg(not(target_os = "windows"))]
 pub fn update_color_map() -> Result<()> {
     if let Some(connection) = crate::CONNECTION.lock().as_ref() {
         let canvas = connection.get_canvas()?;

@@ -799,9 +799,6 @@ fn run_main_loop(
                         "Fatal: Could not process a D-Bus event: {}",
                         event.as_ref().unwrap_err()
                     );
-
-                    // TODO: Do we really need to quit here?
-                    QUIT.store(true, Ordering::SeqCst);
                 }
             });
 
@@ -2328,9 +2325,16 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         // let filter = tracing_subscriber::EnvFilter::from_default_env();
         // let journald_layer = tracing_journald::layer()?.with_filter(filter);
 
+        #[cfg(not(target_os = "windows"))]
+        let ansi = true;
+
+        #[cfg(target_os = "windows")]
+        let ansi = false;
+
         let filter = tracing_subscriber::EnvFilter::from_default_env();
         let format_layer = tracing_subscriber::fmt::layer()
             .compact()
+            .with_ansi(ansi)
             .with_filter(filter);
 
         cfg_if::cfg_if! {
