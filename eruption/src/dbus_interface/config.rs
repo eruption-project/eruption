@@ -26,7 +26,10 @@ use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use crate::{color_scheme::ColorScheme, plugins::audio, script};
+#[cfg(not(target_os = "windows"))]
+use crate::plugins::audio;
+
+use crate::{color_scheme::ColorScheme, script};
 
 use super::{
     convenience::FactoryWithPermission, convenience::InterfaceAddend,
@@ -121,12 +124,16 @@ impl InterfaceAddend for ConfigInterface {
 }
 
 fn get_enable_sfx(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
+    #[cfg(not(target_os = "windows"))]
     i.append(audio::ENABLE_SFX.load(Ordering::SeqCst));
+
     Ok(())
 }
 
 fn set_enable_sfx(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult {
+    #[cfg(not(target_os = "windows"))]
     audio::ENABLE_SFX.store(i.read::<bool>()?, Ordering::SeqCst);
+
     Ok(())
 }
 

@@ -23,6 +23,7 @@ use std::{any::Any, collections::HashMap, sync::Arc};
 
 use crate::hwdevices::DeviceStatus;
 use crate::hwdevices::{self, DeviceZoneAllocationTrait, Zone};
+#[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use parking_lot::RwLock;
@@ -301,6 +302,7 @@ impl MouseDeviceTrait for GenericMouse {
         Err(HwDeviceError::InvalidResult {}.into())
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn ev_key_to_button_index(&self, code: EV_KEY) -> Result<u8> {
         match code {
             EV_KEY::KEY_RESERVED => Ok(0),
@@ -344,6 +346,7 @@ impl MouseDeviceTrait for GenericMouse {
         }
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn button_index_to_ev_key(&self, index: u32) -> Result<EV_KEY> {
         match index {
             0 => Ok(EV_KEY::KEY_RESERVED),

@@ -21,7 +21,10 @@
 
 use crate::constants;
 use crate::hwdevices::{keyboards::*, mice::*, misc::*};
+
+#[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
+
 use hidapi::HidApi;
 use lazy_static::lazy_static;
 use mlua::prelude::*;
@@ -34,6 +37,8 @@ use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
 use tracing::*;
+
+#[cfg(not(target_os = "windows"))]
 use udev::Enumerator;
 
 mod util;
@@ -934,6 +939,7 @@ pub trait KeyboardDeviceTrait: DeviceTrait {
     fn get_next_event_timeout(&self, millis: i32) -> Result<KeyboardHidEvent>;
 
     /// Convert an EV_KEY to an index value
+    #[cfg(not(target_os = "windows"))]
     fn ev_key_to_key_index(&self, key: EV_KEY) -> u8;
 
     /// Convert a HID event code to a key index
@@ -997,9 +1003,11 @@ pub trait MouseDeviceTrait: DeviceTrait {
     fn get_next_event_timeout(&self, millis: i32) -> Result<MouseHidEvent>;
 
     /// Converts an EV_KEY value to a button index
+    #[cfg(not(target_os = "windows"))]
     fn ev_key_to_button_index(&self, code: EV_KEY) -> Result<u8>;
 
     /// Converts a button index to an EV_KEY value
+    #[cfg(not(target_os = "windows"))]
     fn button_index_to_ev_key(&self, index: u32) -> Result<EV_KEY>;
 
     /// Send RGBA LED map to the device
@@ -1442,6 +1450,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
 
 /// Enumerates all HID devices on the system and then returns a tuple of all the supported devices
 /// Already bound devices will be ignored
+#[cfg(not(target_os = "windows"))]
 pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<MiscDevice>)> {
     // wait for devices to settle
     // thread::sleep(Duration::from_millis(3000));
@@ -1736,6 +1745,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
 }
 
 /// Get the path of the USB device from udev
+#[cfg(not(target_os = "windows"))]
 pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
     // retry up to n times, in case device enumeration fails
     let mut retry_counter = 3;
@@ -1976,7 +1986,33 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
 //     }
 // }
 
+#[cfg(target_os = "windows")]
+pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
+    use usb_enumeration::{Event, Observer};
+
+    let sub = Observer::new()
+        // .with_poll_interval(2)
+        .with_vendor_id(usb_vid)
+        .with_product_id(usb_pid)
+        .subscribe();
+
+    for event in sub.rx_event.iter() {
+        match event {
+            Event::Initial(d) => println!("Initial devices: {:?}", d),
+            Event::Connect(d) => println!("Connected device: {:?}", d),
+            Event::Disconnect(d) => println!("Disconnected device: {:?}", d),
+        }
+    }
+
+    if usb_pid == 0x343b {
+        Ok(DeviceClass::Misc)
+    } else {
+        Ok(DeviceClass::Unknown)
+    }
+}
+
 /// Queries udev for the device class of an USB input device
+#[cfg(not(target_os = "windows"))]
 pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
     match Enumerator::new() {
         Ok(mut enumerator) => {

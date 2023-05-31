@@ -27,6 +27,7 @@ use tracing::*;
 
 use serde::{Deserialize, Serialize};
 use std::default::Default;
+#[cfg(not(target_os = "windows"))]
 use std::os::unix::prelude::{MetadataExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 use std::{collections::BTreeMap, ffi::OsStr};
@@ -311,12 +312,25 @@ impl Profile {
     pub fn save_params(&self) -> Result<()> {
         if !self.config.is_empty() {
             let state_path = self.profile_file.with_extension("profile.state");
+
+            #[cfg(not(target_os = "windows"))]
             let profile_metadata = fs::metadata(&self.profile_file);
 
-            let mut open_options = fs::OpenOptions::new();
-            open_options.create(true).write(true);
-            if let Ok(profile_metadata) = &profile_metadata {
-                open_options.mode(profile_metadata.mode()); // (only takes effect if the file is new)
+            cfg_if::cfg_if! {
+                if #[cfg(not(target_os = "windows"))] {
+                    let mut open_options = fs::OpenOptions::new();
+                } else {
+                    let open_options = fs::OpenOptions::new();
+                }
+            }
+
+            cfg_if::cfg_if! {
+                if #[cfg(not(target_os = "windows"))] {
+                    open_options.create(true).write(true);
+                    if let Ok(profile_metadata) = &profile_metadata {
+                        open_options.mode(profile_metadata.mode()); // (only takes effect if the file is new)
+                    }
+                }
             }
 
             let file = open_options.open(&state_path)?;
@@ -325,20 +339,26 @@ impl Profile {
 
             // Try to give the state file the same permissions and ownership as the profile file.
             // This can be useful if the profile file is sitting under the user's home directory.
-            // Otherwise, the state file is owned by the eruption user, which is root by default.
-            if let Ok(profile_metadata) = &profile_metadata {
-                let try_mode = fs::set_permissions(&state_path, profile_metadata.permissions());
-                if try_mode.is_err() {
-                    debug!("Could not set permissions on {}", &state_path.display());
-                }
+            // Otherwise, the state file is owned by the eruption user, which is `eruption` by default.
+            cfg_if::cfg_if! {
+                if #[cfg(not(target_os = "windows"))] {
+                    if let Ok(profile_metadata) = &profile_metadata {
+                        let try_mode = fs::set_permissions(&state_path, profile_metadata.permissions());
+                        if try_mode.is_err() {
+                            debug!("Could not set permissions on {}", &state_path.display());
+                        }
 
-                let try_chown = nix::unistd::chown(
-                    &state_path,
-                    Some(profile_metadata.uid().into()),
-                    Some(profile_metadata.gid().into()),
-                );
-                if try_chown.is_err() {
-                    debug!("Could not change ownership of {}", &state_path.display());
+                        let try_chown = nix::unistd::chown(
+                            &state_path,
+                            Some(profile_metadata.uid().into()),
+                            Some(profile_metadata.gid().into()),
+                        );
+                        if try_chown.is_err() {
+                            debug!("Could not change ownership of {}", &state_path.display());
+                        }
+                    }
+                } else {
+                    // TODO: Handle windows case
                 }
             }
         }

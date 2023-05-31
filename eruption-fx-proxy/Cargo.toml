@@ -38,6 +38,7 @@ resolver = "2"
 
 [features]
 default = ["backends-most"]
+windows = []
 debug-async = []
 backends-all = ["backend-wayland", "backend-gnome", "backend-x11"]
 backends-most = ["backend-gnome", "backend-x11"]

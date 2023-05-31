@@ -34,15 +34,23 @@ pub mod rasterops;
 pub mod sdk_support;
 pub mod sensors;
 pub mod system;
+
+#[cfg(not(target_os = "windows"))]
 pub mod uleds;
 
 pub use animal::AnimalPlugin;
+
+#[cfg(not(target_os = "windows"))]
 pub use audio::AudioPlugin;
+
 pub use canvas::CanvasPlugin;
 pub use hwaccel::HwAccelPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
+
+#[cfg(not(target_os = "windows"))]
 pub use macros::MacrosPlugin;
+
 pub use mouse::MousePlugin;
 pub use persistence::PersistencePlugin;
 pub use plugin::Plugin;
@@ -51,6 +59,8 @@ pub use rasterops::RasterOpsPlugin;
 pub use sdk_support::SdkSupportPlugin;
 pub use sensors::SensorsPlugin;
 pub use system::SystemPlugin;
+
+#[cfg(not(target_os = "windows"))]
 pub use uleds::UledsPlugin;
 
 use tracing::*;
@@ -91,6 +101,7 @@ pub fn register_plugins() -> Result<()> {
         .register_plugin(Box::new(MousePlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
+    #[cfg(not(target_os = "windows"))]
     let _ = plugin_manager
         .register_plugin(Box::new(MacrosPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
@@ -115,6 +126,7 @@ pub fn register_plugins() -> Result<()> {
         .register_plugin(Box::new(SensorsPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
+    #[cfg(not(target_os = "windows"))]
     let _ = plugin_manager
         .register_plugin(Box::new(UledsPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
@@ -123,6 +135,7 @@ pub fn register_plugins() -> Result<()> {
         .register_plugin(Box::new(SdkSupportPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
+    #[cfg(not(target_os = "windows"))]
     let _ = plugin_manager
         .register_plugin(Box::new(AudioPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));

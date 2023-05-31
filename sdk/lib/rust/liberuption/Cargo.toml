@@ -40,6 +40,10 @@ resolver = "2"
 name = "eruption"
 crate-type = ["cdylib"]
 
+[features]
+default = []
+windows = []
+
 [dependencies]
 cfg-if = "1.0.0"
 thiserror = "1.0.40"

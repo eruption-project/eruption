@@ -20,6 +20,7 @@
 */
 
 use bitvec::{field::BitField, order::Lsb0, view::BitView};
+#[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use parking_lot::{Mutex, RwLock};
@@ -774,6 +775,7 @@ impl KeyboardDeviceTrait for CorsairStrafe {
         }
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn ev_key_to_key_index(&self, key: EV_KEY) -> u8 {
         EV_TO_INDEX_ISO[(key as u8) as usize].saturating_add(1)
     }

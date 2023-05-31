@@ -17,12 +17,42 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
+# Linux x86_64
+
 BUILDFLAGS := --release
 
 TARGET_DIR := /usr
 SOURCE_DIR := target/release
 
 SUDO := sudo
+
+# Windows x64, cross-compilation from Linux host
+# please see docs/CROSS_COMPILATION.md for further instructions
+
+BUILDFLAGS_WINDOWS := --target=x86_64-pc-windows-gnu \
+	--release --no-default-features --features=windows \
+	-p eruption \
+	-p eruption-gui-gtk3 \
+	-p eruption-sdk \
+	-p liberuption \
+
+	# TODO: These still need porting to Windows
+	# -p eruption-cmd \
+	# -p eruption-hwutil \
+	# -p eruption-debug-tool \
+	# -p simple \
+	# -p eruptionctl \
+	# -p eruption-netfx \
+	# -p eruption-keymap \
+	# -p eruption-audio-proxy \
+	# -p eruption-process-monitor \
+
+	# Not strictly required on Windows
+	# -p eruption-util \
+	# -p eruption-hotplug-helper
+	# -p eruption-watchdog \
+
+CROSS := cross
 
 all: build
 
@@ -35,6 +65,21 @@ build:
 	@echo ""
 	@echo "If Eruption is already running, stop it first.  Consider:"
 	@echo "'make stop && sudo make install && make start'"
+	@echo ""
+
+windows-installer: windows
+	@makensis "support/nsis/eruption.nsi"
+
+	@echo ""
+	@echo "Installer built successfully"
+
+windows:
+	@echo "Commencing cross-compilation for Windows..."
+	@echo ""
+
+	@$(CROSS) build $(BUILDFLAGS_WINDOWS)
+	@$(CROSS) xtask dist
+
 	@echo ""
 
 start:
@@ -374,4 +419,5 @@ test:
 	@cargo test
 
 .SILENT: check clean all start stop install uninstall build test
-.PHONY: check clean all start stop install uninstall build test
+.PHONY: check clean all start stop install uninstall build test \
+		windows windows-installer

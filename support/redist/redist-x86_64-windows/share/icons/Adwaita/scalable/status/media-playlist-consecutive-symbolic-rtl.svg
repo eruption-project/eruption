@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+    <g fill="#474747" stroke="#474747">
+        <path d="M14.983 8H2" style="marker:none" color="#bebebe" overflow="visible" fill="none" stroke-width="2"/>
+        <path d="M4 6L2 8l2 2" style="marker:none" color="#bebebe" overflow="visible" fill="none" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5 5H4v1h1zM5 10H4v1h1z" style="marker:none" color="#000" overflow="visible" stroke="none"/>
+    </g>
+</svg>

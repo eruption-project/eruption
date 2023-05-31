@@ -39,11 +39,14 @@ use tracing::*;
 
 use crate::scripting::script::LAST_RENDERED_LED_MAP;
 use crate::util::ratelimited;
+
+#[cfg(not(target_os = "windows"))]
+use crate::plugins::macros;
+
 use crate::{
     constants,
     hwdevices::RGBA,
     plugin_manager,
-    plugins::macros,
     script::ScriptingError,
     script::{
         ALLOCATED_GRADIENTS, FRAME_GENERATION_COUNTER, LED_MAP, LOCAL_LED_MAP,
@@ -227,8 +230,11 @@ pub(crate) fn inject_key(ev_key: u32, down: bool) {
     // calling inject_key(..) from Lua will drop the current input;
     // the original key event from the hardware keyboard will not be
     // mirrored on the virtual keyboard.
+
+    #[cfg(not(target_os = "windows"))]
     macros::DROP_CURRENT_KEY.store(true, Ordering::SeqCst);
 
+    #[cfg(not(target_os = "windows"))]
     macros::UINPUT_TX
         .read()
         .as_ref()
@@ -242,8 +248,11 @@ pub(crate) fn inject_mouse_button(button_index: u32, down: bool) {
     // calling inject_mouse_button(..) from Lua will drop the current input;
     // the original mouse event from the hardware mouse will not be
     // mirrored on the virtual mouse.
+
+    #[cfg(not(target_os = "windows"))]
     macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
 
+    #[cfg(not(target_os = "windows"))]
     macros::UINPUT_TX
         .read()
         .as_ref()
@@ -260,8 +269,11 @@ pub(crate) fn inject_mouse_wheel(direction: u32) {
     // calling inject_mouse_wheel(..) from Lua will drop the current input;
     // the original mouse event from the hardware mouse will not be
     // mirrored on the virtual mouse.
+
+    #[cfg(not(target_os = "windows"))]
     macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
 
+    #[cfg(not(target_os = "windows"))]
     macros::UINPUT_TX
         .read()
         .as_ref()
@@ -275,6 +287,8 @@ pub(crate) fn inject_key_with_delay(ev_key: u32, down: bool, millis: u64) {
     // calling inject_key(..) from Lua will drop the current input;
     // the original key event from the hardware keyboard will not be
     // mirrored on the virtual keyboard.
+
+    #[cfg(not(target_os = "windows"))]
     macros::DROP_CURRENT_KEY.store(true, Ordering::SeqCst);
 
     thread::Builder::new()
@@ -282,6 +296,7 @@ pub(crate) fn inject_key_with_delay(ev_key: u32, down: bool, millis: u64) {
         .spawn(move || {
             thread::sleep(Duration::from_millis(millis));
 
+            #[cfg(not(target_os = "windows"))]
             macros::UINPUT_TX
                 .read()
                 .as_ref()

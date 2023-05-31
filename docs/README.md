@@ -81,6 +81,10 @@ How to setup Eruption
 
 [INSTALL.md](INSTALL.md)
 
+Cross-compile on a Linux host for the Microsoft Windows platform
+
+[CROSS_COMPILATION.md](CROSS_COMPILATION.md)
+
 ### Setup Audio
 
 HowTo setup audio for Eruption

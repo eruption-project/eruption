@@ -19,8 +19,11 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+#[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_SYN;
+#[cfg(not(target_os = "windows"))]
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
+
 use flume::{unbounded, Receiver, Sender};
 use palette::{FromColor, Hsva, Lighten, LinSrgba, Saturate, ShiftHue};
 use rayon::prelude::{
@@ -37,11 +40,18 @@ use tracing::{debug, error, info, trace, warn};
 
 use crate::plugins::sdk_support::FRAME_GENERATION_COUNTER_ERUPTION_SDK;
 use crate::util::ratelimited;
+
+#[cfg(not(target_os = "windows"))]
+use crate::macros;
+
+#[cfg(not(target_os = "windows"))]
+use crate::uleds;
+
 use crate::{
-    constants, dbus_interface::DbusApi, dbus_interface::Message, hwdevices, macros, plugins,
-    script, scripting::parameters::PlainParameter, sdk_support, uleds, DeviceAction, EvdevError,
-    KeyboardDevice, MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES,
-    LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA, ULEDS_SUPPORT_ACTIVE,
+    constants, dbus_interface::DbusApi, dbus_interface::Message, hwdevices, plugins, script,
+    scripting::parameters::PlainParameter, sdk_support, DeviceAction, EvdevError, KeyboardDevice,
+    MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES, LUA_TXS, QUIT,
+    REQUEST_FAILSAFE_MODE, RGBA, ULEDS_SUPPORT_ACTIVE,
 };
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -118,6 +128,7 @@ pub fn spawn_dbus_api_thread(dbus_tx: Sender<Message>) -> plugins::Result<Sender
 }
 
 /// Spawns the keyboard events thread and executes it's main loop
+#[cfg(not(target_os = "windows"))]
 pub fn spawn_keyboard_input_thread(
     kbd_tx: Sender<Option<evdev_rs::InputEvent>>,
     keyboard_device: KeyboardDevice,
@@ -275,6 +286,7 @@ pub fn spawn_keyboard_input_thread(
 }
 
 /// Spawns the mouse events thread and executes it's main loop
+#[cfg(not(target_os = "windows"))]
 pub fn spawn_mouse_input_thread(
     mouse_tx: Sender<Option<evdev_rs::InputEvent>>,
     mouse_device: MouseDevice,
@@ -629,6 +641,7 @@ pub fn spawn_mouse_input_thread(
 } */
 
 /// Spawns the misc devices input thread and executes it's main loop
+#[cfg(not(target_os = "windows"))]
 pub fn spawn_misc_input_thread(
     misc_tx: Sender<Option<evdev_rs::InputEvent>>,
     misc_device: crate::MiscDevice,
@@ -967,6 +980,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 });
                             }
 
+                            #[cfg(not(target_os = "windows"))]
                             if ULEDS_SUPPORT_ACTIVE.load(Ordering::SeqCst) {
                                 // blend the LED map of the Userspace LEDs support plugin
                                 let uleds_led_map = uleds::LED_MAP.read();

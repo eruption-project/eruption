@@ -37,9 +37,11 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = ["sourceview", "mimalloc_allocator"]
+default = ["dbus-ipc", "sourceview", "mimalloc_allocator"]
+windows = ["dbus-ipc"]
 sourceview = ["sourceview4"]
 mimalloc_allocator = ["mimalloc"]
+dbus-ipc = ["dbus"]
 debug-async = []
 
 [dependencies]
@@ -81,7 +83,7 @@ color-eyre = "0.6.2"
 paste = "1.0.12"
 colorgrad = "0.6.2"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
-dbus = "0.9.7"
+dbus = { version = "0.9.7", optional = true }
 cairo-rs = "0.17.0"
 glib = "0.17.9"
 glib-macros = "0.17.9"

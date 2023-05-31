@@ -69,11 +69,13 @@ mod profiles;
 mod scripting;
 mod state;
 
+#[cfg(not(target_os = "windows"))]
+use crate::{plugins::macros, plugins::uleds};
+
 use crate::{
     color_scheme::ColorScheme,
     hwdevices::{DeviceStatus, MaturityLevel, RGBA},
-    plugins::macros,
-    plugins::{sdk_support, uleds},
+    plugins::sdk_support,
     profiles::Profile,
     scripting::script,
 };
@@ -130,24 +132,28 @@ macro_rules! tr {
     }};
 }
 
+#[cfg(not(target_os = "windows"))]
+lazy_static! {
+    #[cfg(not(target_os = "windows"))]
+    pub static ref KEYBOARD_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+
+    #[cfg(not(target_os = "windows"))]
+    pub static ref MOUSE_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+
+    #[cfg(not(target_os = "windows"))]
+    pub static ref MISC_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+
+}
+
 lazy_static! {
     /// Managed keyboard devices
     pub static ref KEYBOARD_DEVICES: Arc<RwLock<Vec<hwdevices::KeyboardDevice>>> = Arc::new(RwLock::new(Vec::new()));
 
-    pub static ref KEYBOARD_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
-
-
     /// Managed mouse devices
     pub static ref MOUSE_DEVICES: Arc<RwLock<Vec<hwdevices::MouseDevice>>> = Arc::new(RwLock::new(Vec::new()));
 
-    pub static ref MOUSE_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
-
-
     /// Managed miscellaneous devices
     pub static ref MISC_DEVICES: Arc<RwLock<Vec<hwdevices::MiscDevice>>> = Arc::new(RwLock::new(Vec::new()));
-
-    pub static ref MISC_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
-
 
     /// Hidapi object
     pub static ref HIDAPI: Arc<RwLock<Option<hidapi::HidApi>>> = Arc::new(RwLock::new(None));
@@ -755,10 +761,14 @@ fn run_main_loop(
 
         let mut device_has_failed = false;
 
+        #[cfg(not(target_os = "windows"))]
         let kbd_rxs = crate::KEYBOARD_DEVICES_RX.write();
+        #[cfg(not(target_os = "windows"))]
         let mouse_rxs = crate::MOUSE_DEVICES_RX.write();
 
+        #[cfg(not(target_os = "windows"))]
         let kbd_rxs_clone = kbd_rxs.clone();
+        #[cfg(not(target_os = "windows"))]
         let mouse_rxs_clone = mouse_rxs.clone();
 
         let mut sel = Selector::new()
@@ -795,8 +805,10 @@ fn run_main_loop(
                 }
             });
 
+        #[cfg(not(target_os = "windows"))]
         let failed_kbd_rxs = Arc::new(RwLock::new(HashSet::new()));
 
+        #[cfg(not(target_os = "windows"))]
         for (index, rx) in kbd_rxs_clone.iter().enumerate() {
             let failed_kbd_rxs = failed_kbd_rxs.clone();
 
@@ -867,8 +879,10 @@ fn run_main_loop(
             sel = sel.recv(rx, mapper);
         }
 
+        #[cfg(not(target_os = "windows"))]
         let failed_mouse_rxs = Arc::new(RwLock::new(HashSet::new()));
 
+        #[cfg(not(target_os = "windows"))]
         for (index, rx) in mouse_rxs_clone.iter().enumerate() {
             let failed_mouse_rxs = failed_mouse_rxs.clone();
 
@@ -960,6 +974,7 @@ fn run_main_loop(
                     error!("Could not switch profiles: {}", e);
                 } else {
                     // reset the audio backend, it will be enabled again if needed
+                    #[cfg(not(target_os = "windows"))]
                     plugins::audio::reset_audio_backend();
 
                     FAILED_TXS.write().clear();
@@ -980,6 +995,7 @@ fn run_main_loop(
                     error!("Could not switch profiles: {}", e);
                 } else {
                     // reset the audio backend, it will be enabled again if needed
+                    #[cfg(not(target_os = "windows"))]
                     plugins::audio::reset_audio_backend();
 
                     dbus_api_tx
@@ -1081,6 +1097,7 @@ fn run_main_loop(
                     error!("Could not switch profiles: {}", e);
                 } else {
                     // reset the audio backend, it will be enabled again if needed
+                    #[cfg(not(target_os = "windows"))]
                     plugins::audio::reset_audio_backend();
 
                     FAILED_TXS.write().clear();
@@ -1107,6 +1124,7 @@ fn run_main_loop(
                         error!("Could not reload profile: {}", e);
                     } else {
                         // reset the audio backend, it will be enabled again if needed
+                        #[cfg(not(target_os = "windows"))]
                         plugins::audio::reset_audio_backend();
 
                         // don't notify "active profile changed", since it may deadlock
@@ -1190,6 +1208,7 @@ fn run_main_loop(
         };
 
         // remove all failed devices
+        #[cfg(not(target_os = "windows"))]
         for idx in failed_kbd_rxs.read().iter() {
             // warn!("Removing keyboard rx with index {idx}");
             // kbd_rxs.remove(*idx);
@@ -1203,6 +1222,7 @@ fn run_main_loop(
             }
         }
 
+        #[cfg(not(target_os = "windows"))]
         for idx in failed_mouse_rxs.read().iter() {
             // warn!("Removing mouse rx with index {idx}");
             // mouse_rxs.remove(*idx);
@@ -1216,6 +1236,7 @@ fn run_main_loop(
             }
         }
 
+        // #[cfg(not(target_os = "windows"))]
         // for idx in failed_misc_rxs.read().iter() {
         //     // warn!("Removing misc rx with index {idx}");
         //     // misc_rxs.remove(*idx);
@@ -1231,6 +1252,13 @@ fn run_main_loop(
 
         // terminate the main loop (and later re-enter it) on device failure
         // in most cases eruption should better be restarted
+
+        #[cfg(target_os = "windows")]
+        if device_has_failed || (result.is_err() && !timedout) {
+            return Err(MainError::DeviceFailed {}.into());
+        }
+
+        #[cfg(not(target_os = "windows"))]
         if device_has_failed
             || (result.is_err() && !timedout)
             || !failed_kbd_rxs.read().is_empty()
@@ -1373,9 +1401,13 @@ fn remove_failed_devices() -> Result<bool> {
     {
         info!("Unplugging a failed keyboard device...");
 
-        let mut devices_rx = crate::KEYBOARD_DEVICES_RX.write();
-        assert!(devices_rx.len() > index);
-        devices_rx.remove(index);
+        cfg_if::cfg_if! {
+            if #[cfg(not(target_os = "windows"))] {
+                let mut devices_rx = crate::KEYBOARD_DEVICES_RX.write();
+                assert!(devices_rx.len() > index);
+                devices_rx.remove(index);
+            }
+        }
 
         assert!(keyboard_devices.len() > index);
 
@@ -1404,9 +1436,13 @@ fn remove_failed_devices() -> Result<bool> {
     {
         info!("Unplugging a failed mouse device...");
 
-        let mut devices_rx = crate::MOUSE_DEVICES_RX.write();
-        assert!(devices_rx.len() > index);
-        devices_rx.remove(index);
+        cfg_if::cfg_if! {
+            if #[cfg(not(target_os = "windows"))] {
+                let mut devices_rx = crate::MOUSE_DEVICES_RX.write();
+                assert!(devices_rx.len() > index);
+                devices_rx.remove(index);
+            }
+        }
 
         assert!(mouse_devices.len() > index);
 
@@ -1435,9 +1471,13 @@ fn remove_failed_devices() -> Result<bool> {
     {
         info!("Unplugging a failed misc device...");
 
-        let mut devices_rx = crate::MISC_DEVICES_RX.write();
-        assert!(devices_rx.len() > index);
-        devices_rx.remove(index);
+        cfg_if::cfg_if! {
+            if #[cfg(not(target_os = "windows"))] {
+                let mut devices_rx = crate::MISC_DEVICES_RX.write();
+                assert!(devices_rx.len() > index);
+                devices_rx.remove(index);
+            }
+        }
 
         assert!(misc_devices.len() > index);
         misc_devices.remove(index);
@@ -1848,6 +1888,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let _result = fs::create_dir(constants::RUN_ERUPTION_DIR);
 
     // write out our current PID
+    #[cfg(not(target_os = "windows"))]
     let _result = util::write_pid_file();
 
     // process configuration file
@@ -1943,23 +1984,28 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                     let usb_vid = device.read().get_usb_vid();
                                     let usb_pid = device.read().get_usb_pid();
 
-                                    // spawn a thread to handle keyboard input
-                                    info!("Spawning keyboard input thread...");
+                                    cfg_if::cfg_if! {
+                                        if #[cfg(not(target_os = "windows"))] {
+                                            // spawn a thread to handle keyboard input
+                                            info!("Spawning keyboard input thread...");
 
-                                    let (kbd_tx, kbd_rx) = unbounded();
-                                    threads::spawn_keyboard_input_thread(
-                                        kbd_tx,
-                                        device.clone(),
-                                        index,
-                                        usb_vid,
-                                        usb_pid,
-                                    )
-                                    .unwrap_or_else(|e| {
-                                        error!("Could not spawn a thread: {}", e);
-                                        panic!()
-                                    });
+                                            let (kbd_tx, kbd_rx) = unbounded();
+                                            threads::spawn_keyboard_input_thread(
+                                                kbd_tx,
+                                                device.clone(),
+                                                index,
+                                                usb_vid,
+                                                usb_pid,
+                                            )
+                                            .unwrap_or_else(|e| {
+                                                error!("Could not spawn a thread: {}", e);
+                                                panic!()
+                                            });
 
-                                    crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
+                                            crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
+                                        }
+                                    }
+
                                     crate::KEYBOARD_DEVICES.write().push(device.clone());
                                 },
                             )
@@ -1979,43 +2025,48 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                         let usb_vid = device.read().get_usb_vid();
                                         let usb_pid = device.read().get_usb_pid();
 
-                                        let (mouse_tx, mouse_rx) = unbounded();
-                                        // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
+                                        cfg_if::cfg_if! {
+                                            if #[cfg(not(target_os = "windows"))] {
+                                                let (mouse_tx, mouse_rx) = unbounded();
+                                                // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
 
-                                        // spawn a thread to handle mouse input
-                                        info!("Spawning mouse input thread...");
+                                                // spawn a thread to handle mouse input
+                                                info!("Spawning mouse input thread...");
 
-                                        spawn_mouse_input_thread(
-                                            mouse_tx,
-                                            device.clone(),
-                                            index,
-                                            usb_vid,
-                                            usb_pid,
-                                        )
-                                        .unwrap_or_else(|e| {
-                                            error!("Could not spawn a thread: {}", e);
-                                            panic!()
-                                        });
+                                                spawn_mouse_input_thread(
+                                                    mouse_tx,
+                                                    device.clone(),
+                                                    index,
+                                                    usb_vid,
+                                                    usb_pid,
+                                                )
+                                                .unwrap_or_else(|e| {
+                                                    error!("Could not spawn a thread: {}", e);
+                                                    panic!()
+                                                });
 
-                                        // spawn a thread to handle possible sub-devices
-                                        /* if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
-                                            && device.read().has_secondary_device()
-                                        {
-                                            info!("Spawning mouse input thread for secondary sub-device...");
-                                            spawn_mouse_input_thread_secondary(
-                                                mouse_secondary_tx,
-                                                device.clone(),
-                                                index,
-                                                usb_vid,
-                                                usb_pid,
-                                            )
-                                            .unwrap_or_else(|e| {
-                                                error!("Could not spawn a thread: {}", e);
-                                                panic!()
-                                            });
-                                        } */
+                                                // spawn a thread to handle possible sub-devices
+                                                /* if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
+                                                    && device.read().has_secondary_device()
+                                                {
+                                                    info!("Spawning mouse input thread for secondary sub-device...");
+                                                    spawn_mouse_input_thread_secondary(
+                                                        mouse_secondary_tx,
+                                                        device.clone(),
+                                                        index,
+                                                        usb_vid,
+                                                        usb_pid,
+                                                    )
+                                                    .unwrap_or_else(|e| {
+                                                        error!("Could not spawn a thread: {}", e);
+                                                        panic!()
+                                                    });
+                                                } */
 
-                                        crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
+                                                crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
+                                            }
+                                        }
+
                                         crate::MOUSE_DEVICES.write().push(device.clone());
                                     } else {
                                         info!("Found mouse device, but mouse support is DISABLED by configuration");
@@ -2024,47 +2075,50 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             )
                         })?;
 
-                    let misc_init_thread =
-                        thread::Builder::new()
-                            .name("init/misc:all".to_string())
-                            .spawn_scoped(s, || {
-                                // initialize misc devices
-                                devices.2.par_iter().enumerate().for_each_init(
-                                    || {},
-                                    move |_, (index, device)| {
-                                        init_misc_device(device);
+                    let misc_init_thread = thread::Builder::new()
+                        .name("init/misc:all".to_string())
+                        .spawn_scoped(s, || {
+                            // initialize misc devices
+                            devices.2.par_iter().enumerate().for_each_init(
+                                || {},
+                                move |_, (index, device)| {
+                                    init_misc_device(device);
 
-                                        if device.read().has_input_device() {
-                                            let usb_vid = device.read().get_usb_vid();
-                                            let usb_pid = device.read().get_usb_pid();
+                                    cfg_if::cfg_if! {
+                                    if #[cfg(not(target_os = "windows"))] {
+                                            if device.read().has_input_device() {
+                                                let usb_vid = device.read().get_usb_vid();
+                                                let usb_pid = device.read().get_usb_pid();
 
-                                            // spawn a thread to handle keyboard input
-                                            info!("Spawning misc device input thread...");
+                                                // spawn a thread to handle keyboard input
+                                                info!("Spawning misc device input thread...");
 
-                                            let (misc_tx, misc_rx) = unbounded();
-                                            threads::spawn_misc_input_thread(
-                                                misc_tx,
-                                                device.clone(),
-                                                index,
-                                                usb_vid,
-                                                usb_pid,
-                                            )
-                                            .unwrap_or_else(|e| {
-                                                error!("Could not spawn a thread: {}", e);
-                                                panic!()
-                                            });
+                                                let (misc_tx, misc_rx) = unbounded();
+                                                threads::spawn_misc_input_thread(
+                                                    misc_tx,
+                                                    device.clone(),
+                                                    index,
+                                                    usb_vid,
+                                                    usb_pid,
+                                                )
+                                                .unwrap_or_else(|e| {
+                                                    error!("Could not spawn a thread: {}", e);
+                                                    panic!()
+                                                });
 
-                                            crate::MISC_DEVICES_RX.write().push(misc_rx);
-                                        } else {
-                                            // insert an unused rx
-                                            let (_misc_tx, misc_rx) = unbounded();
-                                            crate::MISC_DEVICES_RX.write().push(misc_rx);
+                                                crate::MISC_DEVICES_RX.write().push(misc_rx);
+                                            } else {
+                                                // insert an unused rx
+                                                let (_misc_tx, misc_rx) = unbounded();
+                                                crate::MISC_DEVICES_RX.write().push(misc_rx);
+                                            }
                                         }
+                                    }
 
-                                        crate::MISC_DEVICES.write().push(device.clone());
-                                    },
-                                );
-                            })?;
+                                    crate::MISC_DEVICES.write().push(device.clone());
+                                },
+                            );
+                        })?;
 
                     info!("Device enumeration completed");
 
@@ -2096,7 +2150,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
 
                     // initialize the Linux uleds interface
+                    #[cfg(not(target_os = "windows"))]
                     info!("Initializing Linux Userspace LEDs interface...");
+
+                    #[cfg(not(target_os = "windows"))]
                     plugins::UledsPlugin::spawn_uleds_thread().unwrap_or_else(|e| {
                         warn!("Could not spawn a thread: {}", e);
                         panic!()

@@ -37,6 +37,7 @@ resolver = "2"
 
 [features]
 default = []
+windows = []
 debug-async = []
 
 [dependencies]

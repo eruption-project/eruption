@@ -20,15 +20,19 @@
 */
 
 use crate::util::ratelimited;
+
+#[cfg(not(target_os = "windows"))]
+use crate::macros;
+
 use crate::{
-    constants, dbus_interface, events, macros, script, switch_profile, DbusApiEvent,
-    FileSystemEvent, KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent, ACTIVE_SLOT,
-    DEVICE_STATUS, FAILED_TXS, KEY_STATES, LUA_TXS, MOUSE_MOTION_BUF,
-    MOUSE_MOVE_EVENT_LAST_DISPATCHED, REQUEST_FAILSAFE_MODE, REQUEST_PROFILE_RELOAD,
-    UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT, UPCALL_COMPLETED_ON_KEY_DOWN,
-    UPCALL_COMPLETED_ON_KEY_UP, UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN,
-    UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP, UPCALL_COMPLETED_ON_MOUSE_EVENT,
-    UPCALL_COMPLETED_ON_MOUSE_HID_EVENT, UPCALL_COMPLETED_ON_MOUSE_MOVE,
+    constants, dbus_interface, events, script, switch_profile, DbusApiEvent, FileSystemEvent,
+    KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent, ACTIVE_SLOT, DEVICE_STATUS,
+    FAILED_TXS, KEY_STATES, LUA_TXS, MOUSE_MOTION_BUF, MOUSE_MOVE_EVENT_LAST_DISPATCHED,
+    REQUEST_FAILSAFE_MODE, REQUEST_PROFILE_RELOAD, UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT,
+    UPCALL_COMPLETED_ON_KEY_DOWN, UPCALL_COMPLETED_ON_KEY_UP,
+    UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN, UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP,
+    UPCALL_COMPLETED_ON_MOUSE_EVENT, UPCALL_COMPLETED_ON_MOUSE_HID_EVENT,
+    UPCALL_COMPLETED_ON_MOUSE_MOVE,
 };
 use flume::Sender;
 use lazy_static::lazy_static;
@@ -51,7 +55,10 @@ pub enum Event {
     KeyboardHidEvent(crate::hwdevices::KeyboardHidEvent),
     MouseHidEvent(crate::hwdevices::MouseHidEvent),
 
+    #[cfg(not(target_os = "windows"))]
     RawKeyboardEvent(evdev_rs::InputEvent),
+
+    #[cfg(not(target_os = "windows"))]
     RawMouseEvent(evdev_rs::InputEvent),
 
     KeyDown(u8),
@@ -444,6 +451,7 @@ pub fn process_mouse_hid_events(mouse_device: &MouseDevice) -> Result<()> {
 }
 
 /// Process mouse events
+#[cfg(not(target_os = "windows"))]
 pub fn process_mouse_event(
     raw_event: &evdev_rs::InputEvent,
     mouse_device: &MouseDevice,
@@ -853,6 +861,7 @@ pub fn process_mouse_event(
 // }
 
 /// Process keyboard events
+#[cfg(not(target_os = "windows"))]
 pub fn process_keyboard_event(
     raw_event: &evdev_rs::InputEvent,
     keyboard_device: &KeyboardDevice,

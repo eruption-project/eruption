@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+    <g color="#000" fill="#474747">
+        <path d="M5.99 8.99a1 1 0 0 0-.697 1.717L6.586 12l-1.293 1.293a1 1 0 1 0 1.414 1.414L9.414 12 6.707 9.293a1 1 0 0 0-.717-.303z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;shape-padding:0;isolation:auto;mix-blend-mode:normal" font-weight="400" font-family="sans-serif" white-space="normal" overflow="visible"/>
+        <path d="M15 9.005V10c0 1.645-1.355 3-3 3h-1v-2h1c.572 0 1-.429 1-1v-.983zM6.993 5H4c-.571 0-1 .429-1 1v4c0 .571.429 1 1 1h4v2H4c-1.644 0-3-1.355-3-3V6c0-1.645 1.356-3 3-3h2.982z" style="line-height:normal;-inkscape-font-specification:Sans;text-indent:0;text-align:start;text-decoration-line:none;text-transform:none;marker:none" font-weight="400" font-family="Sans" overflow="visible"/>
+        <path d="M6 9H5v1h1zM6 14H5v1h1zM12 0a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-1 2h2v4h-2l-.004-1.989L10 4V3z" style="marker:none" overflow="visible"/>
+    </g>
+</svg>

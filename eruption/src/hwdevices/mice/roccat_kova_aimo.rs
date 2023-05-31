@@ -20,6 +20,7 @@
 */
 
 use bitvec::prelude::*;
+#[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use parking_lot::{Mutex, RwLock};
@@ -704,6 +705,7 @@ impl MouseDeviceTrait for RoccatKovaAimo {
         }
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn ev_key_to_button_index(&self, code: EV_KEY) -> Result<u8> {
         match code {
             EV_KEY::KEY_RESERVED => Ok(0),
@@ -747,6 +749,7 @@ impl MouseDeviceTrait for RoccatKovaAimo {
         }
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn button_index_to_ev_key(&self, index: u32) -> Result<EV_KEY> {
         match index {
             0 => Ok(EV_KEY::KEY_RESERVED),

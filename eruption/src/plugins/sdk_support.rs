@@ -21,16 +21,23 @@
 
 use crate::scripting::script::LAST_RENDERED_LED_MAP;
 use crate::util::ratelimited;
+
+#[cfg(not(target_os = "windows"))]
+use crate::{spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread};
+
 use crate::{
     constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
-    spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread, DbusApiEvent,
-    SwitchProfileResult,
+    DbusApiEvent, SwitchProfileResult,
 };
 use flume::unbounded;
 use lazy_static::lazy_static;
 use mlua::prelude::*;
+
+#[cfg(not(target_os = "windows"))]
 use nix::poll::{poll, PollFd, PollFlags};
+#[cfg(not(target_os = "windows"))]
 use nix::unistd::unlink;
+
 use parking_lot::RwLock;
 use prost::Message;
 use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
@@ -38,8 +45,12 @@ use socket2::{Domain, SockAddr, Socket, Type};
 use std::any::Any;
 use std::io::Cursor;
 use std::mem::MaybeUninit;
+
+#[cfg(not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
+#[cfg(not(target_os = "windows"))]
 use std::os::unix::io::AsRawFd;
+
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -95,6 +106,12 @@ pub struct HotplugInfo {
     pub usb_pid: u16,
 }
 
+#[cfg(target_os = "windows")]
+pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
 pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
     if crate::QUIT.load(Ordering::SeqCst) {
         info!("Ignoring device hotplug event since Eruption is shutting down");
@@ -400,6 +417,7 @@ impl SdkSupportPlugin {
 
     pub fn initialize_socket() -> Result<()> {
         // unlink any leftover control sockets
+        #[cfg(not(target_os = "windows"))]
         let _result = unlink(constants::CONTROL_SOCKET_NAME)
             .map_err(|e| debug!("Unlink of control socket failed: {}", e));
 
@@ -408,11 +426,15 @@ impl SdkSupportPlugin {
         let address = SockAddr::unix(constants::CONTROL_SOCKET_NAME)?;
         listener.bind(&address)?;
 
-        // set permissions of the control socket, allow only root
-        let mut perms = fs::metadata(constants::CONTROL_SOCKET_NAME)?.permissions();
-        // perms.set_mode(0o660); // don't allow others, only user and group rw
-        perms.set_mode(0o666);
-        fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
+        cfg_if::cfg_if! {
+            if #[cfg(not(target_os = "windows"))] {
+                // set permissions of the control socket, allow only root
+                let mut perms = fs::metadata(constants::CONTROL_SOCKET_NAME)?.permissions();
+                perms.set_mode(0o660); // don't allow others, only user and group rw
+                // perms.set_mode(0o666);
+                fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
+            }
+        }
 
         LISTENER.write().replace(listener);
 
@@ -440,6 +462,12 @@ impl SdkSupportPlugin {
         Ok(())
     }
 
+    #[cfg(target_os = "windows")]
+    pub fn run_io_loop() -> Result<()> {
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
     pub fn run_io_loop() -> Result<()> {
         unsafe fn assume_init(buf: &[MaybeUninit<u8>]) -> &[u8] {
             &*(buf as *const [MaybeUninit<u8>] as *const [u8])

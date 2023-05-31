@@ -19,7 +19,7 @@
 
 [package]
 name = "pyroclasm"
-version = "0.0.7"
+version = "0.0.8"
 build = "build.rs"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -37,7 +37,9 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = ["mimalloc_allocator"]
+default = ["dbus-ipc", "mimalloc_allocator"]
+windows = ["dbus-ipc",]
+dbus-ipc = ["dbus"]
 mimalloc_allocator = ["mimalloc"]
 debug-async = []
 
@@ -77,8 +79,8 @@ thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 paste = "1.0.12"
-dbus = "0.9.7"
-dbus-tokio = "0.7.6"
+dbus = { version = "0.9.7", optional = true }
+# dbus-tokio = { version = "0.7.6", optional = true }
 i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",

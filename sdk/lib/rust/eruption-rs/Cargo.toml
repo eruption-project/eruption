@@ -36,6 +36,10 @@ license = "LGPL-3.0-or-later"
 readme = "README.md"
 resolver = "2"
 
+[features]
+default = []
+windows = []
+
 [dependencies]
 cfg-if = "1.0.0"
 thiserror = "1.0.40"

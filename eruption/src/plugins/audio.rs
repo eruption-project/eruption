@@ -82,6 +82,7 @@ static AUDIO_GRABBER_RECORDING: AtomicBool = AtomicBool::new(false);
 static AUDIO_GRABBER_PERFORM_RMS_COMPUTATION: AtomicBool = AtomicBool::new(false);
 static AUDIO_GRABBER_PERFORM_FFT_COMPUTATION: AtomicBool = AtomicBool::new(false);
 
+#[cfg(not(target_os = "windows"))]
 pub fn reset_audio_backend() {
     AUDIO_GRABBER_RECORD_AUDIO.store(false, Ordering::SeqCst);
 
@@ -94,6 +95,12 @@ pub fn reset_audio_backend() {
 }
 
 fn try_start_audio_backend() -> Result<()> {
+    #[cfg(target_os = "windows")]
+    AUDIO_BACKEND
+        .write()
+        .replace(Box::new(backends::NullBackend {}));
+
+    #[cfg(not(target_os = "windows"))]
     AUDIO_BACKEND
         .write()
         .replace(Box::new(backends::ProxyBackend::new().map_err(|e| {
@@ -261,27 +268,38 @@ mod backends {
 
     use flume::{self, unbounded, Receiver, Sender};
     use lazy_static::lazy_static;
+
+    #[cfg(not(target_os = "windows"))]
     use nix::unistd::unlink;
+
     use parking_lot::RwLock;
     use prost::Message;
     use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
     use std::fs;
     use std::io::Cursor;
+
+    #[cfg(not(target_os = "windows"))]
     use std::os::unix::prelude::PermissionsExt;
+
     use std::sync::atomic::AtomicBool;
     use std::sync::atomic::AtomicI32;
     use std::sync::Arc;
     use std::{sync::atomic::Ordering, thread};
     use tracing::*;
 
+    #[cfg(not(target_os = "windows"))]
     use nix::poll::{poll, PollFd, PollFlags};
+
     use rustfft::num_complex::Complex;
     use rustfft::Fft;
     use rustfft::{algorithm::Radix4, FftDirection};
     use socket2::{Domain, SockAddr, Socket, Type};
     use std::f32::consts::PI;
     use std::mem::MaybeUninit;
+
+    #[cfg(not(target_os = "windows"))]
     use std::os::unix::io::AsRawFd;
+
     use std::time::Duration;
 
     use protocol::response::Payload;
@@ -338,8 +356,10 @@ mod backends {
     }
 
     /// An audio backend that uses the eruption-audio-proxy
+    #[cfg(not(target_os = "windows"))]
     pub struct ProxyBackend {}
 
+    #[cfg(not(target_os = "windows"))]
     impl ProxyBackend {
         pub fn new() -> Result<Self> {
             // unlink any leftover audio socket
@@ -352,9 +372,13 @@ mod backends {
             listener.bind(&address)?;
 
             // widen permissions of audio socket, so that all users may connect to it
-            let mut perms = fs::metadata(constants::AUDIO_SOCKET_NAME)?.permissions();
-            perms.set_mode(0o666);
-            fs::set_permissions(constants::AUDIO_SOCKET_NAME, perms)?;
+            cfg_if::cfg_if! {
+                if #[cfg(not(target_os = "windows"))] {
+                    let mut perms = fs::metadata(constants::AUDIO_SOCKET_NAME)?.permissions();
+                    perms.set_mode(0o666);
+                    fs::set_permissions(constants::AUDIO_SOCKET_NAME, perms)?;
+                }
+            }
 
             LISTENER.write().replace(listener);
 
@@ -761,6 +785,7 @@ mod backends {
         }
     }
 
+    #[cfg(not(target_os = "windows"))]
     impl AudioBackend for ProxyBackend {
         fn play_sfx(&self, id: u32) -> Result<()> {
             if let Some(ref tx) = *SFX_TX.read() {

@@ -1,0 +1,50 @@
+FROM fedora:38
+
+# Install cross compiled libs and build dependencies
+RUN dnf update -y && dnf install -y \
+    curl \
+    mingw64-gcc \
+    mingw64-gcc-c++ \
+    mingw64-winpthreads-static \
+    mingw64-glslang \
+    mingw64-gtk3 \
+    # mingw64-gtksourceview4 \
+    mingw64-dbus
+
+RUN dnf -y groupinstall "Development Tools" "Development Libraries"
+
+# Select a toolchain
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly
+#RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+
+ENV PATH=$PATH:/root/.cargo/bin
+RUN rustup target add x86_64-pc-windows-gnu
+
+# Install Eruption dependencies
+RUN dnf install -y \
+    cmake \
+    protobuf-devel \
+    systemd-devel \
+    systemd-rpm-macros \
+    dbus-devel \
+    hidapi-devel \
+    # libevdev-devel \
+    libusbx-devel \
+    pulseaudio-libs-devel \
+    # lua-devel \
+    # lua \
+    libX11-devel \
+    libXrandr-devel \
+    gtk3-devel \
+    gtksourceview4-devel \
+    gtksourceview4\
+    vulkan-devel \
+    libshaderc-devel \
+    libshaderc \
+    spirv-tools
+
+ENV CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=x86_64-w64-mingw32-gcc \
+    CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUNNER=wine \
+    CC_x86_64_pc_windows_gnu=x86_64-w64-mingw32-gcc \
+    CXX_x86_64_pc_windows_gnu=x86_64-w64-mingw32-g++ \
+    BINDGEN_EXTRA_CLANG_ARGS_x86_64_pc_windows_gnu="--sysroot=/usr/x86_64-w64-mingw32"

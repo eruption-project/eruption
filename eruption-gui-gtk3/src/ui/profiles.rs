@@ -43,12 +43,13 @@ use gtk::TextView;
 
 #[cfg(feature = "sourceview")]
 use sourceview4::prelude::*;
+#[cfg(feature = "sourceview")]
 use sourceview4::Buffer;
 
 #[cfg(not(feature = "sourceview"))]
 use gtk::ApplicationWindow;
 #[cfg(not(feature = "sourceview"))]
-use gtk::{TextBuffer, TextView};
+use gtk::TextView;
 
 use std::path::{Path, PathBuf};
 use std::{cell::RefCell, collections::HashMap, ffi::OsStr, rc::Rc};

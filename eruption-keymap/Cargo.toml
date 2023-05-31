@@ -36,7 +36,8 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = []
+default = ["evdev-rs"]
+windows = []
 debug-async = []
 
 [dependencies]
@@ -65,11 +66,9 @@ thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 chrono = { version = "0.4.24", features = ["serde"] }
-# lua-src = "546.0.0"
-mlua = { version = "0.9.0-beta.2", features = ["luajit"] }
 regex = "1.8.3"
 dbus = "0.9.7"
-evdev-rs = "0.6.1"
+evdev-rs = { version = "0.6.1", optional = true }
 lazy_static = "1.4.0"
 walkdir = "2.3.3"
 maplit = "1.0.2"
@@ -86,6 +85,16 @@ i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.6.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "d3d0d88706824536889723564dceeff4ffc5c2a9", default-features = false, features = ["linux-native"] }
+# lua-src = "546.0.0"
+mlua = { version = "0.9.0-beta.2", features = ["luajit"] }
+
+[target.'cfg(windows)'.dependencies]
+# hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "d3d0d88706824536889723564dceeff4ffc5c2a9" }
+lua-src = "546.0.0"
+mlua = { version = "0.9.0-beta.2", features = ["lua54", "vendored"] }
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"

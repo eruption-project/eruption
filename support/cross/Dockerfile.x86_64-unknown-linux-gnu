@@ -1,0 +1,54 @@
+FROM ubuntu:23.04
+ARG DEBIAN_FRONTEND=noninteractive
+
+# COPY common.sh lib.sh /
+# RUN /common.sh
+
+# COPY cmake.sh /
+# RUN /cmake.sh
+
+# COPY xargo.sh /
+# RUN /xargo.sh
+
+# COPY qemu.sh /
+# RUN /qemu.sh x86_64 softmmu
+
+# COPY dropbear.sh /
+# RUN /dropbear.sh
+
+# COPY linux-image.sh /
+# RUN /linux-image.sh x86_64
+
+# COPY linux-runner /
+
+# Basic setup
+RUN apt-get update && apt-get install --assume-yes \
+    apt-utils \
+    git \
+    build-essential
+
+# Install Eruption dependencies
+RUN apt-get update && apt-get install --assume-yes \
+    protobuf-compiler \
+	libprotobuf-dev \
+	libsystemd-dev \
+	libusb-1.0-0-dev \
+	libhidapi-dev \
+	libevdev-dev \
+	libudev-dev \
+	libdbus-1-dev \
+	libpulse-dev \
+	libluajit-5.1-dev \
+	libx11-dev \
+ 	libxrandr-dev \
+	libgtk-3-dev \
+	libgdk-pixbuf2.0-dev \
+	libatk1.0-dev \
+	libpango1.0-dev \
+	libcairo2-dev \
+	libgtksourceview-4-dev \
+	libvulkan-dev \
+    libshaderc-dev \
+    spirv-tools
+
+ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER="/linux-runner x86_64"

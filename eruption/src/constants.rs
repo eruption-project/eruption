@@ -20,59 +20,118 @@
 */
 
 #![allow(dead_code)]
+// Linux specific configuration
+mod linux {
+    // ****************************************************************************
+    // Default filesystem paths and names
 
-// ****************************************************************************
-// Default filesystem paths and names
+    /// Default path of eruption master configuration file
+    pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
 
-/// Default path of eruption master configuration file
-pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
+    /// Default effect script
+    pub const DEFAULT_EFFECT_SCRIPT: &str = "solid.lua";
 
-/// Default effect script
-pub const DEFAULT_EFFECT_SCRIPT: &str = "solid.lua";
+    /// Default profile directory
+    pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
 
-/// Default profile directory
-pub const DEFAULT_PROFILE_DIR: &str = "/var/lib/eruption/profiles/";
+    /// Default script directory
+    pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
 
-/// Default script directory
-pub const DEFAULT_SCRIPT_DIR: &str = "/usr/share/eruption/scripts/";
+    /// Default script directory
+    pub const DEFAULT_MACRO_DIR: &str = "/usr/share/eruption/scripts/lib/macros";
 
-/// Default script directory
-pub const DEFAULT_MACRO_DIR: &str = "/usr/share/eruption/scripts/lib/macros";
+    /// Default script directory
+    pub const DEFAULT_KEYMAP_DIR: &str = "/usr/share/eruption/scripts/lib/keymaps";
 
-/// Default script directory
-pub const DEFAULT_KEYMAP_DIR: &str = "/usr/share/eruption/scripts/lib/keymaps";
+    /// Default AFK profile
+    pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/profiles/blackout.profile";
 
-/// Default AFK profile
-pub const DEFAULT_AFK_PROFILE: &str = "/var/lib/eruption/profiles/blackout.profile";
+    /// The `/run/eruption/` directory
+    pub const RUN_ERUPTION_DIR: &str = "/run/eruption/";
 
-/// The `/run/eruption/` directory
-pub const RUN_ERUPTION_DIR: &str = "/run/eruption/";
+    /// State directory
+    pub const STATE_DIR: &str = "/var/lib/eruption/";
 
-/// State directory
-pub const STATE_DIR: &str = "/var/lib/eruption/";
+    /// Eruption daemon PID file
+    pub const PID_FILE: &str = "/run/eruption/eruption.pid";
 
-/// Eruption daemon PID file
-pub const PID_FILE: &str = "/run/eruption/eruption.pid";
+    /// Name of the Systemd unit file of eruption
+    pub const UNIT_NAME_ERUPTION: &str = "eruption.service";
 
-/// Name of the Systemd unit file of eruption
-pub const UNIT_NAME_ERUPTION: &str = "eruption.service";
+    /// Name of the Systemd unit file of the eruption process monitor
+    pub const UNIT_NAME_PROCESS_MONITOR: &str = "eruption-process-monitor.service";
 
-/// Name of the Systemd unit file of the eruption process monitor
-pub const UNIT_NAME_PROCESS_MONITOR: &str = "eruption-process-monitor.service";
+    /// Name of the Systemd unit file of the eruption audio proxy
+    pub const UNIT_NAME_AUDIO_PROXY: &str = "eruption-audio-proxy.service";
 
-/// Name of the Systemd unit file of the eruption audio proxy
-pub const UNIT_NAME_AUDIO_PROXY: &str = "eruption-audio-proxy.service";
+    /// Name of the Systemd unit file of the eruption FX proxy
+    pub const UNIT_NAME_FX_PROXY: &str = "eruption-fx-proxy.service";
 
-/// Name of the Systemd unit file of the eruption FX proxy
-pub const UNIT_NAME_FX_PROXY: &str = "eruption-fx-proxy.service";
+    /// Eruption daemon control UNIX domain socket (SDK support)
+    pub const CONTROL_SOCKET_NAME: &str = "/run/eruption/control.sock";
 
-/// Eruption daemon control UNIX domain socket (SDK support)
-pub const CONTROL_SOCKET_NAME: &str = "/run/eruption/control.sock";
+    /// Eruption daemon audio data UNIX domain socket
+    pub const AUDIO_SOCKET_NAME: &str = "/run/eruption/audio.sock";
 
-/// Eruption daemon audio data UNIX domain socket
-pub const AUDIO_SOCKET_NAME: &str = "/run/eruption/audio.sock";
+    // ****************************************************************************
+}
 
-// ****************************************************************************
+// Windows specific configuration
+mod windows {
+    /// Default path of eruption master configuration file
+    pub const DEFAULT_CONFIG_FILE: &str = "etc/eruption.conf";
+
+    /// Default effect script
+    pub const DEFAULT_EFFECT_SCRIPT: &str = "solid.lua";
+
+    /// Default profile directory
+    pub const DEFAULT_PROFILE_DIR: &str = "profiles/";
+
+    /// Default script directory
+    pub const DEFAULT_SCRIPT_DIR: &str = "scripts/";
+
+    /// Default script directory
+    pub const DEFAULT_MACRO_DIR: &str = "scripts/lib/macros";
+
+    /// Default script directory
+    pub const DEFAULT_KEYMAP_DIR: &str = "scripts/lib/keymaps";
+
+    /// Default AFK profile
+    pub const DEFAULT_AFK_PROFILE: &str = "profiles/blackout.profile";
+
+    /// The `/run/eruption/` directory
+    pub const RUN_ERUPTION_DIR: &str = "run/";
+
+    /// State directory
+    pub const STATE_DIR: &str = "run/";
+
+    /// Eruption daemon PID file
+    pub const PID_FILE: &str = "run/eruption.pid";
+
+    /// Name of the Systemd unit file of eruption
+    pub const UNIT_NAME_ERUPTION: &str = "eruption.service";
+
+    /// Name of the Systemd unit file of the eruption process monitor
+    pub const UNIT_NAME_PROCESS_MONITOR: &str = "eruption-process-monitor.service";
+
+    /// Name of the Systemd unit file of the eruption audio proxy
+    pub const UNIT_NAME_AUDIO_PROXY: &str = "eruption-audio-proxy.service";
+
+    /// Name of the Systemd unit file of the eruption FX proxy
+    pub const UNIT_NAME_FX_PROXY: &str = "eruption-fx-proxy.service";
+
+    /// Eruption daemon control UNIX domain socket (SDK support)
+    pub const CONTROL_SOCKET_NAME: &str = "run/control.sock";
+
+    /// Eruption daemon audio data UNIX domain socket
+    pub const AUDIO_SOCKET_NAME: &str = "run/audio.sock";
+}
+
+#[cfg(not(target_os = "windows"))]
+pub use linux::*;
+
+#[cfg(target_os = "windows")]
+pub use windows::*;
 
 // ****************************************************************************
 // Eruption core daemon

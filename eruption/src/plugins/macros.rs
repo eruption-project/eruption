@@ -19,7 +19,9 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+#[cfg(not(target_os = "windows"))]
 use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, UninitDevice};
+
 use flume::{unbounded, Sender};
 use lazy_static::lazy_static;
 use mlua::prelude::*;
@@ -37,14 +39,27 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 pub enum Message {
     // keyboard related
+    #[cfg(not(target_os = "windows"))]
     MirrorKey(evdev_rs::InputEvent),
-    InjectKey { key: u32, down: bool },
+
+    InjectKey {
+        key: u32,
+        down: bool,
+    },
 
     // mouse related
+    #[cfg(not(target_os = "windows"))]
     MirrorMouseEvent(evdev_rs::InputEvent),
+    #[cfg(not(target_os = "windows"))]
     MirrorMouseEventImmediate(evdev_rs::InputEvent),
-    InjectButtonEvent { button: u32, down: bool },
-    InjectMouseWheelEvent { direction: u32 },
+
+    InjectButtonEvent {
+        button: u32,
+        down: bool,
+    },
+    InjectMouseWheelEvent {
+        direction: u32,
+    },
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -62,6 +77,7 @@ lazy_static! {
     pub static ref DROP_CURRENT_MOUSE_INPUT: AtomicBool = AtomicBool::new(false);
 }
 
+#[cfg(not(target_os = "windows"))]
 thread_local! {
     static KEYBOARD_DEVICE: RefCell<Option<UInputDevice>> = RefCell::new(None);
     static MOUSE_DEVICE: RefCell<Option<UInputDevice>> = RefCell::new(None);
@@ -72,6 +88,7 @@ thread_local! {
 /// from the hardware
 pub struct MacrosPlugin {}
 
+#[cfg(not(target_os = "windows"))]
 impl MacrosPlugin {
     pub fn new() -> Self {
         MacrosPlugin {}
@@ -648,6 +665,7 @@ impl Plugin for MacrosPlugin {
     }
 
     fn initialize(&mut self) -> plugins::Result<()> {
+        #[cfg(not(target_os = "windows"))]
         Self::spawn_uinput_thread()?;
 
         Ok(())

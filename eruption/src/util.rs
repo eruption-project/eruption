@@ -19,9 +19,13 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+#[cfg(not(target_os = "windows"))]
 use nix::fcntl::{flock, open, FlockArg, OFlag};
+#[cfg(not(target_os = "windows"))]
 use nix::sys::stat::Mode;
+#[cfg(not(target_os = "windows"))]
 use nix::unistd::{ftruncate, getpid, write};
+
 use std::path::{Path, PathBuf};
 use std::{fs, io};
 
@@ -53,6 +57,7 @@ pub enum UtilError {
 }
 
 /// Write out the current process' PID to the .pid file at `/run/eruption/eruption.pid`
+#[cfg(not(target_os = "windows"))]
 pub fn write_pid_file() -> Result<()> {
     let pid = getpid().as_raw();
     let text = format!("{pid}");

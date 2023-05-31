@@ -117,6 +117,7 @@ fn switch_slot(
             .unwrap_or_else(|e| error!("Could not send a pending D-Bus event: {}", e));
 
         // reset the audio backend, it will be enabled again if needed
+        #[cfg(not(target_os = "windows"))]
         plugins::audio::reset_audio_backend();
 
         let mut changed_properties = Vec::new();
