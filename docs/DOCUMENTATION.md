@@ -275,7 +275,7 @@ effects scripts on top of that.
 
 ## Available Macro Definitions
 
-The macro files are stored in `/usr/share/eruption/scripts/lib/macros/`. Each file provides the Lua code that controls illumination and colors of each of the modifier layers, additionally they provide the code that gets executed when a macro key or Easy Shift shortcut is pressed. Eruption currently ships with custom keyboard macros for the following software:
+The macro files are stored in `/usr/share/eruption/scripts/lib/macros/`. Each file provides the Lua code that controls illumination and colors of each of the modifier layers, additionally they provide the code that gets executed when a macro key or Easy Shift+ shortcut is pressed. Eruption currently ships with custom keyboard macros for the following software:
 
 | Name         | Class   | File              | Progress        | Description                                                                                                               |
 | ------------ | ------- | ----------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------- |

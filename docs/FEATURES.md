@@ -29,7 +29,7 @@
       - [Macro Keys](#macro-keys)
     - [Easy Shift+](#easy-shift)
       - [Special (Media) Keys](#special-media-keys)
-      - [Assignable Easy Shift Macros (up to 6 Layers)](#assignable-easy-shift-macros-up-to-6-layers)
+      - [Assignable Easy Shift+ Macros (up to 6 Layers)](#assignable-easy-shift-macros-up-to-6-layers)
   - [Extending Eruption (using the SDK)](#extending-eruption-using-the-sdk)
     - [Python SDK](#python-sdk)
     - [Rust SDK](#rust-sdk)
@@ -237,12 +237,12 @@ Eruption ships with a feature rich macro system.
 
 #### Special (Media) Keys
 
-#### Assignable Easy Shift Macros (up to 6 Layers)
+#### Assignable Easy Shift+ Macros (up to 6 Layers)
 
 - Enable `Game Mode`
-- Press and hold `Easy Shift` Key
+- Press and hold `Easy Shift+` Key
 - Switch layers using `INS` - `PAGE DOWN` keys
-- Activate a Lua macro by pressing a highlighted key, while still holding down the `Easy Shift` key
+- Activate a Lua macro by pressing a highlighted key, while still holding down the `Easy Shift+` key
 
 ## Extending Eruption (using the SDK)
 

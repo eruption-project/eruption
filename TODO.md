@@ -8,17 +8,18 @@
 
 ### TODO before merging the `unified-canvas` branch into the `develop` branch
 
-- Wherever possible, convert handling of mem-copies and per-pixel routines in Lua code: Push the inner loop down into Rust code and use high-level graphics-primitives instead. Having the inner loop in Lua code becomes infeasible with higher canvas resolutions.
+- Wherever possible, convert handling of mem-copies and per-pixel routines in Lua code to Rust, push the inner loop down into Rust code and use high-level graphics primitives instead. Having the inner loop in Lua code becomes infeasible with higher canvas resolutions.
   Convert all existing effects scripts to make use of the hwaccel API (GPU acceleration) or at least use the
   2D-rasterization library (rasterops plugin)
 
 ### Status of the Eruption porting effort to Microsoft Windows
 
-- WIP support code for Microsoft Windows was merged to the `unified-canvas` branch
-- Cross-compilation on Linux host (in a Fedora 38 `podman` container) is up and running
+- WIP support code for Microsoft Windows has been merged recently to the `unified-canvas` branch
+- Cross-compilation on Linux host (in a Fedora 38 `podman` container) for Windows x86_64 is up and running
 - Successful compilation of selected binaries has been achieved
 - Deployment to Windows via an NSIS-based installer binary
 - Eruption GTK3+ GUI is able to start but is unable to connect to the Eruption daemon
+- Eruption daemon is able to drive LED lighting on most devices that are supported under Linux as well
 
 ## Planned Features
 
@@ -38,8 +39,8 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
-- Update all DBus interfaces in rust code
 - Update all manpages
+- Update all DBus interfaces in rust code
 - keyboard and misc gui pages: make battery/signal controls same as on mice page
 - Improve 2D-primitives drawing/rasterization API
 - Improve hardware acceleration with Vulkan/WebGPU (GPGPU)

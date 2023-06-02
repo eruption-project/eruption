@@ -39,7 +39,7 @@
 
 Hardware feature support matrix
 
-| Vendor  | Product                | Status                     | Macro Keys | Easy Shift Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys     | Media keys F9-F12 |
+| Vendor  | Product                | Status                     | Macro Keys | Easy Shift+ Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys     | Media keys F9-F12 |
 | ------- | ---------------------- | -------------------------- | ---------- | -------------- | ------------------------------ | ------------------------------------ | ----------------- |
 | Wooting | Two HE (ARM)       | work-in-progress  | No | No | No | No | No | No |
 | ROCCAT  | Vulcan 100/12x         | 100%                       | Yes        | Yes            | Yes                            | Yes                                  | Yes               |
@@ -55,7 +55,7 @@ Hardware feature support matrix
 
 Hardware feature support matrix
 
-| Vendor | Product              | Status | Profiles | DPI  | Poll Rate | Debounce | Angle snapping | DCU | Macro Keys | Easy Shift Key |
+| Vendor | Product              | Status | Profiles | DPI  | Poll Rate | Debounce | Angle snapping | DCU | Macro Keys | Easy Shift+ Key |
 | ------ | -------------------- | ------ | -------- | ---- | --------- | -------- | -------------- | --- | ---------- | -------------- |
 | ROCCAT | Kone Pure Ultra      | 100%   | Yes      | Yes  | TODO      | Yes      | Yes            | No  | N.a.       | N.a.           |
 | ROCCAT | Burst Pro            | 100%   | Yes      | Yes¹ | No        | No       | No             | No  | N.a.       | N.a.           |

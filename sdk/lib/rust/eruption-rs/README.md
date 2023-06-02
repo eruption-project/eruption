@@ -27,12 +27,12 @@ Please add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-eruption-sdk = "0.0.5"
+eruption-sdk = "0.0.12"
 ```
 
 ## MSRV
 
-Minimum Supported Rust Version: `Rust 1.65`
+Minimum Supported Rust Version: `Rust 1.69`
 
 ## Example Code
 
