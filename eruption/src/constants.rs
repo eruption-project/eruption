@@ -143,7 +143,13 @@ pub const NUM_SLOTS: usize = 4;
 pub const AFK_TIMEOUT_SECS: u64 = 0;
 
 /// Amount of time that has to pass before we retry sending a command to the LED/control USB sub-device
-pub const DEVICE_SETTLE_MILLIS: u64 = 80;
+pub const DEVICE_SETTLE_MILLIS: u64 = 100;
+
+/// Amount of time that we pause after sending a command to the LED/control USB sub-device
+pub const DEVICE_SHORT_DELAY: u64 = 25;
+
+/// This helps slow USB HUBs and KVM switches to not fail to init the device
+pub const DEVICE_SETTLE_DELAY: u64 = 250;
 
 /// Update sensors every n seconds
 /// It is recommended to use a prime number value here

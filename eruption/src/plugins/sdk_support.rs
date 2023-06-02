@@ -144,7 +144,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                     // place a request to re-enter the main loop, this will drop all global locks
                     crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                    thread::sleep(Duration::from_millis(25));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
 
                     let usb_vid = device.read().get_usb_vid();
                     let usb_pid = device.read().get_usb_pid();
@@ -201,7 +201,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                         // place a request to re-enter the main loop, this will drop all global locks
                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                        thread::sleep(Duration::from_millis(25));
+                        thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
 
                         let usb_vid = device.read().get_usb_vid();
                         let usb_pid = device.read().get_usb_pid();
@@ -275,7 +275,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                     // place a request to re-enter the main loop, this will drop all global locks
                     crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                    thread::sleep(Duration::from_millis(25));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
 
                     if device.read().has_input_device() {
                         let usb_vid = device.read().get_usb_vid();

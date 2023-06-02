@@ -770,7 +770,7 @@ impl MouseDeviceTrait for RoccatNyth {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Implement this
-            thread::sleep(Duration::from_millis(70));
+            thread::sleep(Duration::from_millis(1));
 
             Ok(())
         }
@@ -787,7 +787,7 @@ impl MouseDeviceTrait for RoccatNyth {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             // TODO: Implement this
-            thread::sleep(Duration::from_millis(70));
+            thread::sleep(Duration::from_millis(1));
 
             Ok(())
         }

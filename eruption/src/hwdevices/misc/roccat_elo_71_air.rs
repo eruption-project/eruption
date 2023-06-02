@@ -209,7 +209,7 @@ impl RoccatElo71Air {
                         Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
                     }
 
-                    // thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
+                    thread::sleep(Duration::from_millis(DEVICE_SETTLE_MILLIS));
 
                     // let mut buf: [u8; 64] = [0x00; 64];
                     // buf[0] = 0xa1;

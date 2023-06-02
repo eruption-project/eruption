@@ -233,12 +233,12 @@ impl WootingTwoHeArm {
 
         match result {
             Ok(_result) => {
-                hexdump::hexdump_iter(&report_buffer).for_each(|s| trace!("  {}", s));
+                hexdump::hexdump_iter(&report_buffer).for_each(|s| debug!("  {}", s));
 
                 let mut buf = Vec::with_capacity(RESPONSE_SIZE);
                 match ctrl_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
                     Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
 
                         Ok(())
                     }
@@ -533,17 +533,13 @@ impl DeviceTrait for WootingTwoHeArm {
             // TODO: Implement firmware version check
 
             // This helps slow USB HUBs and KVM switches to not fail to init the device
-            thread::sleep(Duration::from_millis(15));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
 
             self.v2_send_feature_report(Command::RESET_ALL_COMMAND as u8, &[0, 0, 0, 0])
                 .unwrap_or_else(|e| error!("Step 1: {}", e));
-            self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| error!("Wait 1: {}", e));
 
             self.v2_send_feature_report(Command::COLOR_INIT_COMMAND as u8, &[0, 0, 0, 0])
                 .unwrap_or_else(|e| error!("Step 2: {}", e));
-            self.wait_for_ctrl_dev()
-                .unwrap_or_else(|e| error!("Wait 2: {}", e));
 
             self.is_initialized = true;
 
@@ -695,83 +691,80 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            // let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            // let mut buf = [0; 8];
+            let mut buf = [0; RESPONSE_SIZE];
 
-            // match ctrl_dev.read_timeout(&mut buf, millis) {
-            //     Ok(_size) => {
-            //         if buf.iter().any(|e| *e != 0) {
-            //             hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
-            //         }
+            match ctrl_dev.read_timeout(&mut buf, millis) {
+                Ok(_size) => {
+                    if buf.iter().any(|e| *e != 0) {
+                        hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
+                    }
 
-            //         // let fn_down = false;
+                    // let fn_down = false;
 
-            //         // let event = match buf[0..5] {
-            //         //     // Key reports, incl. KEY_FN, ..
-            //         //     [0x03, 0x00, 0xfb, code, status] => match code {
-            //         //         0x6d if fn_down => KeyboardHidEvent::PreviousSlot,
+                    // let event = match buf[0..5] {
+                    //     // Key reports, incl. KEY_FN, ..
+                    //     [0x03, 0x00, 0xfb, code, status] => match code {
+                    //         0x6d if fn_down => KeyboardHidEvent::PreviousSlot,
 
-            //         //         0x7d if fn_down => KeyboardHidEvent::NextSlot,
+                    //         0x7d if fn_down => KeyboardHidEvent::NextSlot,
 
-            //         //         _ => match status {
-            //         //             0x00 => KeyboardHidEvent::KeyUp {
-            //         //                 code: keyboard_hid_event_code_from_report(0xfb, code),
-            //         //             },
+                    //         _ => match status {
+                    //             0x00 => KeyboardHidEvent::KeyUp {
+                    //                 code: keyboard_hid_event_code_from_report(0xfb, code),
+                    //             },
 
-            //         //             0x01 => KeyboardHidEvent::KeyDown {
-            //         //                 code: keyboard_hid_event_code_from_report(0xfb, code),
-            //         //             },
+                    //             0x01 => KeyboardHidEvent::KeyDown {
+                    //                 code: keyboard_hid_event_code_from_report(0xfb, code),
+                    //             },
 
-            //         //             _ => KeyboardHidEvent::Unknown,
-            //         //         },
-            //         //     },
+                    //             _ => KeyboardHidEvent::Unknown,
+                    //         },
+                    //     },
 
-            //         //     // CAPS LOCK, Easy Shift+, ..
-            //         //     [0x03, 0x00, 0x0a, code, status] => match code {
-            //         //         0x39 | 0xff => match status {
-            //         //             0x00 => KeyboardHidEvent::KeyDown {
-            //         //                 code: keyboard_hid_event_code_from_report(0x0a, code),
-            //         //             },
+                    //     // CAPS LOCK, Easy Shift+, ..
+                    //     [0x03, 0x00, 0x0a, code, status] => match code {
+                    //         0x39 | 0xff => match status {
+                    //             0x00 => KeyboardHidEvent::KeyDown {
+                    //                 code: keyboard_hid_event_code_from_report(0x0a, code),
+                    //             },
 
-            //         //             0x01 => KeyboardHidEvent::KeyUp {
-            //         //                 code: keyboard_hid_event_code_from_report(0x0a, code),
-            //         //             },
+                    //             0x01 => KeyboardHidEvent::KeyUp {
+                    //                 code: keyboard_hid_event_code_from_report(0x0a, code),
+                    //             },
 
-            //         //             _ => KeyboardHidEvent::Unknown,
-            //         //         },
+                    //             _ => KeyboardHidEvent::Unknown,
+                    //         },
 
-            //         //         _ => KeyboardHidEvent::Unknown,
-            //         //     },
+                    //         _ => KeyboardHidEvent::Unknown,
+                    //     },
 
-            //         //     _ => KeyboardHidEvent::Unknown,
-            //         // };
+                    //     _ => KeyboardHidEvent::Unknown,
+                    // };
 
-            //         /* match event {
-            //             KeyboardHidEvent::KeyDown { code } => {
-            //                 // update our internal representation of the keyboard state
-            //                 let index = self.hid_event_code_to_key_index(&code) as usize;
-            //                 crate::KEY_STATES.write()[index] = true;
-            //             }
+                    /* match event {
+                        KeyboardHidEvent::KeyDown { code } => {
+                            // update our internal representation of the keyboard state
+                            let index = self.hid_event_code_to_key_index(&code) as usize;
+                            crate::KEY_STATES.write()[index] = true;
+                        }
 
-            //             KeyboardHidEvent::KeyUp { code } => {
-            //                 // update our internal representation of the keyboard state
-            //                 let index = self.hid_event_code_to_key_index(&code) as usize;
-            //                 crate::KEY_STATES.write()[index] = false;
-            //             }
+                        KeyboardHidEvent::KeyUp { code } => {
+                            // update our internal representation of the keyboard state
+                            let index = self.hid_event_code_to_key_index(&code) as usize;
+                            crate::KEY_STATES.write()[index] = false;
+                        }
 
-            //             _ => { /* ignore other events */ }
-            //         } */
-            //         Ok(event)
-            //     }
+                        _ => { /* ignore other events */ }
+                    } */
 
-            //     Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            // }
+                    Ok(KeyboardHidEvent::Unknown)
+                }
 
-            thread::sleep(Duration::from_millis(millis as u64));
-
-            Ok(KeyboardHidEvent::Unknown)
+                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+            }
         }
     }
 
@@ -870,7 +863,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                                     //     }
                                     // }
 
-                                    thread::sleep(Duration::from_millis(10));
+                                    thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
                                 }
 
                                 Err(_) => return Err(HwDeviceError::WriteError {}.into()),
@@ -1016,35 +1009,35 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
     }
 }
 
-// fn keyboard_hid_event_code_from_report(report: u8, code: u8) -> KeyboardHidEventCode {
-//     match report {
-//         0xfb => match code {
-//             16 => KeyboardHidEventCode::KEY_F1,
-//             24 => KeyboardHidEventCode::KEY_F2,
-//             33 => KeyboardHidEventCode::KEY_F3,
-//             32 => KeyboardHidEventCode::KEY_F4,
+fn keyboard_hid_event_code_from_report(report: u8, code: u8) -> KeyboardHidEventCode {
+    match report {
+        0xfb => match code {
+            16 => KeyboardHidEventCode::KEY_F1,
+            24 => KeyboardHidEventCode::KEY_F2,
+            33 => KeyboardHidEventCode::KEY_F3,
+            32 => KeyboardHidEventCode::KEY_F4,
 
-//             40 => KeyboardHidEventCode::KEY_F5,
-//             48 => KeyboardHidEventCode::KEY_F6,
-//             56 => KeyboardHidEventCode::KEY_F7,
-//             57 => KeyboardHidEventCode::KEY_F8,
+            40 => KeyboardHidEventCode::KEY_F5,
+            48 => KeyboardHidEventCode::KEY_F6,
+            56 => KeyboardHidEventCode::KEY_F7,
+            57 => KeyboardHidEventCode::KEY_F8,
 
-//             17 => KeyboardHidEventCode::KEY_ESC,
-//             119 => KeyboardHidEventCode::KEY_FN,
+            17 => KeyboardHidEventCode::KEY_ESC,
+            119 => KeyboardHidEventCode::KEY_FN,
 
-//             _ => KeyboardHidEventCode::Unknown(code),
-//         },
+            _ => KeyboardHidEventCode::Unknown(code),
+        },
 
-//         0x0a => match code {
-//             57 => KeyboardHidEventCode::KEY_CAPS_LOCK,
-//             255 => KeyboardHidEventCode::KEY_EASY_SHIFT,
+        0x0a => match code {
+            57 => KeyboardHidEventCode::KEY_CAPS_LOCK,
+            255 => KeyboardHidEventCode::KEY_EASY_SHIFT,
 
-//             _ => KeyboardHidEventCode::Unknown(code),
-//         },
+            _ => KeyboardHidEventCode::Unknown(code),
+        },
 
-//         _ => KeyboardHidEventCode::Unknown(code),
-//     }
-// }
+        _ => KeyboardHidEventCode::Unknown(code),
+    }
+}
 
 /// Map evdev event codes to key indices, for ISO variant
 #[rustfmt::skip]

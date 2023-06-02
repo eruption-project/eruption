@@ -154,7 +154,7 @@ impl RoccatAimoPad {
             //     thread::sleep(Duration::from_millis(10));
             // }
 
-            thread::sleep(Duration::from_millis(10));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }

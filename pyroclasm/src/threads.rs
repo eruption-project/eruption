@@ -165,7 +165,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
 
                 update_color_map()?;
 
-                thread::sleep(Duration::from_millis(25));
+                thread::sleep(Duration::from_millis(15));
             }
 
             Ok(())

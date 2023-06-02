@@ -2123,7 +2123,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     info!("Device enumeration completed");
 
                     // optionally wait for devices to settle; this should not be required
-                    // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
 
                     let _ = keyboard_init_thread.join().map_err(|_| {
                         error!("Error during initialization of at least one device occurred")
@@ -2209,8 +2209,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             break 'OUTER_LOOP;
                         }
 
-                        // wait a few miliseconds to give devices time to settle
-                        thread::sleep(Duration::from_millis(50));
+                        // wait a few milliseconds to give devices time to settle
+                        thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
                         // remove disconnected or failed devices
                         remove_failed_devices()?;

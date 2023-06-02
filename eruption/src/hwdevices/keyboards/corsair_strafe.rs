@@ -316,7 +316,7 @@ impl CorsairStrafe {
     //     } else if !self.is_opened {
     //         Err(HwDeviceError::DeviceNotOpened {}.into())
     //     } else {
-    //         thread::sleep(Duration::from_millis(70));
+    //         thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
 
     //         Ok(())
     //     }
@@ -330,7 +330,7 @@ impl CorsairStrafe {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            thread::sleep(Duration::from_millis(20));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }

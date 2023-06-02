@@ -458,7 +458,7 @@ impl RoccatVulcan1xx {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             // This helps slow USB HUBs and KVM switches to not fail to init the device
-            thread::sleep(Duration::from_millis(15));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             loop {
                 let mut buf: [u8; 4] = [0; 4];

@@ -285,7 +285,7 @@ impl RoccatAimoPad {
             //     }
             // }
 
-            thread::sleep(Duration::from_millis(25));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
             Ok(())
         }

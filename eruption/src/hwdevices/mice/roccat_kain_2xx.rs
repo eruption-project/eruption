@@ -30,6 +30,8 @@ use tracing::*;
 use lazy_static::lazy_static;
 use std::any::Any;
 use std::collections::HashMap;
+use std::thread;
+use std::time::Duration;
 use std::{mem::size_of, sync::Arc};
 
 use crate::{constants, hwdevices, hwdevices::DeviceStatus};
@@ -550,8 +552,6 @@ impl DeviceTrait for RoccatKain2xx {
 
                     _ => { /* do nothing */ }
                 }
-
-                // thread::sleep(Duration::from_millis(15));
             }
 
             Ok(DeviceStatus(table))
@@ -575,7 +575,7 @@ impl DeviceTrait for RoccatKain2xx {
 
             let result = read_results()?;
 
-            // thread::sleep(Duration::from_millis(15));
+            thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
 
             let buf: [u8; 22] = [
                 0x08, 0x03, 0x40, 0x00, 0x4b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

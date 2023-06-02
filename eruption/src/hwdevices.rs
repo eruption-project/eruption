@@ -1825,7 +1825,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                         } else {
                             // wait for the device to be available
                             retry_counter -= 1;
-                            thread::sleep(Duration::from_millis(500));
+                            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
                         }
                     }
 
@@ -1836,7 +1836,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                         } else {
                             // wait for the enumerator to be available
                             retry_counter -= 1;
-                            thread::sleep(Duration::from_millis(500));
+                            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
                         }
                     }
                 }
@@ -1849,7 +1849,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                 } else {
                     // wait for the enumerator to be available
                     retry_counter -= 1;
-                    thread::sleep(Duration::from_millis(500));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
                 }
             }
         }
@@ -1917,7 +1917,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                         } else {
                             // wait for the device to be available
                             retry_counter -= 1;
-                            thread::sleep(Duration::from_millis(500));
+                            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
                         }
                     }
 
@@ -1928,7 +1928,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                         } else {
                             // wait for the enumerator to be available
                             retry_counter -= 1;
-                            thread::sleep(Duration::from_millis(500));
+                            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
                         }
                     }
                 }
@@ -1941,7 +1941,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
                 } else {
                     // wait for the enumerator to be available
                     retry_counter -= 1;
-                    thread::sleep(Duration::from_millis(500));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
                 }
             }
         }

@@ -412,7 +412,7 @@ impl RoccatKoneProAir {
 
                 cntr += 1;
 
-                thread::sleep(Duration::from_millis(10));
+                thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
             }
 
             Ok(DeviceStatus(table))
@@ -1206,7 +1206,7 @@ impl MouseDeviceTrait for RoccatKoneProAir {
 
                             poll_cntr += 1;
 
-                            thread::sleep(Duration::from_millis(10));
+                            thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
                         }
                     }
 
