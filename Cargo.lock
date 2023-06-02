@@ -2291,7 +2291,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-debug-tool"
-version = "0.0.24"
+version = "0.0.25"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -2475,7 +2475,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hwutil"
-version = "0.0.17"
+version = "0.0.18"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -2708,7 +2708,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-sdk"
-version = "0.0.11"
+version = "0.0.12"
 dependencies = [
  "bincode 2.0.0-rc.3",
  "bytes",
@@ -2723,6 +2723,7 @@ dependencies = [
  "serde",
  "socket2 0.5.3",
  "thiserror",
+ "windows-named-pipe",
 ]
 
 [[package]]

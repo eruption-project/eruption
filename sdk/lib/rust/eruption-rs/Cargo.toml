@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-sdk"
-version = "0.0.11"
+version = "0.0.12"
 build = "build.rs"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -37,8 +37,8 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = []
-windows = []
+default = ["socket2"]
+windows = ["windows-named-pipe"]
 
 [dependencies]
 cfg-if = "1.0.0"
@@ -52,7 +52,8 @@ bincode = "2.0.0-rc.3"
 bytes = "1.4.0"
 prost = "0.11.9"
 prost-types = "0.11.9"
-socket2 = { version = "0.5.3", features = ["all"] }
+socket2 = { version = "0.5.3", features = ["all"], optional = true }
+windows-named-pipe = { git = "https://github.com/X3n0m0rph59/windows-named-pipe", branch = "main", optional = true }
 
 [build-dependencies]
 prost-build = "0.11.9"
