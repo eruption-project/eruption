@@ -1,0 +1,187 @@
+/*  SPDX-License-Identifier: GPL-3.0-or-later  */
+
+/*
+    This file is part of Eruption.
+
+    Eruption is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Eruption is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+
+    Copyright (c) 2019-2023, The Eruption Development Team
+*/
+
+window {
+  color: rgb(132, 132, 132);
+}
+
+.client {
+  padding: 8px;
+  /* background-image: -gtk-gradient(linear, 0 0, 1 1,
+      color-stop(0, rgb(49, 49, 49)),
+      color-stop(1, rgb(23, 23, 23))); */
+}
+
+.icon {
+  font-size: xx-large;
+  color: rgb(200, 200, 200);
+}
+
+.heading {
+  font-size: x-large;
+  font-weight: bold;
+  color: rgb(200, 200, 200);
+
+  margin-left: 8px;
+  margin-right: 8px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.heading.sub {
+  font-size: larger;
+  font-weight: normal;
+  color: rgb(132, 132, 132);
+
+  margin-left: 4px;
+  margin-right: 0px;
+  margin-top: 4px;
+  margin-bottom: 0px;
+}
+
+.heading_large {
+  font-size: 3.55rem;
+  font-weight: normal;
+  color: rgb(200, 200, 200);
+}
+
+.notification {
+  font-size: larger;
+  margin-bottom: 8px;
+  color: rgb(200, 200, 200);
+}
+
+.notification_dim {
+  font-size: larger;
+  color: rgb(200, 200, 200);
+}
+
+box .notification-box {
+  margin: 0px;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+box.notification-box.error {
+  background-image: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #ff5722),
+      color-stop(1, #f44336));
+}
+
+box.notification-box.warning {
+  background: -gtk-gradient(linear, 0 0, 0 1,
+      color-stop(0, #ecd02c),
+      color-stop(1, #a5901a));
+}
+
+infobar {
+  margin: 24px 16px 24px 16px;
+}
+
+infobar.other *,
+infobar.question *,
+infobar.info *,
+infobar.warning *,
+infobar.error * {
+  background: transparent;
+  color: white;
+}
+
+infobar.error {
+  background-color: rgb(85, 20, 20);
+}
+
+infobar.warning {
+  background-color: rgb(87, 85, 0);
+}
+
+infobar.info {
+  background-color: rgb(32, 50, 20);
+}
+
+infobar.question {
+  background-color: rgb(32, 50, 20);
+}
+
+infobar.other {
+  background-color: rgb(32, 50, 20);
+}
+
+.header-bar {
+  background-image: -gtk-gradient(linear, 0 0, 1 0,
+      color-stop(0, rgba(94, 94, 94, 0.15)),
+      color-stop(1, rgba(94, 94, 94, 0.25)));
+
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.small-font {
+  font-size: small;
+}
+
+/* .slot_bar {
+  background-image: -gtk-gradient(linear, 0 0, 1 1,
+      color-stop(0, rgba(40, 40, 40, 1.0)),
+      color-stop(1, rgba(14, 14, 14, 1.0)));
+} */
+
+.slot_indicator {
+  margin: 8px;
+  padding: 8px;
+  border: 8px dotted rgba(132, 132, 132, 0.25);
+  border-width: 4px;
+  border-radius: 8px;
+}
+
+.slot_indicator.active {
+  padding: 8px;
+  border: 4px solid rgba(132, 132, 132, 0.25);
+  background-color: rgba(132, 132, 132, 0.65);
+
+  box-shadow: rgba(255, 255, 255, 0.25) 0px 0px 8px,
+    rgba(255, 255, 255, 0.25) 0px 0px 8px;
+}
+
+.slot_indicator.active box {
+  border-radius: 8px;
+  background-color: transparent;
+}
+
+.slot_indicator selection {
+  background-color: transparent;
+}
+
+.slot_indicator ComboBox {
+  font-size: small;
+}
+
+.slot_indicator radiobutton {
+  font-size: large;
+}
+
+.slot_indicator.active radiobutton {
+  border-style: none;
+}
+
+.slot_entry {
+  font-weight: bolder;
+}

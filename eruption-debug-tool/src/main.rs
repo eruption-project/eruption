@@ -263,6 +263,7 @@ Copyright (c) 2019-2023, The Eruption Development Team
 
 #[allow(dead_code)]
 fn print_notice() {
+    #[cfg(not(target_os = "windows"))]
     println!(
         r#"
  Please stop the Eruption daemon prior to running this tool:

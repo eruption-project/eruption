@@ -26,7 +26,7 @@ SOURCE_DIR := target/release
 
 SUDO := sudo
 
-# Windows x64, cross-compilation from Linux host
+# Windows x86_64, cross-compilation from Linux host
 # please see docs/CROSS_COMPILATION.md for further instructions
 
 BUILDFLAGS_WINDOWS := --target=x86_64-pc-windows-gnu \
@@ -35,13 +35,13 @@ BUILDFLAGS_WINDOWS := --target=x86_64-pc-windows-gnu \
 	-p eruption-gui-gtk3 \
 	-p eruption-sdk \
 	-p liberuption \
+	-p eruption-hwutil \
+	-p eruption-debug-tool \
 
 	# TODO: These still need porting to Windows
-	# -p eruption-cmd \
-	# -p eruption-hwutil \
-	# -p eruption-debug-tool \
-	# -p simple \
 	# -p eruptionctl \
+	# -p eruption-cmd \
+	# -p simple \
 	# -p eruption-netfx \
 	# -p eruption-keymap \
 	# -p eruption-audio-proxy \
@@ -72,6 +72,8 @@ windows-installer: windows
 
 	@echo ""
 	@echo "Installer built successfully"
+	@echo "Please find the generated binary at './target/Eruption.exe'"
+	@echo ""
 
 windows:
 	@echo "Commencing cross-compilation for Windows..."

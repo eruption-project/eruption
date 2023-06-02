@@ -72,6 +72,9 @@ mod state;
 #[cfg(not(target_os = "windows"))]
 use crate::{plugins::macros, plugins::uleds};
 
+#[cfg(target_os = "windows")]
+use windows_named_pipe::PipeStream;
+
 use crate::{
     color_scheme::ColorScheme,
     hwdevices::{DeviceStatus, MaturityLevel, RGBA},

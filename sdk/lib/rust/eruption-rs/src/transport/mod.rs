@@ -26,8 +26,15 @@ use crate::canvas::Canvas;
 use crate::hardware::HotplugInfo;
 use crate::Result;
 
-mod local;
-pub use local::*;
+#[cfg(not(target_os = "windows"))]
+mod local_socket;
+#[cfg(not(target_os = "windows"))]
+pub use local_socket::*;
+
+#[cfg(target_os = "windows")]
+mod local_named_pipe;
+#[cfg(target_os = "windows")]
+pub use local_named_pipe::*;
 
 pub trait Transport {
     fn connect(&mut self) -> Result<()>;

@@ -18,20 +18,14 @@
 @REM  Copyright (c) 2019-2023, The Eruption Development Team
 
 
-:: This batch-script initializes and runs Eruption on Microsoft Windows
+:: This batch-script initializes and runs the Eruption GUI on Microsoft Windows
 
-title "Eruption - Realtime RGB LED Software for Windows"
-
-md %AppData%\eruption
-
-start dbus-daemon.exe --system --print-address>%AppData%\eruption\dbus-system-bus.txt
-start dbus-daemon.exe --session --print-address>%AppData%\eruption\dbus-session-bus.txt
+title "Eruption GTK3+ GUI"
 
 set /p DBUS_SYSTEM_BUS_ADDRESS=<%AppData%\eruption\dbus-system-bus.txt
 set /p DBUS_SESSION_BUS_ADDRESS=<%AppData%\eruption\dbus-session-bus.txt
 
-start dbus-monitor.exe --system
-
 set RUST_BACKTRACE=full
 set RUST_LOG=info
-start eruption.exe -c .\etc\eruption.conf daemon
+
+eruption-gui-gtk3.exe -c .\etc\eruption.conf

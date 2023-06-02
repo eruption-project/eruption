@@ -19,6 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+#![windows_subsystem = "windows"]
+
 use clap::Parser;
 use config::Config;
 use eframe::{NativeOptions, Theme};

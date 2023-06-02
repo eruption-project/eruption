@@ -19,6 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+// #![windows_subsystem = "windows"]
+
 use config::Config;
 use constants::CANVAS_SIZE;
 use eruption_sdk::connection::{Connection, ConnectionType};
@@ -242,21 +244,7 @@ Copyright (c) 2019-2023, The Eruption Development Team
     );
 }
 
-#[cfg(target_os = "windows")]
 /// Update the global color map vector
-pub fn update_color_map() -> Result<()> {
-    let mut led_colors = dbus_client::get_led_colors()?;
-
-    let mut color_map = crate::COLOR_MAP.lock();
-
-    color_map.clear();
-    color_map.append(&mut led_colors);
-
-    Ok(())
-}
-
-/// Update the global color map vector
-#[cfg(not(target_os = "windows"))]
 pub fn update_color_map() -> Result<()> {
     if let Some(connection) = crate::CONNECTION.lock().as_ref() {
         let canvas = connection.get_canvas()?;

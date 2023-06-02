@@ -51,6 +51,11 @@ use std::os::unix::fs::PermissionsExt;
 #[cfg(not(target_os = "windows"))]
 use std::os::unix::io::AsRawFd;
 
+#[cfg(target_os = "windows")]
+use std::path::Path;
+#[cfg(target_os = "windows")]
+use windows_named_pipe::*;
+
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -90,8 +95,15 @@ lazy_static! {
     pub static ref FRAME_GENERATION_COUNTER_ERUPTION_SDK: AtomicUsize = AtomicUsize::new(0);
 }
 
+#[cfg(not(target_os = "windows"))]
 lazy_static! {
     pub static ref LISTENER: Arc<RwLock<Option<Socket>>> = Arc::new(RwLock::new(None));
+}
+
+#[cfg(target_os = "windows")]
+lazy_static! {
+    pub static ref LISTENER: Arc<RwLock<Option<PipeListener<'static>>>> =
+        Arc::new(RwLock::new(None));
 }
 
 use bincode::{Decode, Encode};
@@ -415,9 +427,9 @@ impl SdkSupportPlugin {
         SdkSupportPlugin {}
     }
 
+    #[cfg(not(target_os = "windows"))]
     pub fn initialize_socket() -> Result<()> {
         // unlink any leftover control sockets
-        #[cfg(not(target_os = "windows"))]
         let _result = unlink(constants::CONTROL_SOCKET_NAME)
             .map_err(|e| debug!("Unlink of control socket failed: {}", e));
 
@@ -426,15 +438,32 @@ impl SdkSupportPlugin {
         let address = SockAddr::unix(constants::CONTROL_SOCKET_NAME)?;
         listener.bind(&address)?;
 
-        cfg_if::cfg_if! {
-            if #[cfg(not(target_os = "windows"))] {
-                // set permissions of the control socket, allow only root
-                let mut perms = fs::metadata(constants::CONTROL_SOCKET_NAME)?.permissions();
-                // perms.set_mode(0o660); // don't allow others, only user and group rw
-                perms.set_mode(0o666);
-                fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
-            }
-        }
+        // set permissions of the control socket, allow only root
+        let mut perms = fs::metadata(constants::CONTROL_SOCKET_NAME)?.permissions();
+        // perms.set_mode(0o660); // don't allow others, only user and group rw
+        perms.set_mode(0o666);
+        fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
+
+        LISTENER.write().replace(listener);
+
+        Ok(())
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn initialize_named_pipe() -> Result<()> {
+        // unlink any leftover control sockets
+        // let _result = unlink(constants::CONTROL_SOCKET_NAME)
+        //     .map_err(|e| debug!("Unlink of control socket failed: {}", e));
+
+        // create, bind and store the control named-pipe
+
+        let listener = PipeListener::bind(Path::new(constants::CONTROL_PIPE_NAME))?;
+
+        // set permissions of the control pipe
+        // let mut perms = fs::metadata(constants::CONTROL_SOCKET_NAME)?.permissions();
+        // // perms.set_mode(0o660); // don't allow others, only user and group rw
+        // perms.set_mode(0o666);
+        // fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
 
         LISTENER.write().replace(listener);
 
@@ -962,7 +991,12 @@ impl Plugin for SdkSupportPlugin {
     }
 
     fn initialize(&mut self) -> plugins::Result<()> {
+        #[cfg(not(target_os = "windows"))]
         Self::initialize_socket()?;
+
+        #[cfg(target_os = "windows")]
+        Self::initialize_named_pipe()?;
+
         Self::start_control_thread()?;
 
         // events::register_observer(|event: &events::Event| {

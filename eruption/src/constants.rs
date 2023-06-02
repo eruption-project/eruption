@@ -121,10 +121,10 @@ mod windows {
     pub const UNIT_NAME_FX_PROXY: &str = "eruption-fx-proxy.service";
 
     /// Eruption daemon control UNIX domain socket (SDK support)
-    pub const CONTROL_SOCKET_NAME: &str = "run/control.sock";
+    pub const CONTROL_PIPE_NAME: &str = "//./pipe/eruption-control";
 
     /// Eruption daemon audio data UNIX domain socket
-    pub const AUDIO_SOCKET_NAME: &str = "run/audio.sock";
+    pub const AUDIO_PIPE_NAME: &str = "//./pipe/eruption-audio";
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -170,7 +170,7 @@ pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = DEVICE_SETTLE_MILLIS as u32;
 pub const POLL_TIMER_INTERVAL_MILLIS: u64 = 499;
 
 /// Max. supported number of keys on a keyboard
-pub const MAX_KEYS: usize = 144;
+pub const MAX_KEYS: usize = 256;
 
 /// Max. supported number of mouse buttons
 pub const MAX_MOUSE_BUTTONS: usize = 32;

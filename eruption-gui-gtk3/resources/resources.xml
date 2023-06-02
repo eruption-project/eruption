@@ -22,6 +22,7 @@
     <file>img/roccat-kain-100.png</file>
     <file>img/roccat-kain-2xx.png</file>
     <file compressed="true">styles/app.css</file>
+    <file compressed="true">styles/app-windows.css</file>
     <file compressed="true">ui/main.glade</file>
     <file compressed="true">ui/about.glade</file>
     <file compressed="true">ui/rule.glade</file>
