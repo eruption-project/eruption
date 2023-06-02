@@ -17,10 +17,16 @@
 --
 -- Copyright (c) 2019-2023, The Eruption Development Team
 --
+require "macros/modifiers"
+--
 -- global config
 ENABLE_FUNCTION_KEYS = false
 ENABLE_MEDIA_KEYS = false
 ENABLE_MACRO_KEYS = false
+
+MODIFIER_KEY = RIGHT_META
+MODIFIER_KEY_INDEX = 255
+MODIFIER_KEY_EV_CODE = 255
 
 -- HID key codes
 FN_KEY = 119

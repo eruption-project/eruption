@@ -17,27 +17,29 @@
 --
 -- Copyright (c) 2019-2023, The Eruption Development Team
 --
+require "macros/modifiers"
+--
 -- global config
 ENABLE_FUNCTION_KEYS = true
 ENABLE_MEDIA_KEYS = false
-ENABLE_MACRO_KEYS = false
+ENABLE_MACRO_KEYS = true
 
 MODIFIER_KEY = RIGHT_META
-MODIFIER_KEY_INDEX = 84 -- key_name_to_index("RIGHT_META")
+MODIFIER_KEY_INDEX = 255
 MODIFIER_KEY_EV_CODE = 255
 
 -- HID key codes
 FN_KEY = 255
-GAME_MODE_KEY = 96
+GAME_MODE_KEY = 255
 EASY_SHIFT_KEY = 255
 
 -- character to key index mapping
 key_to_index = {}
 
 -- F Keys
-key_to_index['F1'] = 12
-key_to_index['F2'] = 18
-key_to_index['F3'] = 24
+key_to_index['F1'] = 14
+key_to_index['F2'] = 21
+key_to_index['F3'] = 26
 key_to_index['F4'] = 29
 key_to_index['F5'] = 49
 key_to_index['F6'] = 54
@@ -57,17 +59,17 @@ key_to_index['PAUSE'] = 109
 key_to_index['BACKSPACE'] = 88
 key_to_index['TAB'] = 3
 key_to_index['RETURN'] = 89
-key_to_index['CAPS_LOCK'] = 4
+key_to_index['CAPS_LOCK'] = 6
 key_to_index['LEFT_SHIFT'] = 5
 key_to_index['RIGHT_SHIFT'] = 83
 key_to_index['LEFT_CTRL'] = 6
-key_to_index['MOD_LEFT'] = 11
+key_to_index['MOD_LEFT'] = 8
 key_to_index['LEFT_ALT'] = 17
 key_to_index['SPACE'] = 38
 key_to_index['RIGHT_ALT'] = 71
-key_to_index['RIGHT_META'] = 84
+key_to_index['RIGHT_META'] = 255
 key_to_index['FN'] = 77
-key_to_index['RIGHT_MENU'] = 84
+key_to_index['RIGHT_MENU'] = 255
 key_to_index['RIGHT_CTRL'] = 90
 key_to_index['INSERT'] = 101
 key_to_index['POS1'] = 105
@@ -156,7 +158,66 @@ key_to_index['.'] = 70
 key_to_index['-'] = 76
 
 -- support functions
-function device_specific_key_highlights() end
+function device_specific_key_highlights()
+    if MODIFIER_KEY == FN and modifier_map[MODIFIER_KEY] then
+        color_map_highlight[key_to_index['INSERT']] = COLOR_FUNCTION_KEY -- print screen
+        color_map_highlight[key_to_index['POS1']] = COLOR_FUNCTION_KEY -- scroll lock
+        color_map_highlight[key_to_index['PGUP']] = COLOR_FUNCTION_KEY -- pause
+        -- color_map_highlight[key_to_index['PGDWN']]  = COLOR_FUNCTION_KEY -- toggle game mode
+
+        color_map_highlight[key_to_index['DEL']] = COLOR_FUNCTION_KEY -- enable/disable F/FN
+        color_map_highlight[key_to_index['END']] = COLOR_FUNCTION_KEY -- enable/disable FN/Win
+
+        color_map_highlight[key_to_index['RIGHT_CTRL']] = COLOR_FUNCTION_KEY -- enable/disable LEDs
+
+        color_map_highlight[key_to_index['UP']] = COLOR_FUNCTION_KEY -- brightness up
+        color_map_highlight[key_to_index['DOWN']] = COLOR_FUNCTION_KEY -- brightness down
+        color_map_highlight[key_to_index['LEFT']] = COLOR_FUNCTION_KEY -- previous profile slot
+        color_map_highlight[key_to_index['RIGHT']] = COLOR_FUNCTION_KEY -- next profile slot
+    end
+end
+
+function device_specific_key_highlights_indicators()
+    -- mute button
+    -- local audio_muted = is_audio_muted()
+
+    -- if audio_muted then
+    --     color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    --     color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    --     color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    -- else
+    --     color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_UNMUTED
+    --     color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_UNMUTED
+    --     color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_UNMUTED
+    -- end
+
+    -- Easy Shift+ overlay
+    -- if modifier_map[CAPS_LOCK] and ENABLE_EASY_SHIFT and game_mode_enabled then
+    --     if audio_muted then
+    --         color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    --         color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    --         color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    --     else
+    --         color_map_highlight[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+    --         color_map_overlay[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+    --         color_map[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+    --     end
+    -- end
+
+    -- FN overlay active
+    -- if MODIFIER_KEY == FN and modifier_map[MODIFIER_KEY] or overlay_state ~=
+    --     NO_OVERLAY then
+    --     if audio_muted then
+    --         color_map_highlight[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    --         color_map_overlay[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    --         color_map[key_to_index['MUTE']] = COLOR_MUTE_AUDIO_MUTED
+    --     else
+    --         color_map_highlight[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+    --         color_map_overlay[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+    --         color_map[key_to_index['MUTE']] = rgb_to_color(16, 16, 16)
+    --     end
+    -- end
+end
 
 -- coordinates to key index mapping
 coordinates_to_index = {

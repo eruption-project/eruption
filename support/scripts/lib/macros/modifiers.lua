@@ -17,7 +17,19 @@
 --
 -- Copyright (c) 2019-2023, The Eruption Development Team
 --
-require "utilities"
+-- require "utilities"
+--
+-- Definitions of available modifier keys
+CAPS_LOCK = 0
+LEFT_SHIFT = 1
+RIGHT_SHIFT = 2
+LEFT_CTRL = 3
+RIGHT_CTRL = 4
+LEFT_ALT = 5
+RIGHT_ALT = 6
+RIGHT_MENU = 7
+RIGHT_META = 8
+FN = 9
 
 -- specify whether the `Eruption Virtual Keyboard` is in charge of emitting events for the
 -- function-, media-, volume/brightness and macro-keys.
@@ -27,16 +39,15 @@ require "utilities"
 -- grabbed exlusively by Eruption.
 HANDLE_EXTRA_FUNCTIONS = true
 
-ENABLE_EASY_SHIFT = true -- set this to false if you don't want to
--- use the Easy Shift+ functionality
+ENABLE_SUPER_KEY_IN_GAME_MODE = false -- set this to true to enable the Super ("Windows") key even when in game mode
 
-ENABLE_SUPER_KEY_IN_GAME_MODE = false -- set this to true to enable the Windows key even when in game mode
+ENABLE_EASY_SHIFT = true -- set this to false if you don't want to use the Easy Shift+ functionality, where supported
 
--- comment out the declarations below to change the modifier key you want to use; default is the "FN" key:
+-- This is the default modifier
 
-MODIFIER_KEY = FN --
-MODIFIER_KEY_INDEX = key_name_to_index("FN") -- the KEY_INDEX of the modifier key; has to match the key defined above
-MODIFIER_KEY_EV_CODE = 464 -- the EV_KEY code of the modifier key; has to match the key defined above
+-- MODIFIER_KEY = FN --
+-- MODIFIER_KEY_INDEX = key_name_to_index("FN") -- the KEY_INDEX of the modifier key; has to match the key defined above
+-- MODIFIER_KEY_EV_CODE = 464 -- the EV_KEY code of the modifier key; has to match the key defined above
 
 -- or use this if you prefer "Right Meta" as the modifier key:
 
