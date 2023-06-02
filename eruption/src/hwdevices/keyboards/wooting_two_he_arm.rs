@@ -863,7 +863,9 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                                     //     }
                                     // }
 
-                                    thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
+                                    thread::sleep(Duration::from_millis(
+                                        constants::DEVICE_MICRO_DELAY,
+                                    ));
                                 }
 
                                 Err(_) => return Err(HwDeviceError::WriteError {}.into()),

@@ -1038,113 +1038,104 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             // send the final (combined) color map to all of the devices, in parallel
                             if !drop_frame {
                                 crate::KEYBOARD_DEVICES.read().par_iter().for_each(|keyboard_device| {
-                                    if let Some(mut device) = keyboard_device.try_write() {
-                                        if let Ok(is_initialized) = device.is_initialized() {
-                                            if is_initialized {
-                                                if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
-                                                    ratelimited::error!("Error sending LED map to a device: {}", e);
+                                    let mut device = keyboard_device.write();
+                                    if let Ok(is_initialized) = device.is_initialized() {
+                                        if is_initialized {
+                                            if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
+                                                ratelimited::error!("Error sending LED map to a device: {}", e);
 
-                                                    ratelimited::warn!("Trying to unplug the failed device");
-                                                    let _ = device.fail();
+                                                ratelimited::warn!("Trying to unplug the failed device");
+                                                let _ = device.fail();
 
-                                                    // we need to terminate and then re-enter the main loop to update all global state
-                                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                                                }
-                                            } else {
-                                                ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
-
-                                                let hidapi: parking_lot::lock_api::RwLockReadGuard<parking_lot::RawRwLock, Option<hidapi::HidApi>> = crate::HIDAPI.read();
-                                                let hidapi = hidapi.as_ref().unwrap();
-
-                                                device.open(hidapi).unwrap_or_else(|e| {
-                                                    ratelimited::error!("Error opening the keyboard device: {}", e);
-                                                });
-
-                                                // send initialization handshake
-                                                ratelimited::info!("Initializing keyboard device...");
-                                                device
-                                                    .send_init_sequence()
-                                                    .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
+                                                // we need to terminate and then re-enter the main loop to update all global state
+                                                crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                             }
                                         } else {
-                                            warn!("Could not query device status");
+                                            ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
+
+                                            let hidapi: parking_lot::lock_api::RwLockReadGuard<parking_lot::RawRwLock, Option<hidapi::HidApi>> = crate::HIDAPI.read();
+                                            let hidapi = hidapi.as_ref().unwrap();
+
+                                            device.open(hidapi).unwrap_or_else(|e| {
+                                                ratelimited::error!("Error opening the keyboard device: {}", e);
+                                            });
+
+                                            // send initialization handshake
+                                            ratelimited::info!("Initializing keyboard device...");
+                                            device
+                                                .send_init_sequence()
+                                                .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
                                         }
                                     } else {
-                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        warn!("Could not query device status");
                                     }
                                 });
 
                                 crate::MOUSE_DEVICES.read().par_iter().for_each(|mouse_device|  {
-                                    if let Some(mut device) = mouse_device.try_write() {
-                                        if let Ok(is_initialized) = device.is_initialized() {
-                                            if is_initialized {
-                                                if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
-                                                    ratelimited::error!("Error sending LED map to a device: {}", e);
+                                    let mut device = mouse_device.write();
+                                    if let Ok(is_initialized) = device.is_initialized() {
+                                        if is_initialized {
+                                            if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
+                                                ratelimited::error!("Error sending LED map to a device: {}", e);
 
-                                                    ratelimited::warn!("Trying to unplug the failed device");
-                                                    let _ = device.fail();
+                                                ratelimited::warn!("Trying to unplug the failed device");
+                                                let _ = device.fail();
 
-                                                    // we need to terminate and then re-enter the main loop to update all global state
-                                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                                                }
-                                            } else {
-                                                ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
-
-                                                let hidapi = crate::HIDAPI.read();
-                                                let hidapi = hidapi.as_ref().unwrap();
-
-                                                device.open(hidapi).unwrap_or_else(|e| {
-                                                    ratelimited::error!("Error opening the mouse device: {}", e);
-                                                });
-
-                                                // send initialization handshake
-                                                ratelimited::info!("Initializing mouse device...");
-                                                device
-                                                    .send_init_sequence()
-                                                    .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
+                                                // we need to terminate and then re-enter the main loop to update all global state
+                                                crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                             }
                                         } else {
-                                            warn!("Could not query device status");
+                                            ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
+
+                                            let hidapi = crate::HIDAPI.read();
+                                            let hidapi = hidapi.as_ref().unwrap();
+
+                                            device.open(hidapi).unwrap_or_else(|e| {
+                                                ratelimited::error!("Error opening the mouse device: {}", e);
+                                            });
+
+                                            // send initialization handshake
+                                            ratelimited::info!("Initializing mouse device...");
+                                            device
+                                                .send_init_sequence()
+                                                .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
                                         }
                                     } else {
-                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        warn!("Could not query device status");
                                     }
                                 });
 
                                 crate::MISC_DEVICES.read().par_iter().for_each(|misc_device| {
-                                    if let Some(mut device) = misc_device.try_write() {
-                                        if let Ok(is_initialized) = device.is_initialized() {
-                                            if is_initialized {
-                                                if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
-                                                    ratelimited::error!("Error sending LED map to a device: {}", e);
+                                    let mut device = misc_device.write();
+                                    if let Ok(is_initialized) = device.is_initialized() {
+                                        if is_initialized {
+                                            if let Err(e) = device.send_led_map(&script::LED_MAP.read()) {
+                                                ratelimited::error!("Error sending LED map to a device: {}", e);
 
-                                                    ratelimited::warn!("Trying to unplug the failed device");
-                                                    let _ = device.fail();
+                                                ratelimited::warn!("Trying to unplug the failed device");
+                                                let _ = device.fail();
 
-                                                    // we need to terminate and then re-enter the main loop to update all global state
-                                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                                                }
-                                            } else {
-                                                ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
-
-                                                let hidapi = crate::HIDAPI.read();
-                                                let hidapi = hidapi.as_ref().unwrap();
-
-                                                device.open(hidapi).unwrap_or_else(|e| {
-                                                    ratelimited::error!("Error opening the misc device: {}", e);
-                                                });
-
-                                                // send initialization handshake
-                                                ratelimited::info!("Initializing misc device...");
-                                                device
-                                                    .send_init_sequence()
-                                                    .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
+                                                // we need to terminate and then re-enter the main loop to update all global state
+                                                crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                                             }
                                         } else {
-                                            warn!("Could not query device status");
+                                            ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
+
+                                            let hidapi = crate::HIDAPI.read();
+                                            let hidapi = hidapi.as_ref().unwrap();
+
+                                            device.open(hidapi).unwrap_or_else(|e| {
+                                                ratelimited::error!("Error opening the misc device: {}", e);
+                                            });
+
+                                            // send initialization handshake
+                                            ratelimited::info!("Initializing misc device...");
+                                            device
+                                                .send_init_sequence()
+                                                .unwrap_or_else(|e| ratelimited::error!("Could not initialize the device: {}", e));
                                         }
                                     } else {
-                                        debug!("Skipped rendering a frame to a device, because we could not acquire a lock");
+                                        warn!("Could not query device status");
                                     }
                                 });
 
