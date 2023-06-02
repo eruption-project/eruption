@@ -17,7 +17,7 @@
 --
 -- Copyright (c) 2019-2023, The Eruption Development Team
 --
-require "macros/modifiers"
+require "../macros/modifiers"
 --
 -- global config
 ENABLE_FUNCTION_KEYS = true

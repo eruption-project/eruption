@@ -17,7 +17,7 @@
 --
 -- Copyright (c) 2019-2023, The Eruption Development Team
 --
-require "macros/modifiers"
+require "../macros/modifiers"
 --
 -- global config
 ENABLE_FUNCTION_KEYS = true
@@ -25,7 +25,7 @@ ENABLE_MEDIA_KEYS = true
 ENABLE_MACRO_KEYS = true
 
 MODIFIER_KEY = FN
-MODIFIER_KEY_INDEX = key_name_to_index("FN")
+MODIFIER_KEY_INDEX = 65 -- key_name_to_index("FN")
 MODIFIER_KEY_EV_CODE = 464 -- the EV_KEY code of the modifier key; has to match the key defined above
 
 -- HID key codes
