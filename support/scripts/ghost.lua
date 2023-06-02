@@ -69,7 +69,7 @@ end
 function on_startup(config)
     for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
-    for i = 1, canvas_size do state_map[i] = key_state.idle end
+    for i = 0, canvas_size do state_map[i] = key_state.idle end
 end
 
 function on_key_down(key_index)
@@ -92,7 +92,7 @@ function on_tick(delta)
     if effect_ttl <= 0 then return end
 
     -- propagate the shockwave
-    for i = 1, canvas_size do
+    for i = 0, canvas_size do
         -- decrease key ttl
         if state_map[i] > key_state.shockwave_sentinel then
             state_map[i] = state_map[i] - shockwave_ttl_decrease

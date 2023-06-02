@@ -59,7 +59,7 @@ function on_tick(delta)
 
     -- generate heartbeat color map values
     local upper_bound = num_keys * (clamp(percentage, 0, 100) / 100)
-    for i = 1, num_keys do
+    for i = 0, num_keys do
         if i <= upper_bound then
             color_map[i] = color_map[i] + rgba_to_color(0, 0, 0, 10)
 

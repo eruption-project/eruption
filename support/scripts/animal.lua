@@ -36,12 +36,10 @@ handle = animal_create(name, speed, len_min, len_max, max_radius,
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do color_map[i] = color_background end
+    for i = 0, canvas_size do color_map[i] = color_background end
 end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     ticks = ticks + delta
@@ -53,8 +51,6 @@ function on_tick(delta)
 
         -- render the animal
         local animal_map = animal_render(handle)
-        for i = 1, canvas_size do
-            color_map[i] = animal_map[i]
-        end
+        for i = 0, canvas_size do color_map[i] = animal_map[i] end
     end
 end

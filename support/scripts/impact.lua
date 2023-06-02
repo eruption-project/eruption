@@ -41,7 +41,7 @@ function on_key_down(key_index) effect_ttl = max_effect_ttl end
 function on_key_up(key_index) effect_ttl = max_effect_ttl end
 
 local function update_key_states()
-    for key_index = 1, num_keys do
+    for key_index = 0, num_keys do
         local pressed = get_key_state(key_index)
 
         if pressed then
@@ -76,7 +76,7 @@ function on_tick(delta)
 
     -- compute impact effect
     if ticks % impact_step == 0 then
-        for i = 1, canvas_size do
+        for i = 0, canvas_size do
             color = color_map[i]
             if color ~= nil then
                 r, g, b, alpha = color_to_rgba(color)

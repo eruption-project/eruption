@@ -34,7 +34,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
         color_map_afterglow[i] = 0x00000000
         color_map_effects[i] = 0x00000000
@@ -45,7 +45,7 @@ end
 function on_mouse_button_down(button_index)
     if not mouse_events then return end
 
-    for i = 1, canvas_size do color_map_effects[i] = color_mouse_click_flash end
+    for i = 0, canvas_size do color_map_effects[i] = color_mouse_click_flash end
 
     effect_ttl = max_effect_ttl
 end
@@ -53,7 +53,7 @@ end
 function on_mouse_button_up(button_index)
     if not mouse_events then return end
 
-    for i = 1, canvas_size do color_map_effects[i] = 0x00000000 end
+    for i = 0, canvas_size do color_map_effects[i] = 0x00000000 end
 
     effect_ttl = max_effect_ttl
 end
@@ -71,7 +71,7 @@ function on_mouse_wheel(direction)
         c = color_mouse_wheel_flash
     end
 
-    for i = 1, canvas_size do color_map_effects[i] = c end
+    for i = 0, canvas_size do color_map_effects[i] = c end
 
     effect_ttl = max_effect_ttl
 end
@@ -81,7 +81,7 @@ function on_mouse_hid_event(event_type, arg1)
 
     if event_type == 1 then
         -- DPI change event
-        for i = 1, canvas_size do
+        for i = 0, canvas_size do
             color_map_effects[i] = color_mouse_wheel_flash
         end
 
@@ -94,7 +94,7 @@ function on_key_down(key_index) effect_ttl = max_effect_ttl end
 function on_key_up(key_index) effect_ttl = max_effect_ttl end
 
 local function update_key_states()
-    for key_index = 1, num_keys do
+    for key_index = 0, num_keys do
         local pressed = get_key_state(key_index)
 
         if pressed then

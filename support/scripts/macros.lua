@@ -20,20 +20,6 @@
 require "declarations"
 require "utilities"
 require "debug"
-
--- available modifier keys
-CAPS_LOCK = 0
-LEFT_SHIFT = 1
-RIGHT_SHIFT = 2
-LEFT_CTRL = 3
-RIGHT_CTRL = 4
-LEFT_ALT = 5
-RIGHT_ALT = 6
-RIGHT_MENU = 7
-RIGHT_META = 8
-FN = 9
-
--- import user configuration
 require "macros/modifiers"
 
 -- initialize remapping tables
@@ -133,7 +119,7 @@ function on_startup(config)
     modifier_map[RIGHT_META] = get_key_state(key_name_to_index("RIGHT_META"))
     modifier_map[FN] = get_key_state(key_name_to_index("FN"))
 
-    for i = 1, canvas_size do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
         color_map_highlight[i] = 0x00000000
         color_map_overlay[i] = 0x00000000
@@ -421,7 +407,7 @@ function on_mouse_hid_event(event_type, arg1)
 end
 
 function on_key_down(key_index)
-    trace("Macros: Key down: Index: " .. key_index)
+    debug("Macros: Key down: Index: " .. key_index)
 
     -- update the modifier_map
     if key_index == key_name_to_index("CAPS_LOCK") then
@@ -444,7 +430,7 @@ function on_key_down(key_index)
     elseif key_index == key_name_to_index("RIGHT_ALT") then
         modifier_map[RIGHT_ALT] = true
     elseif key_index == key_name_to_index("RIGHT_META") then
-        modifier_map[RIGHT_META] = false
+        modifier_map[RIGHT_META] = true
 
         if MODIFIER_KEY == RIGHT_META then
             -- consume the menu key
@@ -468,6 +454,14 @@ function on_key_down(key_index)
         do_switch_slot(2)
     elseif modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("F4") then
         do_switch_slot(3)
+    end
+
+    -- Toggle game-mode?
+    if modifier_map[MODIFIER_KEY] and key_index == key_name_to_index("MOD_LEFT") then
+        game_mode_enabled = not game_mode_enabled
+        store_bool_transient("global.game_mode_enabled", game_mode_enabled)
+
+        debug("Macros: Game mode toggled")
     end
 
     -- macro keys (INSERT - PAGEDOWN)
@@ -538,7 +532,7 @@ function on_key_down(key_index)
 end
 
 function on_key_up(key_index)
-    trace("Macros: Key up: Index: " .. key_index)
+    debug("Macros: Key up: Index: " .. key_index)
 
     -- update the modifier_map
     if key_index == key_name_to_index("CAPS_LOCK") then
@@ -689,7 +683,7 @@ function update_overlay_state()
         local highlight_columns = canvas_width * percentage / 100
 
         -- fill background
-        for i = 1, canvas_size do
+        for i = 0, canvas_size do
             color_map_overlay[i] = rgb_to_color(16, 16, 16)
         end
 
@@ -739,7 +733,7 @@ function on_tick(delta)
     if ticks % animation_delay == 0 or force_update then
         force_update = false
 
-        for i = 1, canvas_size do
+        for i = 0, canvas_size do
             -- key highlight effect
             if highlight_ttl > 0 then
                 r, g, b, a = color_to_rgba(color_map_highlight[i])

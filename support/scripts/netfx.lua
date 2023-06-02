@@ -174,7 +174,7 @@ function on_tick(delta)
                         if #spec < 2 then
                             if result[1] == "ALL" then
                                 -- predefined zone: full canvas
-                                for i = 1, canvas_size do
+                                for i = 0, canvas_size do
                                     color_map[i] = color
                                 end
                             else

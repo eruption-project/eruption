@@ -46,7 +46,7 @@ function on_tick(delta)
 
     -- fade out raindrops
     if ticks % raindrop_step == 0 then
-        for i = 1, canvas_size do
+        for i = 0, canvas_size do
             if color_map[i] > 0x00000000 then
                 r, g, b, alpha = color_to_rgba(color_map[i])
                 alpha = alpha - 10

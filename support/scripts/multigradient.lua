@@ -59,22 +59,20 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do
+    for i = 0, canvas_size do
         color_map[i] = linear_gradient_multi(gradient_stops,
                                              (i * num_keys / 100))
     end
 end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     ticks = ticks + delta
 
     -- animate gradient
     if animate_gradient and (ticks % gradient_step == 0) then
-        for i = 1, canvas_size do
+        for i = 0, canvas_size do
             color_map[i] = linear_gradient_multi(gradient_stops, i + ticks)
         end
     end

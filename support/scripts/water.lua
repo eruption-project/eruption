@@ -38,7 +38,7 @@ ticks = 0
 
 -- event handler functions --
 function on_startup(config)
-    for i = 1, canvas_size do
+    for i = 0, canvas_size do
         color_map[i] = 0x00000000
         state_map[i] = key_state.idle
     end
@@ -78,11 +78,7 @@ function on_key_up(key_index)
     effect_ttl = max_effect_ttl
 end
 
-function on_render()
-    if effect_ttl > 0 then
-        submit_color_map(color_map)
-    end
-end
+function on_render() if effect_ttl > 0 then submit_color_map(color_map) end end
 
 function on_tick(delta)
     ticks = ticks + delta
@@ -90,7 +86,7 @@ function on_tick(delta)
     if effect_ttl <= 0 then return end
 
     -- propagate the water wave
-    for i = 1, canvas_size do
+    for i = 0, canvas_size do
         -- decrease key ttl
         if state_map[i] > key_state.water_sentinel then
             state_map[i] = state_map[i] - 1

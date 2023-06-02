@@ -38,7 +38,7 @@ function on_key_down(key_index) effect_ttl = max_effect_ttl end
 function on_key_up(key_index) effect_ttl = max_effect_ttl end
 
 local function update_key_states()
-    for key_index = 1, num_keys do
+    for key_index = 0, num_keys do
         local pressed = get_key_state(key_index)
 
         if pressed then

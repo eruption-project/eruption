@@ -30,7 +30,7 @@ ticks = 0
 function on_startup(config)
     percentage = 0
 
-    for i = 1, canvas_size do color_map[i] = color_background end
+    for i = 0, canvas_size do color_map[i] = color_background end
 end
 
 function on_render()
@@ -50,7 +50,7 @@ function on_tick(delta)
     -- calculate colors
     local percentage = min(temperature / max_temperature * 100, 100)
 
-    for i = 1, canvas_size do
+    for i = 0, canvas_size do
         color_map[i] = linear_gradient(color_cold, color_hot, percentage / 100)
     end
 end

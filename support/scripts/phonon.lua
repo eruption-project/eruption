@@ -35,7 +35,7 @@ function on_startup(config)
     for i = 0, canvas_size do color_map[i] = 0x00000000 end
 
     -- initialize scalar field
-    for i = 1, canvas_size do grid[i] = 0.0 end
+    for i = 0, canvas_size do grid[i] = 0.0 end
 end
 
 function on_key_up(key_index)
@@ -64,7 +64,7 @@ function on_tick(delta)
 
     if ticks % flow_speed == 0 then
         -- compute phonon effect
-        for key_index = 1, num_keys do
+        for key_index = 0, num_keys do
             local epsilon = 0.1
             if grid[key_index] >= epsilon then
                 grid[key_index - 1] = grid[key_index] - 0.1

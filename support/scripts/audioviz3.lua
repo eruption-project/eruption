@@ -37,7 +37,7 @@ function on_render() submit_color_map(color_map) end
 function on_tick(delta)
     ticks = ticks + delta
 
-    for i = 1, canvas_size do
+    for i = 0, canvas_size do
         color_map[i] = rgba_to_color(0, 0, 0, lerp(0, 255, opacity))
     end
 
