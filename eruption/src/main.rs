@@ -19,6 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use bitvec::vec::BitVec;
 use clap::{Arg, Command};
 use color_eyre::owo_colors::OwoColorize;
 use config::Config;
@@ -238,16 +239,17 @@ lazy_static! {
     pub static ref DBUS_API_TX: Arc<RwLock<Option<Sender<DbusApiEvent>>>> = Arc::new(RwLock::new(None));
 
     /// Channel to the device I/O thread
-    pub static ref DEV_IO_TX: Arc<RwLock<Option<Sender<DeviceAction >>>> = Arc::new(RwLock::new(None));
+    pub static ref DEV_IO_TX: Arc<RwLock<Option<Sender<DeviceAction>>>> = Arc::new(RwLock::new(None));
 
     /// Channels to the Lua VMs
     pub static ref LUA_TXS: Arc<RwLock<Vec<LuaTx>>> = Arc::new(RwLock::new(vec![]));
     pub static ref FAILED_TXS: Arc<RwLock<HashSet<usize>>> = Arc::new(RwLock::new(HashSet::new()));
 
-    /// Key states
-    pub static ref KEY_STATES: Arc<RwLock<Vec<bool>>> = Arc::new(RwLock::new(vec![false; constants::MAX_KEYS]));
+    /// Key states on the Eruption Virtual Keyboard
+    pub static ref KEY_STATES: Arc<RwLock<BitVec>> = Arc::new(RwLock::new(BitVec::with_capacity(constants::MAX_KEYS)));
 
-    pub static ref BUTTON_STATES: Arc<RwLock<Vec<bool>>> = Arc::new(RwLock::new(vec![false; constants::MAX_MOUSE_BUTTONS]));
+    /// Button states on the Eruption Virtual Mouse
+    pub static ref BUTTON_STATES: Arc<RwLock<BitVec>> = Arc::new(RwLock::new(BitVec::with_capacity(constants::MAX_KEYS)));
 
     pub static ref MOUSE_MOVE_EVENT_LAST_DISPATCHED: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now()));
     pub static ref MOUSE_MOTION_BUF: Arc<RwLock<(i32, i32, i32)>> = Arc::new(RwLock::new((0,0,0)));

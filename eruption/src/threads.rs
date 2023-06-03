@@ -50,7 +50,7 @@ use crate::uleds;
 use crate::{
     constants, dbus_interface::DbusApi, dbus_interface::Message, hwdevices, plugins, script,
     scripting::parameters::PlainParameter, sdk_support, DeviceAction, EvdevError, KeyboardDevice,
-    MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, KEY_STATES, LUA_TXS, QUIT,
+    MainError, MouseDevice, COLOR_MAPS_READY_CONDITION, FAILED_TXS, LUA_TXS, QUIT,
     REQUEST_FAILSAFE_MODE, RGBA, ULEDS_SUPPORT_ACTIVE,
 };
 
@@ -210,10 +210,10 @@ pub fn spawn_keyboard_input_thread(
                             let is_pressed = k.1.value > 0;
                             let index = keyboard_device.read().ev_key_to_key_index(*code) as usize;
 
-                            {
-                                if let Some(v) = KEY_STATES.write().get_mut(index) {
-                                    *v = is_pressed;
-                                }
+                            if let Some(mut v) = crate::KEY_STATES.write().get_mut(index) {
+                                *v = is_pressed;
+                            } else {
+                                ratelimited::error!("Could not update key states");
                             }
                         }
 
@@ -241,10 +241,10 @@ pub fn spawn_keyboard_input_thread(
 
                             // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                        });
 
-                        // update AFK timer
-                        *crate::LAST_INPUT_TIME.write() = Instant::now();
+                            // update AFK timer
+                            *crate::LAST_INPUT_TIME.write() = Instant::now();
+                        });
                     }
 
                     Err(e) => {
@@ -274,7 +274,7 @@ pub fn spawn_keyboard_input_thread(
                             return Err(EvdevError::EvdevEventError {}.into());
                         }
                     }
-                };
+                }
             }
         })
         .unwrap_or_else(|e| {
@@ -383,7 +383,13 @@ pub fn spawn_mouse_input_thread(
                             let is_pressed = k.1.value > 0;
                             match mouse_device.read().ev_key_to_button_index(code) {
                                 Ok(index) => {
-                                    crate::BUTTON_STATES.write()[index as usize] = is_pressed
+                                    if let Some(mut v) =
+                                        crate::BUTTON_STATES.write().get_mut(index as usize)
+                                    {
+                                        *v = is_pressed;
+                                    } else {
+                                        ratelimited::error!("Could not update mouse-button states");
+                                    }
                                 }
 
                                 Err(e) => {
@@ -399,7 +405,7 @@ pub fn spawn_mouse_input_thread(
                                 && code != evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES
                                 && code != evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES
                             {
-                                // directly mirror pointer motion events to reduce input lag.
+                                // immediately mirror pointer motion events to reduce input-lag.
                                 // This currently prohibits further manipulation of pointer motion events
                                 if crate::GRAB_MOUSE.load(Ordering::SeqCst) {
                                     macros::UINPUT_TX
@@ -828,6 +834,7 @@ pub fn spawn_lua_thread(
                     if let Some(tx) = LUA_TXS.write().get_mut(thread_idx) {
                         tx.is_failed = true;
                     }
+
                     REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
                     return Err(MainError::ScriptExecError {}.into());
@@ -839,6 +846,7 @@ pub fn spawn_lua_thread(
                     if let Some(tx) = LUA_TXS.write().get_mut(thread_idx) {
                         tx.is_failed = true;
                     }
+
                     REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
 
                     return Err(MainError::ScriptExecError {}.into());

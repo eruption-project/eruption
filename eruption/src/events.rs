@@ -248,8 +248,10 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                         let index = keyboard_device.read().hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
-                                if let Some(v) = KEY_STATES.write().get_mut(index as usize) {
+                                if let Some(mut v) = KEY_STATES.write().get_mut(index as usize) {
                                     *v = true;
+                                } else {
+                                    ratelimited::error!("Could not update key states");
                                 }
                             }
 
@@ -301,7 +303,7 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                         let index = keyboard_device.read().hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
-                                if let Some(v) = KEY_STATES.write().get_mut(index as usize) {
+                                if let Some(mut v) = KEY_STATES.write().get_mut(index as usize) {
                                     *v = false;
                                 }
                             }
@@ -731,10 +733,11 @@ pub fn process_mouse_event(
             .unwrap()
             .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
             .unwrap_or_else(|e| {
-                error!(
-                    "Error during notification of observers [mouse_event]: {}",
-                    e
-                )
+                error!("Could not send a pending mouse event: {}", e);
+
+                mouse_device.write().fail().unwrap_or_else(|e| {
+                    error!("Could not mark a device as failed: {}", e);
+                });
             });
     }
 
@@ -969,7 +972,13 @@ pub fn process_keyboard_event(
         .as_ref()
         .unwrap()
         .send(macros::Message::MirrorKey(raw_event.clone()))
-        .unwrap_or_else(|e| error!("Could not send a pending keyboard event: {}", e));
+        .unwrap_or_else(|e| {
+            error!("Could not send a pending keyboard event: {}", e);
+
+            keyboard_device.write().fail().unwrap_or_else(|e| {
+                error!("Could not mark a device as failed: {}", e);
+            });
+        });
 
     Ok(())
 }
