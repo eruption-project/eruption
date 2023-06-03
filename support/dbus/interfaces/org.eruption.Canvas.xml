@@ -1,0 +1,53 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/org/eruption/canvas">
+  <interface name="org.eruption.Canvas">
+    <method name="GetDevicesZoneAllocations">
+      <arg name="zones" type="a(t(iiii))" direction="out"/>
+    </method>
+    <method name="SetDeviceZoneAllocation">
+      <arg name="device" type="t" direction="in"/>
+      <arg name="zone" type="(iiii)" direction="in"/>
+    </method>
+    <method name="SetDevicesZoneAllocations">
+      <arg name="zones" type="a(t(iiii))" direction="in"/>
+    </method>
+    <property name="Hue" type="d" access="readwrite"/>
+    <property name="Lightness" type="d" access="readwrite"/>
+    <property name="Saturation" type="d" access="readwrite"/>
+    <signal name="HueChanged">
+      <arg name="hue" type="d"/>
+    </signal>
+    <signal name="LightnessChanged">
+      <arg name="lightness" type="d"/>
+    </signal>
+    <signal name="SaturationChanged">
+      <arg name="saturation" type="d"/>
+    </signal>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg name="xml_data" type="s" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="out"/>
+    </method>
+    <method name="GetAll">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="props" type="a{sv}" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg name="interface_name" type="s" direction="in"/>
+      <arg name="property_name" type="s" direction="in"/>
+      <arg name="value" type="v" direction="in"/>
+    </method>
+    <signal name="PropertiesChanged">
+      <arg name="interface_name" type="s"/>
+      <arg name="changed_properties" type="a{sv}"/>
+      <arg name="invalidated_properties" type="as"/>
+    </signal>
+  </interface>
+</node>

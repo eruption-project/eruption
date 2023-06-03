@@ -1,6 +1,10 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/org/eruption/config">
   <interface name="org.eruption.Config">
+    <method name="GetColorScheme">
+      <arg name="name" type="s" direction="in"/>
+      <arg name="data" type="ay" direction="out"/>
+    </method>
     <method name="GetColorSchemes">
       <arg name="color_schemes" type="as" direction="out"/>
     </method>

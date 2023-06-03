@@ -13,10 +13,19 @@
     <method name="GetManagedDevices">
       <arg name="values" type="(a(qq)a(qq)a(qq))" direction="out"/>
     </method>
+    <method name="IsDeviceEnabled">
+      <arg name="device" type="t" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
+    </method>
     <method name="SetDeviceConfig">
       <arg name="device" type="t" direction="in"/>
       <arg name="param" type="s" direction="in"/>
       <arg name="value" type="s" direction="in"/>
+      <arg name="status" type="b" direction="out"/>
+    </method>
+    <method name="SetDeviceEnabled">
+      <arg name="device" type="t" direction="in"/>
+      <arg name="enabled" type="b" direction="in"/>
       <arg name="status" type="b" direction="out"/>
     </method>
     <property name="DeviceStatus" type="s" access="read"/>

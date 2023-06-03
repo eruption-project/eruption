@@ -663,10 +663,10 @@ pub fn spawn_dbus_thread(dbus_event_tx: Sender<dbus_client::Message>) -> Result<
 
             let tx = dbus_event_tx.clone();
             let _id1 = slot_proxy.match_signal(
-                move |h: slot::OrgEruptionSlotActiveSlotChanged,
+                move |_h: slot::OrgEruptionSlotActiveSlotChanged,
                       _: &Connection,
                       _message: &dbus::Message| {
-                    tx.send(Message::SlotChanged(h.new_slot as usize)).unwrap();
+                    tx.send(Message::SlotChanged).unwrap();
 
                     true
                 },
@@ -698,7 +698,7 @@ pub fn spawn_dbus_thread(dbus_event_tx: Sender<dbus_client::Message>) -> Result<
                       _: &Connection,
                       _message: &dbus::Message| {
                     let _ = tx
-                        .send(Message::ProfileChanged(h.new_profile_name))
+                        .send(Message::ProfileChanged(h.profile_name))
                         .map_err(|e| tracing::error!("Could not send a message: {}", e));
 
                     true
