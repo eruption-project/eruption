@@ -32,6 +32,7 @@ SUDO := sudo
 BUILDFLAGS_WINDOWS := --target=x86_64-pc-windows-gnu \
 	--release --no-default-features --features=windows \
 	-p eruption \
+	-p pyroclasm \
 	-p eruption-gui-gtk3 \
 	-p eruption-sdk \
 	-p liberuption \
