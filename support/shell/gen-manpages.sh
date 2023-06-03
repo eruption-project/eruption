@@ -27,8 +27,8 @@ languages=('en_US')
 
 for l in "${languages[@]}"; do
 	export LANG=$l
-	export MANPAGES_OUTPUT_DIR="support/shell/manpages/$LANG/"
-	mkdir -p "support/shell/manpages/$LANG/"
+	export MANPAGES_OUTPUT_DIR="support/man/generated/$LANG/"
+	mkdir -p "support/man/generated/$LANG/"
 
 	# gen_manpages "eruption"
 	# gen_manpages "eruption-cmd"
