@@ -127,7 +127,7 @@ Please see [DEVICES.md](DEVICES.md) for further information
 
 This project is still in the early stages of development, and thus may contain some possibly serious bugs.
 
-For a more mature RGB lighting solution please also consider the following alternatives:
+**For a more mature RGB lighting solution please also consider the following alternatives**
 
 **OpenRGB** - OPEN SOURCE RGB LIGHTING CONTROL THAT DOESN'T DEPEND ON MANUFACTURER SOFTWARE \
 <https://openrgb.org/>\
@@ -138,6 +138,13 @@ For configuring gaming mice you may want to consider:
 **libratbag/piper** -
 libratbag A DBus daemon to configure input devices, mainly gaming mice
 <https://github.com/libratbag>
+
+**For key remapping without LED specific features**
+
+If you are more interested in simply remapping your keys at the input level, or even require application-specific key remapping you should consider:
+
+**Keyd** - A key remapping daemon for linux
+<https://github.com/rvaiya/keyd>
 
 ### Troubleshooting
 

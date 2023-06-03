@@ -17,15 +17,16 @@
 - WIP support code for Microsoft Windows has been merged recently to the `unified-canvas` branch
 - Cross-compilation on Linux host (in a Fedora 38 `podman` container) for Windows x86_64 is up and running
 - Successful compilation of selected binaries has been achieved
-- Deployment to Windows via an NSIS-based installer binary
-- Eruption GTK3+ GUI is able to start but is unable to connect to the Eruption daemon
-- Eruption daemon is able to drive LED lighting on most devices that are supported under Linux as well
+- Deployment to Windows via an NSIS-based installer binary is working
+- Eruption daemon is able to drive LED lighting on most devices that are supported under Linux work as well
+- Eruption GTK+3 GUI is able to start but is currently unable to connect to the Eruption daemon
+- There is no support for handling of input: No macros, no remapping, no event handling; only lighting effects
 
 ## Planned Features
 
 _This is a non-exhaustive listing of planned features:_
 
-- GUI support: Improve the GTK3+ based GUI
+- GUI support: Improve the GTK+3 based GUI
 - Improve i18n and l10n: Add more translations
 - Improve the `Eruption SDK` that allows 3rd party applications to communicate with Eruption
 - Add a KDE Plasma widget

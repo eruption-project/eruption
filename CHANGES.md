@@ -4,23 +4,24 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.5.0 | __Unified-canvas Branch__ |
-| 0.5.0 | Implement a unified canvas used by all devices |
-| 0.5.0 | Add support for allocation of per-device zones on the unified canvas |
-| 0.5.0 | Parallel device probing and initialization: The startup of Eruption now only takes the amount of time that the slowest device requires to come up. This is noticeable if you have more than one device managed by Eruption |
-| 0.5.0 | Drag-click support: Tell libinput to not apply a software based button-debounce algorithm to the `Eruption Virtual Mouse` input device |
+| 0.5.0 | __Branch: `unified-canvas`__ |
+| 0.5.0 | **INCOMPATIBLE CHANGE:** Seperate engine code from script code; move all `Lua` scripts to the support directory |
+| 0.5.0 | Implement a unified canvas used by all connected devices |
+| 0.5.0 | Add support for allocating device-specific zones on the unified canvas |
+| 0.5.0 | Parallel device probing and initialization: The startup of Eruption now only takes the amount of time that the slowest device requires to come up. This is especially noticeable if you have more than one device managed by Eruption |
+| 0.5.0 | Drag-click support: Tell the Wayland or Xorg (with `libinput`) input-stack to not apply a software-based button debounce algorithm to the `Eruption Virtual Mouse` input device |
 | 0.5.0 | Introduce a 2D rasterization API that allows to draw hardware-accelerated 2D-graphics primitives on the virtual canvas |
 | 0.5.0 | Use linear RGB color space internally, instead of sRGB |
 | 0.5.0 | Add support for an alpha-blend transition effect when switching between profiles |
-| 0.5.0 | Update the GTK3+ based Eruption GUI |
-| 0.5.0 | Moved Lua scripts to the support directory |
+| 0.5.0 | Update the GTK+3 based Eruption GUI |
+| 0.5.0 | Be more compatible with some KVM switches and slower USB hubs |
 | 0.5.0 | Add experimental support for `Wooting Two HE (ARM)` series keyboards |
+| 0.5.0 | Bump MSRV to latest stable Rust `1.69` |
 | 0.4.0 | __Next Release__ |
-| 0.4.0 | INCOMPATIBLE CHANGES: Lua scripting callbacks: Split render and timer tick code into distinct callbacks. You need to update your `on_tick(...)` event handlers |
-| 0.4.0 | Add support for hardware accelerated rendering of effects using `GLSL` compute shaders |
+| 0.4.0 | **INCOMPATIBLE CHANGE:** Lua scripting callbacks: Split render and timer tick code into distinct callbacks. You need to update your `on_tick(...)` event handlers |
+| 0.4.0 | Add support for hardware accelerated rendering of effects using shaders |
 | 0.4.0 | Add new script: `hwaccel.lua` that utilizes the newly added hardware acceleration features |
 | 0.4.0 | Add new profile using hardware accelerated effects: `shader-demo.profile` |
-| 0.4.0 | Add support for allocating positions on the unified canvas for each device |
 | 0.4.0 | Update all dependencies to their latest releases |
 | 0.4.0 | Bump MSRV to latest stable Rust `1.69` |
 | 0.3.0 | __New Release__ |

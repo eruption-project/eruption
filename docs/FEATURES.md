@@ -17,7 +17,7 @@
     - [eruptionctl](#eruptionctl)
     - [eruption-netfx](#eruption-netfx)
   - [Pyroclasm UI for Eruption](#pyroclasm-ui-for-eruption)
-  - [Eruption GUI (GTK3)](#eruption-gui-gtk3)
+  - [Eruption GUI (GTK+3)](#eruption-gui-gtk3)
     - [Keyboard](#keyboard)
     - [Mice](#mice)
     - [Other Devices](#other-devices)
@@ -187,7 +187,7 @@ A client for the Lua embedded Network FX server.
 
 The `Pyroclasm UI` is currently available as a technology preview version only
 
-## Eruption GUI (GTK3)
+## Eruption GUI (GTK+3)
 
 The `Eruption GUI` is currently available as a technology preview version only
 
