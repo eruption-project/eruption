@@ -325,6 +325,7 @@ impl WootingTwoHeArm {
         }
     }
 
+    #[allow(dead_code)]
     fn wait_for_ctrl_dev(&mut self) -> Result<()> {
         trace!("Waiting for control device to respond...");
 
@@ -1011,6 +1012,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
     }
 }
 
+#[allow(dead_code)]
 fn keyboard_hid_event_code_from_report(report: u8, code: u8) -> KeyboardHidEventCode {
     match report {
         0xfb => match code {
