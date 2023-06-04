@@ -39,5 +39,13 @@ jobs:
         with:
           toolchain: nightly
           override: true
-      - name: Build Eruption.exe Installer for Windows
-        run: make windows-installer
+      - name: Install cross Build Tool
+        run: 'cargo install cross'
+      - name: Run make
+        run: 'make windows-installer'
+      - name: Publish Installer Binary
+        uses: softprops/action-gh-release@v1
+        with:
+            files: 'target/Eruption.exe'
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
