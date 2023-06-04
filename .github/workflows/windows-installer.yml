@@ -41,7 +41,7 @@ jobs:
           override: true
       - name: Install cross Build Tool
         run: 'cargo install cross'
-      - name: Run make
+      - name: Run make windows-installer
         run: 'make windows-installer'
       - name: Publish Installer Binary
         uses: softprops/action-gh-release@v1
