@@ -37,9 +37,9 @@ VIAddVersionKey OriginalFilename "Eruption.exe"
 #!define MUI_ICON "eruption.ico"
 #!define MUI_UNICON "uninstall-eruption.ico"
 !define MUI_HEADERIMAGE
-#!define MUI_HEADERIMAGE_BITMAP "header.bmp"
-!define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
-#!define MUI_WELCOMEFINISHPAGE_BITMAP "welcome.bmp"
+#!define MUI_HEADERIMAGE_BITMAP "../assets/eruption.bmp"
+#!define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
+#!define MUI_WELCOMEFINISHPAGE_BITMAP "../assets/eruption.bmp"
 !define MUI_WELCOMEFINISHPAGE_BITMAP_NOSTRETCH
 
 # Installer pages
@@ -51,16 +51,23 @@ VIAddVersionKey OriginalFilename "Eruption.exe"
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
+# Uninstaller pages
+!insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
+#!insertmacro MUI_UNPAGE_LICENSE textfile
+#!insertmacro MUI_UNPAGE_COMPONENTS
+#!insertmacro MUI_UNPAGE_DIRECTORY
 !insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
 
 # Installer languages
 !insertmacro MUI_LANGUAGE English
 !insertmacro MUI_LANGUAGE German
 
 # Install Types
-#InstType "Full"
-#InstType "Minimal"
+InstType "Full"
+InstType "Standard"
+InstType "Minimal"
 
 OutFile ../../target/Eruption.exe
 InstallDir $PROGRAMFILES\Eruption
@@ -71,22 +78,70 @@ ShowInstDetails show
 RequestExecutionLevel admin
 
 # start default section
-Section
+Section "!Eruption"
     SectionIn RO    # this section cannot be deselected
     SetOverwrite on
 
     # set the installation directory as the destination for the following actions
     SetOutPath $INSTDIR
 
-    File "${SOURCEDIR}\*.exe"
-
-    File /r "..\redist\redist-x86_64-windows\*.*"
-    File /r "..\shell\windows\*.bat"
+    File "${SOURCEDIR}\eruption.exe"
+    File "..\shell\windows\*.bat"
 
     # create the uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
 
 SectionEnd
+
+# start "Pyroclasm UI" section
+Section "!Pyroclasm UI"
+    SectionIn 1 2
+    SetOverwrite on
+
+    # set the installation directory as the destination for the following actions
+    SetOutPath $INSTDIR
+
+    File "${SOURCEDIR}\pyroclasm.exe"
+
+SectionEnd
+
+# start Eruption SDK section
+Section "Eruption Software Development Kit (SDK)"
+    SectionIn RO    # this section cannot be deselected
+    SetOverwrite on
+
+    # set the installation directory as the destination for the following actions
+    SetOutPath $INSTDIR
+
+    File "${SOURCEDIR}\eruption.dll"
+
+SectionEnd
+
+SectionGroup /e "Eruption GTK+3 GUI"
+    # Eruption GUI GTK+3
+    Section /o "Eruption GTK+3 GUI"
+        SectionIn 1
+        SetOverwrite on
+
+        # set the installation directory as the destination for the following actions
+        SetOutPath $INSTDIR
+
+        File "${SOURCEDIR}\eruption-gui-gtk3.exe"
+
+    SectionEnd
+
+    # GTK+3 redist
+    Section /o "GTK+3 Redistributable Package"
+        SectionIn 1
+        SetOverwrite on
+
+        # set the installation directory as the destination for the following actions
+        SetOutPath $INSTDIR
+
+        File /r "..\redist\redist-x86_64-windows\*.*"
+
+    SectionEnd
+SectionGroupEnd
 
 # uninstaller section start
 Section "uninstall"
@@ -94,13 +149,15 @@ Section "uninstall"
     # Remove the link from the start menu
     # Delete "$SMPROGRAMS\new shortcut.lnk"
 
-    Delete $INSTDIR\*.exe
-    Delete $INSTDIR\*.dll
+    Delete /REBOOTOK $INSTDIR\*.exe
+    Delete /REBOOTOK $INSTDIR\*.dll
+    Delete /REBOOTOK $INSTDIR\*.bat
 
     # Delete the uninstaller
-    Delete $INSTDIR\uninstall.exe
+    Delete /REBOOTOK $INSTDIR\uninstall.exe
 
-    RMDir $INSTDIR
+    # request for deletion of instdir; be safe, do not delete foreign files
+    RMDir /REBOOTOK $INSTDIR
 
 # uninstaller section end
 SectionEnd
