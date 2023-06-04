@@ -31,9 +31,7 @@ jobs:
       - name: Setup Base System
         run: "dnf -y groupinstall 'Development Tools' 'Development Libraries'"
       - name: Setup Cross Compilation Environment
-        run: "dnf update -y && dnf install -y curl podman mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static mingw64-glslang mingw64-gtk3 mingw64-dbus"
-      - name: Install Eruption Dependencies
-        run: "dnf install -y cmake protobuf-devel systemd-devel systemd-rpm-macros dbus-devel hidapi-devel libusbx-devel pulseaudio-libs-devel lua-devel libX11-devel libXrandr-devel gtk3-devel gtksourceview4-devel gtksourceview4vulkan-devel libshaderc-devel libshaderc spirv-tools"
+        run: "dnf update -y && dnf install -y curl podman"
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
