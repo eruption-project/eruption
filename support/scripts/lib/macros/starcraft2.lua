@@ -19,8 +19,10 @@
 --
 -- This is the macro definitions file for the game "Star Craft 2".
 -- You may want to customize the code below
--- override color scheme
+-- override color schemes
+--
 require "themes/gaming"
+--
 
 function macro_select_idle_scvs()
     info("StarCraft2: Executing: Select idle SCVs")

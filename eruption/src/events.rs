@@ -305,6 +305,8 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                             {
                                 if let Some(mut v) = KEY_STATES.write().get_mut(index as usize) {
                                     *v = false;
+                                } else {
+                                    ratelimited::error!("Could not update key states");
                                 }
                             }
 

@@ -19,7 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use bitvec::vec::BitVec;
+use bitvec::prelude::*;
 use clap::{Arg, Command};
 use color_eyre::owo_colors::OwoColorize;
 use config::Config;
@@ -246,10 +246,10 @@ lazy_static! {
     pub static ref FAILED_TXS: Arc<RwLock<HashSet<usize>>> = Arc::new(RwLock::new(HashSet::new()));
 
     /// Key states on the Eruption Virtual Keyboard
-    pub static ref KEY_STATES: Arc<RwLock<BitVec>> = Arc::new(RwLock::new(BitVec::with_capacity(constants::MAX_KEYS)));
+    pub static ref KEY_STATES: Arc<RwLock<BitVec>> = Arc::new(RwLock::new(bitvec![0; constants::MAX_KEYS]));
 
     /// Button states on the Eruption Virtual Mouse
-    pub static ref BUTTON_STATES: Arc<RwLock<BitVec>> = Arc::new(RwLock::new(BitVec::with_capacity(constants::MAX_KEYS)));
+    pub static ref BUTTON_STATES: Arc<RwLock<BitVec>> = Arc::new(RwLock::new(bitvec![0; constants::MAX_MOUSE_BUTTONS]));
 
     pub static ref MOUSE_MOVE_EVENT_LAST_DISPATCHED: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now()));
     pub static ref MOUSE_MOTION_BUF: Arc<RwLock<(i32, i32, i32)>> = Arc::new(RwLock::new((0,0,0)));

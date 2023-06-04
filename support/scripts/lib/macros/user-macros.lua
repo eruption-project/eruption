@@ -19,7 +19,9 @@
 --
 -- This is the default macro definitions file, that gets used when
 -- no override has been specified. You may want to customize the code below
+--
 require "macros/examples"
+--
 
 function easyshift_macro_1() warn("UserMacros: Executing: 'easyshift_macro_1'") end
 
