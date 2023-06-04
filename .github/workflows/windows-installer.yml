@@ -1,0 +1,43 @@
+#  SPDX-License-Identifier: GPL-3.0-or-later
+#
+#  This file is part of Eruption.
+#
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#  Copyright (c) 2019-2023, The Eruption Development Team
+
+on:
+    push:
+        branches:
+            - unified-canvas
+
+name: Build Installer for Microsoft Windows
+jobs:
+  windows_installer:
+    runs-on: ubuntu-latest
+    container: fedora:38
+    steps:
+      - name: Setup Base System
+        run: "dnf -y groupinstall 'Development Tools' 'Development Libraries'"
+      - name: Setup Cross Compilation Environment
+        run: "dnf update -y && dnf install -y curl mingw64-gcc mingw64-gcc-c++ mingw64-winpthreads-static mingw64-glslang mingw64-gtk3 mingw64-dbus"
+      - name: Install Eruption Dependencies
+        run: "dnf install -y cmake protobuf-devel systemd-devel systemd-rpm-macros dbus-devel hidapi-devel # libevdev-devel libusbx-devel pulseaudio-libs-devel # lua-devel # lua libX11-devel libXrandr-devel gtk3-devel gtksourceview4-devel gtksourceview4vulkan-devel libshaderc-devel libshaderc spirv-tools"
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - name: Build Eruption.exe Installer for Windows
+        run: make windows-installer
