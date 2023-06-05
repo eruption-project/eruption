@@ -20,7 +20,7 @@
 
 :: This batch-script initializes and runs the Eruption GUI on Microsoft Windows
 
-title "Eruption GTK3+ GUI"
+title "Eruption GTK+3 GUI"
 
 set /p DBUS_SYSTEM_BUS_ADDRESS=<%AppData%\eruption\dbus-system-bus.txt
 set /p DBUS_SESSION_BUS_ADDRESS=<%AppData%\eruption\dbus-session-bus.txt
