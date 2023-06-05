@@ -26,7 +26,8 @@ use config::Config;
 use flume::{select::SelectError, unbounded, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
-    Event,
+    notify::event::ModifyKind,
+    Event, EventKind,
 };
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -1535,41 +1536,41 @@ pub fn register_filesystem_watcher(
 
                             hotwatch
                                 .watch(&profile_dir, move |event: Event| {
-                                    if let Event::Write(event) = event {
-                                        if event.extension().unwrap_or_default().to_string_lossy() == "state" {
+                                    if let EventKind::Modify(_) = event.kind {
+                                        if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "state" {
                                             info!("Existing profile state modified: {:?}", event);
 
                                             // crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
-                                        } else if event.extension().unwrap_or_default().to_string_lossy() == "profile" {
+                                        } else if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "profile" {
                                             info!("Existing profile modified: {:?}", event);
 
-                                            fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Modified, path: event }).unwrap();
+                                            fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Modified, path: event.paths[0].clone() }).unwrap();
                                         }
-                                    } else if let Event::Create(event) = event {
-                                        if event.extension().unwrap_or_default().to_string_lossy() == "state" {
+                                    } else if let EventKind::Create(_) = event.kind {
+                                        if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "state" {
                                             info!("New profile state created: {:?}", event);
 
                                             // crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
-                                        } else if event.extension().unwrap_or_default().to_string_lossy() == "profile" {
+                                        } else if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "profile" {
                                             info!("New profile created: {:?}", event);
 
-                                            fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Created, path: event }).unwrap();
+                                            fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Created, path: event.paths[0].clone() }).unwrap();
                                         }
-                                    } else if let Event::Rename(from, to) = event {
-                                        if to.extension().unwrap_or_default().to_string_lossy() == "profile" {
-                                            info!("Profile file renamed: {:?}", (&from, &to));
+                                    } else if let EventKind::Modify(ModifyKind::Name(_)) = event.kind  {
+                                        if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "profile" {
+                                            info!("Profile file renamed: {:?}", (&event.paths[0], &event.paths[1]));
 
-                                            fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Modified, path: to }).unwrap();
+                                            fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Modified, path: event.paths[0].clone() }).unwrap();
                                         }
-                                    } else if let Event::Remove(event) = event {
-                                        if event.extension().unwrap_or_default().to_string_lossy() == "state" {
+                                    } else if let EventKind::Remove(_) = event.kind  {
+                                        if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "state" {
                                             info!("Profile state deleted: {:?}", event);
 
                                             crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);
-                                        } else if event.extension().unwrap_or_default().to_string_lossy() == "profile" {
+                                        } else if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "profile" {
                                             info!("Profile deleted: {:?}", event);
 
-                                            fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Deleted, path: event }).unwrap();
+                                            fsevents_tx_c.send(FileSystemEvent::ProfileChanged { action: EventAction::Deleted, path: event.paths[0].clone() }).unwrap();
                                         }
                                     }
 
@@ -1583,10 +1584,10 @@ pub fn register_filesystem_watcher(
 
                             hotwatch
                                 .watch(&script_dir, move |event: Event| {
-                                    if let Event::Write(event) | Event::Create(event) |
-                                           Event::Remove(event) | Event::Rename(_, event) = event {
-                                        if event.extension().unwrap_or_default().to_string_lossy() == "lua" ||
-                                           event.extension().unwrap_or_default().to_string_lossy() == "manifest" {
+                                    if let EventKind::Modify(_) | EventKind::Create(_) |
+                                           EventKind::Remove(_) | EventKind::Modify(ModifyKind::Name(_)) = event.kind {
+                                        if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "lua" ||
+                                           event.paths[0].extension().unwrap_or_default().to_string_lossy() == "manifest" {
                                             info!("Script file, manifest or keymap changed: {:?}", event);
 
                                             fsevents_tx_c.send(FileSystemEvent::ScriptChanged).unwrap();

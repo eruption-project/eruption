@@ -22,10 +22,11 @@
 use std::ops::RangeInclusive;
 
 use egui::{
-    epaint::Shadow, style::Margin, warn_if_debug_build, Align, Button, ComboBox, Direction,
-    FontFamily, FontId, Frame, Id, Layout, RichText, Sense, Slider, TextStyle, TopBottomPanel,
-    Widget,
+    epaint::Shadow, style::Margin, warn_if_debug_build, Align, Button, ComboBox, Context,
+    Direction, FontFamily, FontId, Frame, Id, Layout, RichText, Sense, Slider, TextStyle,
+    TopBottomPanel, Widget,
 };
+use egui_toast::{Toast, ToastKind, ToastOptions};
 use tracing::error;
 
 use crate::ui::{self, TabPages};
@@ -37,7 +38,7 @@ pub struct Pyroclasm {
     pub active_page: ui::TabPages,
 
     #[serde(skip)]
-    pub toasts: egui_notify::Toasts,
+    pub toasts: egui_toast::Toasts,
 
     #[serde(skip)]
     pub modal_quit: Option<egui_modal::Modal>,
@@ -123,7 +124,7 @@ impl Pyroclasm {
         Default::default()
     }
 
-    fn setup_modals(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn setup_modals(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
         let modal = egui_modal::Modal::new(ctx, "quit_dialog");
 
         modal.show(|ui| {
@@ -253,7 +254,13 @@ impl Pyroclasm {
                                             if ui.button("About...").clicked() {
                                                 ui.close_menu();
 
-                                                self.toasts.info("About Pyroclasm UI");
+                                                self.toasts.add(Toast {
+                                                    text: "About Pyroclasm UI".into(),
+                                                    kind: ToastKind::Info,
+                                                    options: ToastOptions::default()
+                                                        .duration_in_seconds(5.0)
+                                                        .show_progress(true),
+                                                });
 
                                                 self.active_page = TabPages::About;
                                             }

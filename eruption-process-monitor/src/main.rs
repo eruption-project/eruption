@@ -51,6 +51,7 @@ use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
 use dbus_client::{profile, slot};
 use flume::{unbounded, Receiver, Sender};
+use hotwatch::EventKind;
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     Event,
@@ -610,9 +611,9 @@ pub fn register_filesystem_watcher(
                                 return Flow::Exit;
                             }
 
-                            match event {
-                                Event::Write(path) => {
-                                    debug!("Rule file changed: {}", path.display());
+                            match event.kind {
+                                EventKind::Modify(_) => {
+                                    debug!("Rule file changed: {}", event.paths[0].display());
 
                                     fsevents_tx
                                         .send(FileSystemEvent::RulesChanged)
