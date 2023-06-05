@@ -18,14 +18,18 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 on:
-    push:
-        branches:
-            - unified-canvas
+  push:
+    branches:
+      - unified-canvas
+    tags:
+      - "v*.*.*"
 
 name: Build Installer for Microsoft Windows
 jobs:
   windows_installer:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Setup Base System
         run: "sudo apt-get update -y -qq; sudo apt-get install --assume-yes nsis"
@@ -41,6 +45,8 @@ jobs:
       - name: Publish Installer Binary
         uses: softprops/action-gh-release@v1
         with:
-            files: 'target/Eruption.exe'
+          draft: true
+          prerelease: true
+          files: 'target/Eruption.exe'
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
