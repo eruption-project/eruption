@@ -55,18 +55,10 @@ BUILDFLAGS_WINDOWS := --target=x86_64-pc-windows-gnu \
 
 CROSS := cross
 
-all: build
+all: build xtask
 
 build:
 	@cargo build $(BUILDFLAGS)
-	@cargo xtask dist
-
-	@echo ""
-	@echo "Now please run 'sudo make install' to install Eruption"
-	@echo ""
-	@echo "If Eruption is already running, stop it first.  Consider:"
-	@echo "'make stop && sudo make install && make start'"
-	@echo ""
 
 windows-installer: windows
 	@makensis "support/nsis/eruption.nsi"
@@ -81,7 +73,7 @@ windows:
 	@echo ""
 
 	@$(CROSS) build $(BUILDFLAGS_WINDOWS)
-	@$(CROSS) xtask dist
+	# @$(CROSS) xtask dist
 
 	@echo ""
 
@@ -412,6 +404,16 @@ uninstall:
 	@echo ""
 	@echo "Successfully uninstalled Eruption!"
 
+xtask:
+	@cargo xtask dist
+
+	@echo ""
+	@echo "Now please run 'sudo make install' to install Eruption"
+	@echo ""
+	@echo "If Eruption is already running, stop it first.  Consider:"
+	@echo "'make stop && sudo make install && make start'"
+	@echo ""
+
 check:
 	@cargo check
 
@@ -422,5 +424,5 @@ test:
 	@cargo test
 
 .SILENT: check clean all start stop install uninstall build test
-.PHONY: check clean all start stop install uninstall build test \
+.PHONY: check clean all start stop install uninstall build test xtask \
 		windows windows-installer
