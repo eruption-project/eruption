@@ -125,7 +125,7 @@ Please see [DEVICES.md](DEVICES.md) for further information
 
 ## Important Information
 
-This project is still in the early stages of development, and thus may contain some possibly serious bugs.
+⚠️ This project is still in the early stages of development, and thus may contain some possibly serious bugs. ⚠️
 
 **For a more mature RGB lighting solution please also consider the following alternatives**
 
