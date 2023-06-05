@@ -19,7 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 
 // fn fibonacci(n: u64) -> u64 {
 //     match n {
@@ -29,7 +29,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 //     }
 // }
 
-fn criterion_benchmark(c: &mut Criterion) {
+fn criterion_benchmark(_c: &mut Criterion) {
     // c.bench_function("fib 20", |b| b.iter(|| fibonacci(black_box(20))));
 }
 
