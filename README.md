@@ -1,12 +1,12 @@
 ![Eruption logo](docs/assets/eruption.webp)
 
-[![Continuous integration](https://github.com/eruption-project/eruption/actions/workflows/rust.yml/badge.svg?branch=unified-canvas)](https://github.com/eruption-project/eruption/actions/workflows/rust.yml)
-
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
 ![License](https://img.shields.io/github/license/X3n0m0rph59/eruption?style=flat-square)
 ![Stars](https://img.shields.io/github/stars/X3n0m0rph59/eruption?style=flat-square)
 ![Crates.io](https://img.shields.io/crates/v/eruption-sdk?style=flat-square)
 ![Downloads](https://img.shields.io/crates/d/eruption-sdk?style=flat-square)
+
+[![Continuous integration](https://github.com/eruption-project/eruption/actions/workflows/rust.yml/badge.svg?branch=unified-canvas)](https://github.com/eruption-project/eruption/actions/workflows/rust.yml)
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
 
 <div align="center">
   <br></br>
@@ -334,5 +334,3 @@ Contributions are always welcome!
 Please find information on how to contribute at [CONTRIBUTING.md](CONTRIBUTING.md)
 
 Please see `support/scripts/examples/*.lua` directory for Lua scripting examples.
-
-<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Support Me on Ko-fi', '#1a1919', 'E1E1LYK1S');kofiwidget2.draw();</script>
