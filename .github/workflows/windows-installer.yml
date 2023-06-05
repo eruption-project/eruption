@@ -26,12 +26,9 @@ name: Build Installer for Microsoft Windows
 jobs:
   windows_installer:
     runs-on: ubuntu-latest
-    container: fedora:38
     steps:
       - name: Setup Base System
-        run: "dnf -y groupinstall 'Development Tools' 'Development Libraries'"
-      - name: Setup Cross Compilation Environment
-        run: "dnf update -y && dnf install -y curl podman"
+        run: "sudo apt-get update -y -qq; sudo apt-get install --assume-yes apt-utils git build-essential curl"
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
