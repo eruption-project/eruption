@@ -584,6 +584,40 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
                             drawing_area_color_scheme.queue_draw();
                         }
 
+                        // special handling for the "system" color-scheme; it can be overridden by the user
+                        "system" => match dbus_client::get_color_scheme(&name) {
+                            Ok(color_scheme) => {
+                                match colorgrad::CustomGradient::new()
+                                    .mode(BlendMode::LinearRgb)
+                                    .colors(&color_scheme.colors)
+                                    .build()
+                                {
+                                    Ok(custom_gradient) => {
+                                        *SELECTED_COLOR_SCHEME.write() = Some(custom_gradient);
+                                        drawing_area_color_scheme.queue_draw();
+                                    }
+
+                                    Err(e) => {
+                                        tracing::error!(
+                                            "Could not instantiate a color scheme: {}",
+                                            e
+                                        );
+                                        notifications::error(&format!(
+                                            "Could not instantiate a color scheme: {}",
+                                            e
+                                        ));
+                                    }
+                                }
+                            }
+
+                            Err(_) => {
+                                let gradient = colorgrad::sinebow();
+                                *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+
+                                drawing_area_color_scheme.queue_draw();
+                            }
+                        },
+
                         // user-defined color-schemes
                         _ => match dbus_client::get_color_scheme(&name) {
                             Ok(color_scheme) => {
