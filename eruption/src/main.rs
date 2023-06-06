@@ -962,6 +962,9 @@ fn run_main_loop(
             // reset flag
             crate::REENTER_MAIN_LOOP.store(false, Ordering::SeqCst);
 
+            // take a snapshot of the last rendered LED map
+            *script::SAVED_LED_MAP.write() = script::LAST_RENDERED_LED_MAP.read().clone();
+
             return Ok(());
         }
 
@@ -994,7 +997,7 @@ fn run_main_loop(
                     slot_profiles.as_ref().unwrap()[active_slot].clone()
                 };
 
-                if let Err(e) = switch_profile(Some(&profile_path), dbus_api_tx, false) {
+                if let Err(e) = switch_profile(Some(&profile_path), dbus_api_tx, true) {
                     error!("Could not switch profiles: {}", e);
                 } else {
                     // reset the audio backend, it will be enabled again if needed
@@ -1003,12 +1006,6 @@ fn run_main_loop(
 
                     dbus_api_tx
                         .send(DbusApiEvent::ActiveSlotChanged)
-                        .unwrap_or_else(|e| {
-                            error!("Could not send a pending dbus API event: {}", e)
-                        });
-
-                    dbus_api_tx
-                        .send(DbusApiEvent::ActiveProfileChanged)
                         .unwrap_or_else(|e| {
                             error!("Could not send a pending dbus API event: {}", e)
                         });
@@ -1115,26 +1112,15 @@ fn run_main_loop(
             if REQUEST_PROFILE_RELOAD.load(Ordering::SeqCst) {
                 REQUEST_PROFILE_RELOAD.store(false, Ordering::SeqCst);
 
-                let active_profile = ACTIVE_PROFILE.read();
-                let profile_clone = active_profile.clone();
-
-                // ACTIVE_PROFILE lock needs to be released here, or otherwise we may deadlock
-                drop(active_profile);
+                let profile_clone = ACTIVE_PROFILE.read().clone();
 
                 if let Some(profile) = &profile_clone {
-                    if let Err(e) = switch_profile(Some(&profile.profile_file), dbus_api_tx, false)
-                    {
+                    if let Err(e) = switch_profile(Some(&profile.profile_file), dbus_api_tx, true) {
                         error!("Could not reload profile: {}", e);
                     } else {
                         // reset the audio backend, it will be enabled again if needed
                         #[cfg(not(target_os = "windows"))]
                         plugins::audio::reset_audio_backend();
-
-                        // don't notify "active profile changed", since it may deadlock
-
-                        // dbus_api_tx
-                        //     .send(DbusApiEvent::ActiveProfileChanged)
-                        //     .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
                         FAILED_TXS.write().clear();
                     }
@@ -1585,7 +1571,7 @@ pub fn register_filesystem_watcher(
                             hotwatch
                                 .watch(&script_dir, move |event: Event| {
                                     if let EventKind::Modify(_) | EventKind::Create(_) |
-                                           EventKind::Remove(_) | EventKind::Modify(ModifyKind::Name(_)) = event.kind {
+                                           EventKind::Remove(_) = event.kind {
                                         if event.paths[0].extension().unwrap_or_default().to_string_lossy() == "lua" ||
                                            event.paths[0].extension().unwrap_or_default().to_string_lossy() == "manifest" {
                                             info!("Script file, manifest or keymap changed: {:?}", event);
@@ -2031,7 +2017,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                         cfg_if::cfg_if! {
                                             if #[cfg(not(target_os = "windows"))] {
                                                 let (mouse_tx, mouse_rx) = unbounded();
-                                                // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
 
                                                 // spawn a thread to handle mouse input
                                                 info!("Spawning mouse input thread...");
@@ -2047,24 +2032,6 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                                     error!("Could not spawn a thread: {}", e);
                                                     panic!()
                                                 });
-
-                                                // spawn a thread to handle possible sub-devices
-                                                /* if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
-                                                    && device.read().has_secondary_device()
-                                                {
-                                                    info!("Spawning mouse input thread for secondary sub-device...");
-                                                    spawn_mouse_input_thread_secondary(
-                                                        mouse_secondary_tx,
-                                                        device.clone(),
-                                                        index,
-                                                        usb_vid,
-                                                        usb_pid,
-                                                    )
-                                                    .unwrap_or_else(|e| {
-                                                        error!("Could not spawn a thread: {}", e);
-                                                        panic!()
-                                                    });
-                                                } */
 
                                                 crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
                                             }
@@ -2125,7 +2092,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                     info!("Device enumeration completed");
 
-                    // optionally wait for devices to settle; this should not be required
+                    // optionally, wait a bit for devices to settle; this should
+                    // not be technically required it just prevents fast devices
+                    // from showing LED lighting long before the slower ones do,
+                    // which can lead to an uneven experience on startup
                     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
 
                     let _ = keyboard_init_thread.join().map_err(|_| {

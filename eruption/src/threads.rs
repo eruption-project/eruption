@@ -183,9 +183,11 @@ pub fn spawn_keyboard_input_thread(
                 Err(_e) => return Err(EvdevError::UdevError {}.into()),
             };
 
+            let mut fail = false;
+
             loop {
                 // check if we shall terminate the input thread, before we poll the keyboard
-                if QUIT.load(Ordering::SeqCst) {
+                if fail || QUIT.load(Ordering::SeqCst) {
                     break Ok(());
                 }
 
@@ -223,11 +225,6 @@ pub fn spawn_keyboard_input_thread(
                                 e
                             );
 
-                            // try to recover from an invalid state
-                            // keyboard_device.write().close_all().unwrap_or_else(|e| {
-                            //     warn!("Could not close the device: {}", e);
-                            // });
-
                             // mark the device as failed
                             keyboard_device
                                 .write()
@@ -242,9 +239,11 @@ pub fn spawn_keyboard_input_thread(
                             // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
-                            // update AFK timer
-                            *crate::LAST_INPUT_TIME.write() = Instant::now();
+                            fail = true;
                         });
+
+                        // update AFK timer
+                        *crate::LAST_INPUT_TIME.write() = Instant::now();
                     }
 
                     Err(e) => {
@@ -341,9 +340,11 @@ pub fn spawn_mouse_input_thread(
                 Err(_e) => return Err(EvdevError::UdevError {}.into()),
             };
 
+            let mut fail = false;
+
             loop {
                 // check if we shall terminate the input thread, before we poll the mouse device
-                if QUIT.load(Ordering::SeqCst) {
+                if fail || QUIT.load(Ordering::SeqCst) {
                     break Ok(());
                 }
 
@@ -431,11 +432,6 @@ pub fn spawn_mouse_input_thread(
                                 e
                             );
 
-                            // try to recover from an invalid state
-                            // mouse_device.write().close_all().unwrap_or_else(|e| {
-                            //     warn!("Could not close the device: {}", e);
-                            // });
-
                             // mark the device as failed
                             mouse_device
                                 .write()
@@ -449,6 +445,8 @@ pub fn spawn_mouse_input_thread(
 
                             // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                            fail = true;
                         });
 
                         // update AFK timer
@@ -492,159 +490,6 @@ pub fn spawn_mouse_input_thread(
 
     Ok(())
 }
-
-/// Spawns the mouse events thread for an additional sub-device on the mouse and executes the thread's main loop
-/* pub fn spawn_mouse_input_thread_secondary(
-    mouse_tx: Sender<Option<evdev_rs::InputEvent>>,
-    mouse_device: MouseDevice,
-    device_index: usize,
-    usb_vid: u16,
-    usb_pid: u16,
-) -> plugins::Result<()> {
-    thread::Builder::new()
-        .name(format!("events/mouse-sub:{}", device_index))
-        .spawn(move || -> Result<()> {
-            let device = match hwdevices::get_input_sub_dev_from_udev(usb_vid, usb_pid, 2) {
-                Ok(filename) => match File::open(filename.clone()) {
-                    Ok(devfile) => match Device::new_from_file(devfile) {
-                        Ok(mut device) => {
-                            info!("Now listening on mouse sub-dev: {}", filename);
-
-                            info!(
-                                "Input device name: \"{}\"",
-                                device.name().unwrap_or("<n/a>")
-                            );
-
-                            info!(
-                                "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
-                                device.bustype(),
-                                device.vendor_id(),
-                                device.product_id()
-                            );
-
-                            // info!("Driver version: {:x}", device.driver_version());
-
-                            info!("Physical location: {}", device.phys().unwrap_or("<n/a>"));
-
-                            // info!("Unique identifier: {}", device.uniq().unwrap_or("<n/a>"));
-
-                            info!("Grabbing the sub-device exclusively");
-                            let _ = device
-                                .grab(GrabMode::Grab)
-                                .map_err(|e| error!("Could not grab the device: {}", e));
-
-                            device
-                        }
-
-                        Err(_e) => return Err(EvdevError::EvdevHandleError {}.into()),
-                    },
-
-                    Err(_e) => return Err(EvdevError::EvdevError {}.into()),
-                },
-
-                Err(_e) => return Err(EvdevError::UdevError {}.into()),
-            };
-
-            loop {
-                // check if we shall terminate the input thread, before we poll the mouse device
-                if QUIT.load(Ordering::SeqCst) {
-                    break Ok(());
-                }
-
-                match device.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING) {
-                    Ok(k) => {
-                        trace!("Mouse sub-device event: {:?}", k.1);
-
-                        // reset "to be dropped" flag
-                        macros::DROP_CURRENT_MOUSE_INPUT.store(false, Ordering::SeqCst);
-
-                        // update our internal representation of the device state
-                        if let evdev_rs::enums::EventCode::EV_SYN(code) = k.1.clone().event_code {
-                            if code == EV_SYN::SYN_DROPPED {
-                                warn!("Mouse-sub:{} dropped some events, resyncing...", device_index);
-                                device.next_event(evdev_rs::ReadFlag::SYNC)?;
-                            } else {
-                                // directly mirror SYN events to reduce input lag
-                                if GRAB_MOUSE.load(Ordering::SeqCst) {
-                                    macros::UINPUT_TX
-                                        .read()
-                                        .as_ref()
-                                        .unwrap()
-                                        .send(macros::Message::MirrorMouseEventImmediate(
-                                            k.1.clone(),
-                                        ))
-                                        .unwrap_or_else(|e| {
-                                            error!("Could not send a pending mouse event: {}", e)
-                                        });
-                                }
-                            }
-                        } else if let evdev_rs::enums::EventCode::EV_KEY(code) = k.1.clone().event_code {
-                            let is_pressed = k.1.value > 0;
-                            let index = mouse_device.read().ev_key_to_button_index(code).unwrap() as usize;
-
-                            BUTTON_STATES.write()[index] = is_pressed;
-                        } else if let evdev_rs::enums::EventCode::EV_REL(code) =
-                            k.1.clone().event_code
-                        {
-                            if code != evdev_rs::enums::EV_REL::REL_WHEEL
-                                && code != evdev_rs::enums::EV_REL::REL_HWHEEL
-                                && code != evdev_rs::enums::EV_REL::REL_WHEEL_HI_RES
-                                && code != evdev_rs::enums::EV_REL::REL_HWHEEL_HI_RES
-                            {
-                                // directly mirror pointer motion events to reduce input lag.
-                                // This currently prohibits further manipulation of pointer motion events
-                                if GRAB_MOUSE.load(Ordering::SeqCst) {
-                                    macros::UINPUT_TX
-                                        .read()
-                                        .as_ref()
-                                        .unwrap()
-                                        .send(macros::Message::MirrorMouseEventImmediate(
-                                            k.1.clone(),
-                                        ))
-                                        .unwrap_or_else(|e| {
-                                            error!("Could not send a pending mouse sub-device event: {}", e)
-                                        });
-                                }
-                            }
-                        }
-
-                        mouse_tx.send(Some(k.1)).unwrap_or_else(|e| {
-                            error!("Could not send a mouse sub-device event to the main thread: {}", e)
-                        });
-
-                        // update AFK timer
-                        *crate::LAST_INPUT_TIME.write() = Instant::now();
-                    }
-
-                    Err(e) => {
-                        if e.raw_os_error().unwrap() == libc::ENODEV {
-                            warn!("Mouse sub-device went away: {}", e);
-
-                            // we need to terminate and then re-enter the main loop to update all global state
-                            crate::REENTER_MAIN_LOOP
-                            .store(true, Ordering::SeqCst);
-
-                            return Err(EvdevError::EvdevEventError {}.into());
-                        } else {
-                            error!("Could not peek evdev event: {}", e);
-
-                            // we need to terminate and then re-enter the main loop to update all global state
-                            crate::REENTER_MAIN_LOOP
-                            .store(true, Ordering::SeqCst);
-
-                            return Err(EvdevError::EvdevEventError {}.into());
-                        }
-                    }
-                };
-            }
-        })
-        .unwrap_or_else(|e| {
-            error!("Could not spawn a thread: {}", e);
-            panic!()
-        });
-
-    Ok(())
-} */
 
 /// Spawns the misc devices input thread and executes it's main loop
 #[cfg(not(target_os = "windows"))]
@@ -702,9 +547,11 @@ pub fn spawn_misc_input_thread(
                 Err(_e) => return Err(EvdevError::UdevError {}.into()),
             };
 
+            let mut fail = false;
+
             loop {
                 // check if we shall terminate the input thread, before we poll the device
-                if QUIT.load(Ordering::SeqCst) {
+                if fail || QUIT.load(Ordering::SeqCst) {
                     break Ok(());
                 }
 
@@ -748,6 +595,8 @@ pub fn spawn_misc_input_thread(
 
                             // we need to terminate and then re-enter the main loop to update all global state
                             crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                            fail = true;
                         });
 
                         // update AFK timer

@@ -38,7 +38,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
 {
     fn enum_rules(&self) -> Result<Vec<(String, String, String, String)>, dbus::Error> {
         self.method_call("org.eruption.process_monitor.Rules", "EnumRules", ())
-            .map(|r: (Vec<(String, String, String, String)>,)| r.0)
+            .and_then(|r: (Vec<(String, String, String, String)>,)| Ok(r.0))
     }
 
     fn set_rules(&self, rules: Vec<(&str, &str, &str, &str)>) -> Result<(), dbus::Error> {
@@ -57,6 +57,6 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
 {
     fn introspect(&self) -> Result<String, dbus::Error> {
         self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-            .map(|r: (String,)| r.0)
+            .and_then(|r: (String,)| Ok(r.0))
     }
 }

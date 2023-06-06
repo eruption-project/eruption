@@ -153,7 +153,7 @@ impl HwAccelPlugin {
         }
     }
 
-    pub fn set_uniform(shader: usize, name: &str) -> Result<()> {
+    pub fn set_uniform(_shader: usize, _name: &str) -> Result<()> {
         Ok(())
     }
 

@@ -965,8 +965,4 @@ impl MouseDeviceTrait for RoccatBurstPro {
             Ok(())
         }
     }
-
-    fn has_secondary_device(&self) -> bool {
-        false
-    }
 }

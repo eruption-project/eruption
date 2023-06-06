@@ -1212,8 +1212,4 @@ impl MouseDeviceTrait for RoccatKonePureUltra {
             Ok(())
         }
     }
-
-    fn has_secondary_device(&self) -> bool {
-        false
-    }
 }

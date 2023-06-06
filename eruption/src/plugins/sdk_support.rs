@@ -207,7 +207,6 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         let usb_pid = device.read().get_usb_pid();
 
                         let (mouse_tx, mouse_rx) = unbounded();
-                        // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
 
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
@@ -223,24 +222,6 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                             error!("Could not spawn a thread: {}", e);
                             panic!()
                         });
-
-                        // spawn a thread to handle possible sub-devices
-                        /* if EXPERIMENTAL_FEATURES.load(Ordering::SeqCst)
-                            && device.read().has_secondary_device()
-                        {
-                            info!("Spawning mouse input thread for secondary sub-device...");
-                            spawn_mouse_input_thread_secondary(
-                                mouse_secondary_tx,
-                                device.clone(),
-                                index,
-                                usb_vid,
-                                usb_pid,
-                            )
-                            .unwrap_or_else(|e| {
-                                error!("Could not spawn a thread: {}", e);
-                                panic!()
-                            });
-                        }*/
 
                         crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
                         crate::MOUSE_DEVICES.write().push(device.clone());

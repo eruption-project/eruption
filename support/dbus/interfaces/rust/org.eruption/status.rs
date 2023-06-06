@@ -34,19 +34,19 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 {
     fn get_led_colors(&self) -> Result<Vec<(u8, u8, u8, u8)>, dbus::Error> {
         self.method_call("org.eruption.Status", "GetLedColors", ())
-            .map(|r: (Vec<(u8, u8, u8, u8)>,)| r.0)
+            .and_then(|r: (Vec<(u8, u8, u8, u8)>,)| Ok(r.0))
     }
 
     fn get_managed_devices(
         &self,
     ) -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>), dbus::Error> {
         self.method_call("org.eruption.Status", "GetManagedDevices", ())
-            .map(|r: ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),)| r.0)
+            .and_then(|r: ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),)| Ok(r.0))
     }
 
     fn running(&self) -> Result<bool, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-            self,
+            &self,
             "org.eruption.Status",
             "Running",
         )
@@ -64,7 +64,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
 {
     fn introspect(&self) -> Result<String, dbus::Error> {
         self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-            .map(|r: (String,)| r.0)
+            .and_then(|r: (String,)| Ok(r.0))
     }
 }
 
@@ -128,7 +128,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "Get",
             (interface_name, property_name),
         )
-        .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+        .and_then(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| Ok(r.0))
     }
 
     fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -137,7 +137,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "GetAll",
             (interface_name,),
         )
-        .map(|r: (arg::PropMap,)| r.0)
+        .and_then(|r: (arg::PropMap,)| Ok(r.0))
     }
 
     fn set(

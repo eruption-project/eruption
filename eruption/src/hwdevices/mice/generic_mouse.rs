@@ -407,8 +407,4 @@ impl MouseDeviceTrait for GenericMouse {
 
         Ok(())
     }
-
-    fn has_secondary_device(&self) -> bool {
-        false
-    }
 }

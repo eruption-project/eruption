@@ -60,17 +60,17 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 {
     fn get_slot_profiles(&self) -> Result<Vec<String>, dbus::Error> {
         self.method_call("org.eruption.Slot", "GetSlotProfiles", ())
-            .map(|r: (Vec<String>,)| r.0)
+            .and_then(|r: (Vec<String>,)| Ok(r.0))
     }
 
     fn switch_slot(&self, slot: u64) -> Result<bool, dbus::Error> {
         self.method_call("org.eruption.Slot", "SwitchSlot", (slot,))
-            .map(|r: (bool,)| r.0)
+            .and_then(|r: (bool,)| Ok(r.0))
     }
 
     fn active_slot(&self) -> Result<u64, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-            self,
+            &self,
             "org.eruption.Slot",
             "ActiveSlot",
         )
@@ -78,7 +78,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn slot_names(&self) -> Result<Vec<String>, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-            self,
+            &self,
             "org.eruption.Slot",
             "SlotNames",
         )
@@ -86,7 +86,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn set_slot_names(&self, value: Vec<String>) -> Result<(), dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::set(
-            self,
+            &self,
             "org.eruption.Slot",
             "SlotNames",
             value,
@@ -105,7 +105,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
 {
     fn introspect(&self) -> Result<String, dbus::Error> {
         self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-            .map(|r: (String,)| r.0)
+            .and_then(|r: (String,)| Ok(r.0))
     }
 }
 
@@ -169,7 +169,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "Get",
             (interface_name, property_name),
         )
-        .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+        .and_then(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| Ok(r.0))
     }
 
     fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -178,7 +178,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "GetAll",
             (interface_name,),
         )
-        .map(|r: (arg::PropMap,)| r.0)
+        .and_then(|r: (arg::PropMap,)| Ok(r.0))
     }
 
     fn set(

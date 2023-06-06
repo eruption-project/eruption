@@ -1020,9 +1020,6 @@ pub trait MouseDeviceTrait: DeviceTrait {
     /// Send a LED finalization pattern to the device. This should normally be used,
     /// to set the device to a known good state, on exit of the daemon
     fn set_led_off_pattern(&mut self) -> Result<()>;
-
-    /// Returns true when the mouse supports a secondary sub-device like e.g. a keyboard panel
-    fn has_secondary_device(&self) -> bool;
 }
 
 /// Misc Devices

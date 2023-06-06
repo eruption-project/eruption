@@ -85,24 +85,24 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 {
     fn get_device_config(&self, device: u64, param: &str) -> Result<String, dbus::Error> {
         self.method_call("org.eruption.Device", "GetDeviceConfig", (device, param))
-            .map(|r: (String,)| r.0)
+            .and_then(|r: (String,)| Ok(r.0))
     }
 
     fn get_device_status(&self, device: u64) -> Result<String, dbus::Error> {
         self.method_call("org.eruption.Device", "GetDeviceStatus", (device,))
-            .map(|r: (String,)| r.0)
+            .and_then(|r: (String,)| Ok(r.0))
     }
 
     fn get_managed_devices(
         &self,
     ) -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>), dbus::Error> {
         self.method_call("org.eruption.Device", "GetManagedDevices", ())
-            .map(|r: ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),)| r.0)
+            .and_then(|r: ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),)| Ok(r.0))
     }
 
     fn is_device_enabled(&self, device: u64) -> Result<bool, dbus::Error> {
         self.method_call("org.eruption.Device", "IsDeviceEnabled", (device,))
-            .map(|r: (bool,)| r.0)
+            .and_then(|r: (bool,)| Ok(r.0))
     }
 
     fn set_device_config(
@@ -116,17 +116,17 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
             "SetDeviceConfig",
             (device, param, value),
         )
-        .map(|r: (bool,)| r.0)
+        .and_then(|r: (bool,)| Ok(r.0))
     }
 
     fn set_device_enabled(&self, device: u64, enabled: bool) -> Result<bool, dbus::Error> {
         self.method_call("org.eruption.Device", "SetDeviceEnabled", (device, enabled))
-            .map(|r: (bool,)| r.0)
+            .and_then(|r: (bool,)| Ok(r.0))
     }
 
     fn device_status(&self) -> Result<String, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-            self,
+            &self,
             "org.eruption.Device",
             "DeviceStatus",
         )
@@ -144,7 +144,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
 {
     fn introspect(&self) -> Result<String, dbus::Error> {
         self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-            .map(|r: (String,)| r.0)
+            .and_then(|r: (String,)| Ok(r.0))
     }
 }
 
@@ -208,7 +208,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "Get",
             (interface_name, property_name),
         )
-        .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+        .and_then(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| Ok(r.0))
     }
 
     fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -217,7 +217,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "GetAll",
             (interface_name,),
         )
-        .map(|r: (arg::PropMap,)| r.0)
+        .and_then(|r: (arg::PropMap,)| Ok(r.0))
     }
 
     fn set(

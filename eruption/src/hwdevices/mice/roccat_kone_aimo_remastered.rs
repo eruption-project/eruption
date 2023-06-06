@@ -935,8 +935,4 @@ impl MouseDeviceTrait for RoccatKoneAimoRemastered {
             Ok(())
         }
     }
-
-    fn has_secondary_device(&self) -> bool {
-        false
-    }
 }

@@ -1017,8 +1017,4 @@ impl MouseDeviceTrait for RoccatKain100 {
             Ok(())
         }
     }
-
-    fn has_secondary_device(&self) -> bool {
-        false
-    }
 }
