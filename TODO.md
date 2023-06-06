@@ -8,7 +8,7 @@
 
 ### TODO before merging the `unified-canvas` branch into the `develop` branch
 
-- Wherever possible, convert handling of mem-copies and per-pixel routines in Lua code to Rust, push the inner loop down into Rust code and use high-level graphics primitives instead. Having the inner loop in Lua code becomes infeasible with higher canvas resolutions.
+- Wherever possible, convert handling of mem-copies and per-pixel routines from Lua code to Rust, push the inner loop down into Rust code and use high-level graphics primitives instead. Having the inner loop in Lua code becomes infeasible with higher canvas resolutions.
   Convert all existing effects scripts to make use of the hwaccel API (GPU acceleration) or at least use the
   2D-rasterization library (rasterops plugin)
 
@@ -18,7 +18,7 @@
 - Cross-compilation on Linux host (in a Fedora 38 `podman` container) for Windows x86_64 is up and running
 - Successful compilation of selected binaries has been achieved
 - Deployment to Windows via an NSIS-based installer binary is working
-- Eruption daemon is able to drive LED lighting on most devices that are supported under Linux work as well
+- Eruption daemon is able to drive LED lighting on Windows; most devices that are supported under Linux work as well
 - Eruption GTK+3 GUI is able to start but is currently unable to connect to the Eruption daemon
 - There is no support for handling of input: No macros, no remapping, no event handling; only lighting effects
 
@@ -42,15 +42,23 @@ _This is a non-exhaustive listing of planned features:_
 
 - Update all manpages
 - Update all DBus interfaces in rust code
-- keyboard and misc gui pages: make battery/signal controls same as on mice page
+- keyboard and misc gui pages: make battery/signal-strength controls same as on mice page
 - Improve 2D-primitives drawing/rasterization API
 - Improve hardware acceleration with Vulkan/WebGPU (GPGPU)
+- eruptionctl: Add new `zones` subcommand to define zone allocations
 - eruptionctl: implement effects CLI
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
 - Allocated Zones: Add allocated zones support to scripts where applicable
 - Add Lua event: function on_hotplug(new_device) on_update_zones(...)
-- Fix directory/file permissions in packaging
+- Fix directory/file permissions in packaging (for the `eruption` user)
 - Update Python SDK (get_canvas)
 - Implement Undo/redo ops in the GUI?
 - Simplify handling of internal data structures for representation of devices; maybe use a slotmap of Box<dyn Device> instead of integer-indices
-- Improve wording of identifiers: LED_MAP -> CANVAS
+- Improve wording of identifiers: e.g: LED_MAP -> CANVAS
+- System Plugin: Add time of day API
+- Improve driver code: provide default implementations and routines
+- Add LED count, description, position, and names to each driver
+- Add type of device to capabilities: HID or RAWUSB
+- Device pixel format: RGB BGR LRGB in capabilities
+- Device endpoint in capabilities
+- Add shutdown routines to all drivers, to put devices into a known good state on exit of Eruption
