@@ -847,12 +847,12 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 });
                             }
 
-                            // number of pending blend ops should have reached zero by now
+                            // number of pending blend-ops should have reached zero by now
                             // this condition may occur during switching of profiles
                             let ops_pending = *COLOR_MAPS_READY_CONDITION.0.lock();
                             if ops_pending > 0 {
-                                ratelimited::warn!(
-                                    "Pending blend ops before writing LED map to device: {}",
+                                ratelimited::trace!(
+                                    "Pending blend-ops before writing LED map to device: {}",
                                     ops_pending
                                 );
 

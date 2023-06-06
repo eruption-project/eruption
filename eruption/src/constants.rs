@@ -205,7 +205,7 @@ pub const CANVAS_HEIGHT: usize = 64;
 pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 
 /// Timeout for waiting on condition variables of Lua upcalls
-pub const TIMEOUT_CONDITION_MILLIS: u64 = 200;
+pub const TIMEOUT_CONDITION_MILLIS: u64 = 100;
 
 /// Timeout for waiting on ready condition after the RealizeColorMap upcall
 pub const TIMEOUT_REALIZE_COLOR_MAP_CONDITION_MILLIS: u64 = 25;
@@ -242,7 +242,7 @@ pub const DEFAULT_PORT: u16 = 2359;
 // ****************************************************************************
 
 // ****************************************************************************
-// Session daemons
+// Session daemons and UIs
 
 /// Audio proxy loop sleep time/timeout for poll(2)
 pub const SLEEP_TIME_TIMEOUT: u64 = 2000;
