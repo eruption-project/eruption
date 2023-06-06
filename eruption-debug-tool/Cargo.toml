@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-debug-tool"
-version = "0.0.25"
+version = "0.0.26"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
@@ -44,7 +44,7 @@ debug-async = []
 lazy_static = "1.4.0"
 cfg-if = "1.0.0"
 flume = "0.10.14"
-clap = { version = "4.3.1", features = ["derive"] }
+clap = { version = "4.3.2", features = ["derive"] }
 clap_complete = "4.3.1"
 colored = "2.0.0"
 ctrlc = { version = "3.4.0", features = ["termination"] }

@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-macro"
-version = "0.0.6"
+version = "0.0.7"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
@@ -42,7 +42,7 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap = { version = "4.3.1", features = ["derive"] }
+clap = { version = "4.3.2", features = ["derive"] }
 clap_complete = "4.3.1"
 ctrlc = { version = "3.4.0", features = ["termination"] }
 colored = "2.0.0"
@@ -67,7 +67,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
 chrono = { version = "0.4.26", features = ["serde"] }
-regex = "1.8.3"
+regex = "1.8.4"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"
 udev = { version = "0.7", optional = true }

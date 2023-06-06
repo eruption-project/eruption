@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-keymap"
-version = "0.0.8"
+version = "0.0.9"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
@@ -42,7 +42,7 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap = { version = "4.3.1", features = ["derive"] }
+clap = { version = "4.3.2", features = ["derive"] }
 clap_complete = "4.3.1"
 ctrlc = { version = "3.4.0", features = ["termination"] }
 colored = "2.0.0"
@@ -66,7 +66,7 @@ thiserror = "1.0.40"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 chrono = { version = "0.4.26", features = ["serde"] }
-regex = "1.8.3"
+regex = "1.8.4"
 dbus = "0.9.7"
 evdev-rs = { version = "0.6.1", optional = true }
 lazy_static = "1.4.0"

@@ -71,7 +71,7 @@ socket2 = { version = "0.5.3", features = ["all"] }
 windows-named-pipe = { git = "https://github.com/X3n0m0rph59/windows-named-pipe", branch = "main", optional = true }
 winapi = { version = "0.3.9", features =["namedpipeapi"], optional = true}
 ctrlc = { version = "3.4.0", features = ["termination"] }
-clap = "4.3.1"
+clap = "4.3.2"
 hotwatch = "0.5.0"
 config = "0.13.3"
 eyre = "0.6.8"
@@ -124,7 +124,7 @@ unic-langid = "0.9.1"
 icecream = "0.1.0"
 same-file = "1"
 bytemuck = "1.13.1"
-bitfield-struct = "0.4.3"
+bitfield-struct = "0.4.4"
 gpgpu = { git = "https://github.com/UpsettingBoy/gpgpu-rs.git", branch = "dev" }
 shaderc = "0.8.2"
 

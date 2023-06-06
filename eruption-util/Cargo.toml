@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-util"
-version = "0.0.12"
+version = "0.0.13"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
@@ -42,7 +42,7 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap = { version = "4.3.1", features = ["derive"] }
+clap = { version = "4.3.2", features = ["derive"] }
 clap_complete = "4.3.1"
 ctrlc = { version = "3.4.0", features = ["termination"] }
 colored = "2.0.0"
