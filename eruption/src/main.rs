@@ -1801,25 +1801,27 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     if atty::is(atty::Stream::Stdout) {
-        if !env::args().any(|a| a.eq_ignore_ascii_case("daemon"))
+        if env::args().count() < 2
+            && !env::args().any(|a| a.eq_ignore_ascii_case("daemon"))
             && !env::args().any(|a| a.eq_ignore_ascii_case("completions"))
         {
             // we require the "daemon" subcommand to be specified, as a safety measure to
             // prevent the accidental execution of another instance of the eruption daemon
             eprintln!(
-                "Did you probably intend to run the `{}` command instead?",
+                "Did you probably meant to run the `{}` command instead?",
                 "eruptionctl".bold()
             );
             eprintln!("");
-            eprintln!("");
-            eprintln!("If you meant to run the Eruption daemon, please use:");
+            eprintln!(
+                "If you intended to run the Eruption daemon, please use one of the following commands:"
+            );
             eprintln!(
                 "{}",
                 "sudo systemctl unmask eruption.service && sudo systemctl restart eruption.service"
                     .bold()
             );
             eprintln!("");
-            eprintln!("To run the Eruption daemon from the current shell, please use:");
+            eprintln!("To run the Eruption daemon from a terminal (e.g. for debugging purposes) please use:");
             eprintln!(
                 "{}",
                 "sudo -u eruption RUST_LOG=info eruption daemon".bold()
