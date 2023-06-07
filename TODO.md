@@ -20,7 +20,7 @@
 - Deployment to Windows via an NSIS-based installer binary is working
 - Eruption daemon is able to drive LED lighting on Windows; most devices that are supported under Linux work as well
 - Eruption GTK+3 GUI is able to start but is currently unable to connect to the Eruption daemon
-- There is no support for handling of input: No macros, no remapping, no event handling; only lighting effects
+- There is no support for handling of input, for now: No macros, no remapping, no event handling; only lighting effects
 
 ## Planned Features
 
@@ -37,15 +37,16 @@ _This is a non-exhaustive listing of planned features:_
 
 - Wayland support is still lacking: The Ambient-Effect support is currently not available on Wayland-based compositors,
   since screenshot APIs are not fully settled on the Wayland side
+- On removal of a keyboard device, the primary keyboard device will get spuriously failed sometimes
 
 ## TODO
 
 - Update all manpages
 - Update all DBus interfaces in rust code
-- keyboard and misc gui pages: make battery/signal-strength controls same as on mice page
+- keyboard and misc gui pages: make battery/signal-strength controls the same as on mice page
 - Improve 2D-primitives drawing/rasterization API
 - Improve hardware acceleration with Vulkan/WebGPU (GPGPU)
-- eruptionctl: Add new `zones` subcommand to define zone allocations
+- eruptionctl: Add new `zones` subcommand to define zone allocations via the CLI
 - eruptionctl: implement effects CLI
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
 - Allocated Zones: Add allocated zones support to scripts where applicable
@@ -62,3 +63,4 @@ _This is a non-exhaustive listing of planned features:_
 - Device pixel format: RGB BGR LRGB in capabilities
 - Device endpoint in capabilities
 - Add shutdown routines to all drivers, to put devices into a known good state on exit of Eruption
+- Provide an easy way/standalone application to disable all LED lighting
