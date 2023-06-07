@@ -199,23 +199,41 @@ You may want to use the command line tool `xprop` to find the relevant informati
                 );
 
                 // get window properties
-                let name =
-                    conn.get_property(false, focus, net_wm_name, utf8_string, 0, u32::max_value())?;
-                let class =
-                    conn.get_property(false, focus, wm_class, string, 0, u32::max_value())?;
-                let pid =
-                    conn.get_property(false, focus, net_wm_pid, cardinal, 0, u32::max_value())?;
-                let (name, class, pid) = (name.reply()?, class.reply()?, pid.reply()?);
+                let name = conn
+                    .get_property(false, focus, net_wm_name, utf8_string, 0, u32::max_value())
+                    .ok();
+                let class = conn
+                    .get_property(false, focus, wm_class, string, 0, u32::max_value())
+                    .ok();
+                let pid = conn
+                    .get_property(false, focus, net_wm_pid, cardinal, 0, u32::max_value())
+                    .ok();
 
-                let (instance, class) = parse_wm_class(&class);
+                let name = name.and_then(|name| name.reply().ok());
+                let class = class.and_then(|class| class.reply().ok());
+                let pid = pid.and_then(|pid| pid.reply().ok());
 
-                let pid = parse_pid(&pid);
+                let instance_and_class = class.and_then(|class| parse_wm_class(&class));
+
+                let pid = pid.and_then(|pid| Some(parse_pid(&pid)));
 
                 let result = self::X11SensorData {
-                    window_name: parse_string_property(&name).to_string(),
-                    window_instance: instance.to_string(),
-                    window_class: class.to_string(),
-                    pid,
+                    window_name: name
+                        .and_then(|name| Some(parse_string_property(&name).to_owned()))
+                        .unwrap_or_else(|| "".to_string())
+                        .to_string(),
+                    window_instance: instance_and_class
+                        .clone()
+                        .and_then(|(ref instance, _)| Some(instance.to_owned()))
+                        .unwrap_or_else(|| "".to_string())
+                        .to_string()
+                        .clone(),
+                    window_class: instance_and_class
+                        .and_then(|(_, ref class)| Some(class.to_owned()))
+                        .unwrap_or_else(|| "".to_string())
+                        .to_string()
+                        .clone(),
+                    pid: pid.unwrap_or(0),
                 };
 
                 if result.window_name.is_empty()
@@ -268,15 +286,12 @@ fn find_active_window(
 }
 
 fn parse_string_property(property: &GetPropertyReply) -> &str {
-    std::str::from_utf8(&property.value).unwrap_or("Invalid utf8")
+    std::str::from_utf8(&property.value).unwrap_or_default()
 }
 
-fn parse_wm_class(property: &GetPropertyReply) -> (&str, &str) {
+fn parse_wm_class(property: &GetPropertyReply) -> Option<(String, String)> {
     if property.format != 8 {
-        return (
-            "Malformed property: wrong format",
-            "Malformed property: wrong format",
-        );
+        return None;
     }
 
     let value = &property.value;
@@ -295,12 +310,17 @@ fn parse_wm_class(property: &GetPropertyReply) -> (&str, &str) {
 
         let instance = std::str::from_utf8(instance);
         let class = std::str::from_utf8(class);
-        (
-            instance.unwrap_or("Invalid utf8"),
-            class.unwrap_or("Invalid utf8"),
-        )
+
+        if instance.is_ok() && class.is_ok() {
+            Some((
+                instance.unwrap_or("").to_owned(),
+                class.unwrap_or("").to_owned(),
+            ))
+        } else {
+            None
+        }
     } else {
-        ("Missing null byte", "Missing null byte")
+        None
     }
 }
 
