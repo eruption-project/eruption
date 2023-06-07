@@ -223,10 +223,15 @@ Copyright (c) 2019-2023, The Eruption Development Team
 
 #[allow(dead_code)]
 fn print_notice() {
+    println!(
+        "Did you probably meant to run the `{}` command instead?",
+        "eruptionctl devices status <device>".bold()
+    );
+
     #[cfg(not(target_os = "windows"))]
     println!(
         r#"
- Please stop the Eruption daemon prior to running this tool:
+ Please stop the Eruption daemon prior to running this low-level hardware tool:
  $ sudo systemctl stop eruption.service && sudo systemctl mask eruption.service
 
  You can re-enable Eruption with this command afterwards:
@@ -253,9 +258,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
         print_header();
 
-        if util::is_eruption_daemon_running() {
-            print_notice();
-        }
+        print_notice();
     }
 
     // register ctrl-c handler
@@ -298,24 +301,19 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             match hidapi::HidApi::new() {
                 Ok(hidapi) => {
                     for (index, device) in hidapi.device_list().enumerate() {
-                        if device.interface_number() == 0 {
-                            if opts.verbose > 0 {
-                                println!(
-                                    "Index: {}: ID: {:x}:{:x} {}/{}",
-                                    format!("{index:02}").bold(),
-                                    device.vendor_id(),
-                                    device.product_id(),
-                                    device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                                    device.product_string().unwrap_or("<unknown>").bold()
-                                );
-                            } else {
-                                println!(
-                                    "{}: {}/{}",
-                                    format!("{index:02}").bold(),
-                                    device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                                    device.product_string().unwrap_or("<unknown>").bold()
-                                );
-                            }
+                        if let Some(_device_info) =
+                            device::get_device_info(device.vendor_id(), device.product_id())
+                        {
+                            println!(
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
+                                format!("{index:02}").bold(),
+                                device.vendor_id(),
+                                device.product_id(),
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold(),
+                                device.interface_number(),
+                                device.usage_page(),
+                            )
                         }
                     }
 
@@ -352,23 +350,16 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         let term = console::Term::stdout();
 
-                        if opts.verbose > 0 {
-                            println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{}",
-                                format!("{index:02}").bold(),
-                                device.vendor_id(),
-                                device.product_id(),
-                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                                device.product_string().unwrap_or("<unknown>").bold()
-                            );
-                        } else {
-                            println!(
-                                "{}: {}/{}",
-                                format!("{index:02}").bold(),
-                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                                device.product_string().unwrap_or("<unknown>").bold()
-                            );
-                        }
+                        println!(
+                            "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
+                            format!("{index:02}").bold(),
+                            device.vendor_id(),
+                            device.product_id(),
+                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                            device.product_string().unwrap_or("<unknown>").bold(),
+                            device.interface_number(),
+                            device.usage_page(),
+                        );
 
                         if let Ok(dev) = device.open_device(&hidapi) {
                             let hwdev = hwdevices::bind_device(

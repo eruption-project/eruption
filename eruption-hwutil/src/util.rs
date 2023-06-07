@@ -19,19 +19,19 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use std::fs;
+// use std::fs;
 
-use crate::constants;
+// use crate::constants;
 
-pub fn is_eruption_daemon_running() -> bool {
-    let result = fs::read_to_string(constants::PID_FILE);
+// pub fn is_eruption_daemon_running() -> bool {
+//     let result = fs::read_to_string(constants::PID_FILE);
 
-    // .map_err(|e| {
-    //     eprintln!(
-    //         "Could not determine whether the Eruption daemon is running: {}",
-    //         e
-    //     )
-    // });
+//     // .map_err(|e| {
+//     //     eprintln!(
+//     //         "Could not determine whether the Eruption daemon is running: {}",
+//     //         e
+//     //     )
+//     // });
 
-    result.is_ok()
-}
+//     result.is_ok()
+// }
