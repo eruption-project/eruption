@@ -19,14 +19,10 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-pub mod corsair_strafe;
-pub mod generic_keyboard;
-pub mod roccat_magma;
-pub mod roccat_pyro;
-pub mod roccat_vulcan_1xx;
-pub mod roccat_vulcan_pro;
-pub mod roccat_vulcan_pro_tkl;
-pub mod roccat_vulcan_tkl;
-pub mod wooting_two_he_arm;
+pub struct ExampleRulesAssistant {}
 
-pub use super::Result;
+impl ExampleRulesAssistant {
+    pub fn new() -> Self {
+        Self {}
+    }
+}

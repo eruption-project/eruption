@@ -25,6 +25,7 @@ pub mod corsair_strafe;
 pub mod generic_keyboard;
 pub mod null_keyboard;
 pub mod roccat_magma;
+pub mod roccat_pyro;
 pub mod roccat_vulcan_1xx;
 pub mod roccat_vulcan_pro;
 pub mod roccat_vulcan_pro_tkl;
@@ -74,6 +75,9 @@ pub fn get_keyboard_device(device_handle: u64) -> Result<Box<dyn Keyboard>> {
 
             // ROCCAT Magma
             (0x1e7d, 0x3124) => Ok(Box::new(roccat_magma::RoccatMagma::new(device_handle))),
+
+            // ROCCAT Pyro
+            (0x1e7d, 0x314C) => Ok(Box::new(roccat_pyro::RoccatPyro::new(device_handle))),
 
             // Corsair STRAFE series
             (0x1b1c, 0x1b15) => Ok(Box::new(corsair_strafe::CorsairStrafe::new(device_handle))),

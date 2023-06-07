@@ -2337,7 +2337,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-debug-tool"
-version = "0.0.26"
+version = "0.0.27"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -2521,7 +2521,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hwutil"
-version = "0.0.19"
+version = "0.0.20"
 dependencies = [
  "bitvec",
  "byteorder",

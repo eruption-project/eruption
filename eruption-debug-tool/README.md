@@ -16,16 +16,16 @@ A helper utility that can be used to debug USB HID devices
 Please find the device you want to debug below and use its respective
 index number (column 1) as the device index for the other sub-commands of this tool
 
-Index: 00: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra Subdev: 0
-Index: 01: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra Subdev: 1
-Index: 02: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra Subdev: 2
-Index: 03: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra Subdev: 3
-Index: 04: ID: 1e7d:311a ROCCAT/ROCCAT Vulcan Pro TKL Subdev: 0
-Index: 05: ID: 1e7d:311a ROCCAT/ROCCAT Vulcan Pro TKL Subdev: 1
-Index: 06: ID: 1e7d:311a ROCCAT/ROCCAT Vulcan Pro TKL Subdev: 2
-Index: 07: ID: 1e7d:311a ROCCAT/ROCCAT Vulcan Pro TKL Subdev: 3
-Index: 08: ID: 1e7d:3a37 Turtle Beach/Elo 7.1 Air Subdev: 0
-Index: 09: ID: 1e7d:3a37 Turtle Beach/Elo 7.1 Air Subdev: 5
+Index: 00: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra iface: 0
+Index: 01: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra iface: 1
+Index: 02: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra iface: 2
+Index: 03: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra iface: 3
+Index: 04: ID: 1e7d:311a ROCCAT/ROCCAT Vulcan Pro TKL iface: 0
+Index: 05: ID: 1e7d:311a ROCCAT/ROCCAT Vulcan Pro TKL iface: 1
+Index: 06: ID: 1e7d:311a ROCCAT/ROCCAT Vulcan Pro TKL iface: 2
+Index: 07: ID: 1e7d:311a ROCCAT/ROCCAT Vulcan Pro TKL iface: 3
+Index: 08: ID: 1e7d:3a37 Turtle Beach/Elo 7.1 Air iface: 0
+Index: 09: ID: 1e7d:3a37 Turtle Beach/Elo 7.1 Air iface: 5
 
 Enumeration of HID devices completed
 
@@ -46,7 +46,7 @@ $ sudo eruption-debug-tool state-diff 0
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
 
-Index: 00: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra Subdev: 0
+Index: 00: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra iface: 0
 Reading data from device...
 The following USB HID report IDs have changed bytes:
 
@@ -63,7 +63,7 @@ $  sudo eruption-debug-tool state-diff 0
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
 
-Index: 00: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra Subdev: 0
+Index: 00: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra iface: 0
 Reading data from device...
 The following USB HID report IDs have changed bytes:
 
@@ -86,7 +86,7 @@ $  sudo eruption-debug-tool run-tests 0
  You can re-enable Eruption with this command afterwards:
  $ sudo systemctl unmask eruption.service && sudo systemctl start eruption.service
 
-Index: 00: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra Subdev: 0
+Index: 00: ID: 1e7d:2dd2 ROCCAT/ROCCAT Kone Pure Ultra iface: 0
 Bound driver: ROCCAT Kone Pure Ultra
 Sending device init sequence...
 Step 2

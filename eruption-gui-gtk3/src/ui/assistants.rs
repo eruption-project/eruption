@@ -18,3 +18,22 @@
 
     Copyright (c) 2019-2023, The Eruption Development Team
 */
+
+use gdk::prelude::*;
+use gtk::prelude::*;
+
+pub mod create_color_scheme;
+pub mod create_macro;
+pub mod create_profile;
+pub mod example_rules;
+pub mod import_color_scheme;
+
+pub trait Assistant {
+    fn show(&mut self);
+}
+
+pub fn show_assistant_selection() {
+    let assistant = gtk::Assistant::builder().build();
+
+    assistant.show_all();
+}

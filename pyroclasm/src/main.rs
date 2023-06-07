@@ -23,7 +23,7 @@
 
 use clap::Parser;
 use config::Config;
-use eframe::{NativeOptions, Theme};
+use eframe::{HardwareAcceleration, NativeOptions, Theme};
 use egui::{Context, Vec2};
 use flume::unbounded;
 use i18n_embed::{
@@ -403,9 +403,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         let native_options = NativeOptions {
             default_theme: Theme::Dark,
             initial_window_size: Some(Vec2::new(1600.0_f32, 900.0_f32)),
+            hardware_acceleration: HardwareAcceleration::Preferred,
             decorated: false,
             resizable: true,
-            transparent: true,
+            transparent: false,
             ..NativeOptions::default()
         };
 

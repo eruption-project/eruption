@@ -35,6 +35,7 @@ use std::time::Duration;
 
 use crate::dbus_client;
 use crate::timers::{self, TimerMode};
+use crate::ui::assistants;
 use crate::{ui::rule, util};
 
 use super::Pages;
@@ -179,6 +180,8 @@ pub fn initialize_automation_rules_page<A: IsA<gtk::Application>>(
     let restart_process_monitor_button: gtk::Button = builder
         .object("restart_process_monitor_button_global")
         .unwrap();
+
+    let rules_assistants_button: gtk::Button = builder.object("rules_assistants_button").unwrap();
 
     let rules_treeview: gtk::TreeView = builder.object("rules_treeview").unwrap();
 
@@ -455,6 +458,10 @@ pub fn initialize_automation_rules_page<A: IsA<gtk::Application>>(
             );
         }),
     );
+
+    rules_assistants_button.connect_clicked(clone!(@weak builder, @weak application => move |_| {
+        assistants::show_assistant_selection();
+    }));
 
     let enabled_column = TreeViewColumn::builder()
         .title("Enabled")

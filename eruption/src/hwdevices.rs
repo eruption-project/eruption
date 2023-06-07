@@ -72,7 +72,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<RwLock<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 29]>> = Arc::new(RwLock::new([
+    pub static ref DRIVERS: Arc<RwLock<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 30]>> = Arc::new(RwLock::new([
         // Supported keyboards
 
         // Wooting
@@ -93,6 +93,8 @@ lazy_static! {
         KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &keyboards::roccat_vulcan_pro_tkl::bind_hiddev, MaturityLevel::Testing),
 
         KeyboardDriver::register("ROCCAT", "Magma",          0x1e7d, 0x3124, &keyboards::roccat_magma::bind_hiddev, MaturityLevel::Experimental),
+
+        KeyboardDriver::register("ROCCAT", "Pyro",           0x1e7d, 0x314C, &keyboards::roccat_pyro::bind_hiddev, MaturityLevel::Experimental),
 
         // CORSAIR
 

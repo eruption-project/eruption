@@ -436,13 +436,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 Ok(hidapi) => {
                     for (index, device) in hidapi.device_list().enumerate() {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
                             device.manufacturer_string().unwrap_or("<unknown>").bold(),
                             device.product_string().unwrap_or("<unknown>").bold(),
-                            device.interface_number()
+                            device.interface_number(),
+                            device.usage_page(),
                         )
                     }
 
@@ -480,13 +481,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             let mut ev_to_index: Vec<u8> = vec![0xff; 0x2ff + 1];
 
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number()
+                                device.interface_number(),
+                                device.usage_page(),
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
@@ -655,13 +657,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number()
+                                device.interface_number(),
+                                device.usage_page(),
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
@@ -794,13 +797,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             //     .expect("Invalid number");
 
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number()
+                                device.interface_number(),
+                                device.usage_page(),
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
@@ -1009,13 +1013,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             //     .expect("Invalid number");
 
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number()
+                                device.interface_number(),
+                                device.usage_page(),
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
@@ -1226,13 +1231,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             let mut neighbor_topology: Vec<u8> = vec![0xff; 2900];
 
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number()
+                                device.interface_number(),
+                                device.usage_page(),
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
@@ -1431,13 +1437,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number()
+                                device.interface_number(),
+                                device.usage_page(),
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
@@ -1543,13 +1550,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number()
+                                device.interface_number(),
+                                device.usage_page(),
                             );
 
                             if let Ok(dev) = device.open_device(&hidapi) {
@@ -1653,13 +1661,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
                                 device.manufacturer_string().unwrap_or("<unknown>").bold(),
                                 device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number()
+                                device.interface_number(),
+                                device.usage_page(),
                             );
 
                             let num_keys = 144; // TODO: Implement this

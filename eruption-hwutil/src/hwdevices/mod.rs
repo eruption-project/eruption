@@ -37,6 +37,7 @@ mod roccat_kova_2016;
 mod roccat_kova_aimo;
 mod roccat_magma;
 mod roccat_nyth;
+mod roccat_pyro;
 mod roccat_vulcan_1xx;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
@@ -133,9 +134,9 @@ pub fn bind_device(
                         && dev.vendor_id() == vendor_id
                         && dev.interface_number() == wooting_two_he_arm::LED_INTERFACE
                 })
-                .expect("Could not bind LED sub-device")
+                .expect("Could not bind LED interface")
                 .open_device(hidapi)
-                .expect("Could not open LED sub-device");
+                .expect("Could not open LED interface");
 
             Ok(Box::new(wooting_two_he_arm::WootingTwoHeArm::bind(
                 hiddev, leddev,
@@ -151,9 +152,9 @@ pub fn bind_device(
                         && dev.vendor_id() == vendor_id
                         && dev.interface_number() == roccat_vulcan_1xx::LED_INTERFACE
                 })
-                .expect("Could not bind LED sub-device")
+                .expect("Could not bind LED interface")
                 .open_device(hidapi)
-                .expect("Could not open LED sub-device");
+                .expect("Could not open LED interface");
 
             Ok(Box::new(roccat_vulcan_1xx::RoccatVulcan1xx::bind(
                 hiddev, leddev,
@@ -169,9 +170,9 @@ pub fn bind_device(
                         && dev.vendor_id() == vendor_id
                         && dev.interface_number() == roccat_vulcan_pro::LED_INTERFACE
                 })
-                .expect("Could not bind LED sub-device")
+                .expect("Could not bind LED interface")
                 .open_device(hidapi)
-                .expect("Could not open LED sub-device");
+                .expect("Could not open LED interface");
 
             Ok(Box::new(roccat_vulcan_pro::RoccatVulcanPro::bind(
                 hiddev, leddev,
@@ -187,9 +188,9 @@ pub fn bind_device(
                         && dev.vendor_id() == vendor_id
                         && dev.interface_number() == roccat_vulcan_tkl::LED_INTERFACE
                 })
-                .expect("Could not bind LED sub-device")
+                .expect("Could not bind LED interface")
                 .open_device(hidapi)
-                .expect("Could not open LED sub-device");
+                .expect("Could not open LED interface");
 
             Ok(Box::new(roccat_vulcan_tkl::RoccatVulcanTKL::bind(
                 hiddev, leddev,
@@ -205,9 +206,9 @@ pub fn bind_device(
                         && dev.vendor_id() == vendor_id
                         && dev.interface_number() == roccat_vulcan_pro_tkl::LED_INTERFACE
                 })
-                .expect("Could not bind LED sub-device")
+                .expect("Could not bind LED interface")
                 .open_device(hidapi)
-                .expect("Could not open LED sub-device");
+                .expect("Could not open LED interface");
 
             Ok(Box::new(roccat_vulcan_pro_tkl::RoccatVulcanProTKL::bind(
                 hiddev, leddev,
@@ -223,11 +224,27 @@ pub fn bind_device(
                         && dev.vendor_id() == vendor_id
                         && dev.interface_number() == roccat_magma::LED_INTERFACE
                 })
-                .expect("Could not bind LED sub-device")
+                .expect("Could not bind LED interface")
                 .open_device(hidapi)
-                .expect("Could not open LED sub-device");
+                .expect("Could not open LED interface");
 
             Ok(Box::new(roccat_magma::RoccatMagma::bind(hiddev, leddev)))
+        }
+
+        // ROCCAT Pyro
+        (0x1e7d, 0x314C) => {
+            let leddev = hidapi
+                .device_list()
+                .find(|dev| {
+                    dev.product_id() == product_id
+                        && dev.vendor_id() == vendor_id
+                        && dev.interface_number() == roccat_pyro::LED_INTERFACE
+                })
+                .expect("Could not bind LED interface")
+                .open_device(hidapi)
+                .expect("Could not open LED interface");
+
+            Ok(Box::new(roccat_pyro::RoccatPyro::bind(hiddev, leddev)))
         }
 
         // Corsair STRAFE Gaming Keyboard
@@ -239,9 +256,9 @@ pub fn bind_device(
             //             && dev.vendor_id() == vendor_id
             //             && dev.interface_number() == corsair_strafe::LED_INTERFACE
             //     })
-            //     .expect("Could not bind LED sub-device")
+            //     .expect("Could not bind LED interface")
             //     .open_device(&hidapi)
-            //     .expect("Could not open LED sub-device");
+            //     .expect("Could not open LED interface");
 
             Ok(Box::new(corsair_strafe::CorsairStrafe::bind(hiddev)))
         }

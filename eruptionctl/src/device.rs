@@ -41,7 +41,7 @@ pub struct DeviceInfo {
 
 lazy_static! {
     #[rustfmt::skip]
-    pub static ref DEVICE_INFO: &'static [DeviceInfo; 29] = &[
+    pub static ref DEVICE_INFO: &'static [DeviceInfo; 30] = &[
         // Wooting
 
         // Wooting Two HE (ARM) series
@@ -58,6 +58,8 @@ lazy_static! {
         DeviceInfo { make: "ROCCAT", model: "Vulcan Pro TKL",       usb_vid: 0x1e7d, usb_pid: 0x311a, },
 
         DeviceInfo { make: "ROCCAT", model: "Magma",                usb_vid: 0x1e7d, usb_pid: 0x3124, },
+
+        DeviceInfo { make: "ROCCAT", model: "Pyro",                 usb_vid: 0x1e7d, usb_pid: 0x314C, },
 
         DeviceInfo { make: "Corsair", model: "Corsair STRAFE Gaming Keyboard", usb_vid: 0x1b1c, usb_pid: 0x1b15, },
 
