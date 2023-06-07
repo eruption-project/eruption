@@ -84,6 +84,7 @@ For a list of recent news and noteworthy changes, please refer to [CHANGES.md](C
 - [ ] ROCCAT Vulcan TKL series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
 - [ ] ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
 - [ ] ROCCAT Magma series keyboard (work-in-progress, as of version `0.1.23`, experimental)
+- [ ] ROCCAT Pyro series keyboard (work-in-progress, as of version `0.5.0`, experimental)
 - [ ] Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
 
 ### Mice
