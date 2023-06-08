@@ -235,6 +235,39 @@ impl WootingTwoHeArm {
             Ok(_result) => {
                 hexdump::hexdump_iter(&report_buffer).for_each(|s| debug!("  {}", s));
 
+                thread::sleep(Duration::from_millis(constants::DEVICE_MICRO_DELAY));
+
+                Ok(())
+            }
+
+            Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
+        }
+    }
+
+    #[allow(dead_code)]
+    fn v2_send_feature_report_with_response(&self, id: u8, params: &[u8; 4]) -> Result<()> {
+        trace!("Sending control device feature report [Wooting v2");
+
+        let mut report_buffer = [0x0; SMALL_PACKET_SIZE + 1];
+
+        report_buffer[0] = 0x00;
+        report_buffer[1] = 0xd0;
+        report_buffer[2] = 0xda;
+        report_buffer[3] = id;
+        report_buffer[4] = params[3];
+        report_buffer[5] = params[2];
+        report_buffer[6] = params[1];
+        report_buffer[7] = params[0];
+
+        let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+        let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+        let result = ctrl_dev.write(&report_buffer);
+
+        match result {
+            Ok(_result) => {
+                hexdump::hexdump_iter(&report_buffer).for_each(|s| debug!("  {}", s));
+
                 let mut buf = Vec::with_capacity(RESPONSE_SIZE);
                 match ctrl_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
                     Ok(_result) => {
@@ -265,57 +298,7 @@ impl WootingTwoHeArm {
 
             // match id {
             //     0x00 => {
-            //         let buf: [u8; 1] = [0x00];
 
-            //         match ctrl_dev.send_feature_report(&buf) {
-            //             Ok(_result) => {
-            //                 hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-            //                 Ok(())
-            //             }
-
-            //             Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            //         }
-            //     }
-
-            //     0x11 => {
-            //         let buf: [u8; 299] = [
-            //             0x11, 0x2b, 0x01, 0x00, 0x09, 0x06, 0x45, 0x80, 0x00, 0xff, 0xff, 0xff,
-            //             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0a, 0x0a, 0x0a,
-            //             0x0a, 0x0a, 0x0a, 0x11, 0x11, 0x11, 0x11, 0x17, 0x17, 0x00, 0x00, 0x00,
-            //             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff,
-            //             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x17, 0x17, 0x17,
-            //             0x17, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x25, 0x00, 0x00, 0x00,
-            //             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff,
-            //             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x25, 0x25, 0x25,
-            //             0x25, 0x2b, 0x2b, 0x2b, 0x2b, 0x32, 0x32, 0x39, 0x39, 0x00, 0x00, 0x00,
-            //             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff,
-            //             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x32, 0x39, 0x39,
-            //             0x3f, 0x39, 0x39, 0x3f, 0x3f, 0x46, 0x46, 0x46, 0x3f, 0x00, 0x00, 0x00,
-            //             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff,
-            //             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xfe, 0xff, 0x3f, 0x46, 0x46,
-            //             0x4d, 0x4d, 0x46, 0x46, 0x4d, 0x4d, 0x53, 0x53, 0x4d, 0x00, 0x00, 0x00,
-            //             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xfe, 0xfc,
-            //             0xfc, 0xfc, 0xfc, 0xfc, 0xfc, 0xfa, 0xfa, 0xfa, 0xfa, 0x53, 0x53, 0x57,
-            //             0x57, 0x57, 0x57, 0x57, 0x57, 0x5c, 0x5c, 0x5c, 0x5c, 0x00, 0x00, 0x00,
-            //             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfa, 0xfa, 0xf8,
-            //             0xf6, 0xf6, 0xf8, 0xf8, 0xf6, 0xf6, 0xf6, 0xf6, 0x00, 0x5c, 0x5c, 0x62,
-            //             0x66, 0x66, 0x62, 0x62, 0x66, 0x66, 0x66, 0x66, 0x00, 0x00, 0x00, 0x00,
-            //             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf4, 0xf4, 0xf4,
-            //             0x00, 0xf1, 0xf1, 0xf1, 0xf1, 0xf4, 0xef, 0xef, 0xef, 0x6b, 0x6b, 0x6b,
-            //             0x00, 0x71, 0x71, 0x71, 0x71, 0x6b, 0x75, 0x75, 0x75, 0x00, 0x00, 0x00,
-            //             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x4a, 0x75,
-            //         ];
-
-            //         match ctrl_dev.send_feature_report(&buf) {
-            //             Ok(_result) => {
-            //                 hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-
-            //                 Ok(())
-            //             }
-
-            //             Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            //         }
             //     }
 
             //     _ => Err(HwDeviceError::InvalidStatusCode {}.into()),
@@ -539,8 +522,12 @@ impl DeviceTrait for WootingTwoHeArm {
             self.v2_send_feature_report(Command::RESET_ALL_COMMAND as u8, &[0, 0, 0, 0])
                 .unwrap_or_else(|e| error!("Step 1: {}", e));
 
+            thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
+
             self.v2_send_feature_report(Command::COLOR_INIT_COMMAND as u8, &[0, 0, 0, 0])
                 .unwrap_or_else(|e| error!("Step 2: {}", e));
+
+            thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
 
             self.is_initialized = true;
 
@@ -682,7 +669,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
         self.get_next_event_timeout(-1)
     }
 
-    fn get_next_event_timeout(&self, millis: i32) -> Result<KeyboardHidEvent> {
+    fn get_next_event_timeout(&self, _millis: i32) -> Result<KeyboardHidEvent> {
         trace!("Querying control device for next event");
 
         if !self.is_bound {
@@ -692,80 +679,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
-
-            let mut buf = [0; RESPONSE_SIZE];
-
-            match ctrl_dev.read_timeout(&mut buf, millis) {
-                Ok(_size) => {
-                    if buf.iter().any(|e| *e != 0) {
-                        hexdump::hexdump_iter(&buf).for_each(|s| debug!("  {}", s));
-                    }
-
-                    // let fn_down = false;
-
-                    // let event = match buf[0..5] {
-                    //     // Key reports, incl. KEY_FN, ..
-                    //     [0x03, 0x00, 0xfb, code, status] => match code {
-                    //         0x6d if fn_down => KeyboardHidEvent::PreviousSlot,
-
-                    //         0x7d if fn_down => KeyboardHidEvent::NextSlot,
-
-                    //         _ => match status {
-                    //             0x00 => KeyboardHidEvent::KeyUp {
-                    //                 code: keyboard_hid_event_code_from_report(0xfb, code),
-                    //             },
-
-                    //             0x01 => KeyboardHidEvent::KeyDown {
-                    //                 code: keyboard_hid_event_code_from_report(0xfb, code),
-                    //             },
-
-                    //             _ => KeyboardHidEvent::Unknown,
-                    //         },
-                    //     },
-
-                    //     // CAPS LOCK, Easy Shift+, ..
-                    //     [0x03, 0x00, 0x0a, code, status] => match code {
-                    //         0x39 | 0xff => match status {
-                    //             0x00 => KeyboardHidEvent::KeyDown {
-                    //                 code: keyboard_hid_event_code_from_report(0x0a, code),
-                    //             },
-
-                    //             0x01 => KeyboardHidEvent::KeyUp {
-                    //                 code: keyboard_hid_event_code_from_report(0x0a, code),
-                    //             },
-
-                    //             _ => KeyboardHidEvent::Unknown,
-                    //         },
-
-                    //         _ => KeyboardHidEvent::Unknown,
-                    //     },
-
-                    //     _ => KeyboardHidEvent::Unknown,
-                    // };
-
-                    /* match event {
-                        KeyboardHidEvent::KeyDown { code } => {
-                            // update our internal representation of the keyboard state
-                            let index = self.hid_event_code_to_key_index(&code) as usize;
-                            crate::KEY_STATES.write()[index] = true;
-                        }
-
-                        KeyboardHidEvent::KeyUp { code } => {
-                            // update our internal representation of the keyboard state
-                            let index = self.hid_event_code_to_key_index(&code) as usize;
-                            crate::KEY_STATES.write()[index] = false;
-                        }
-
-                        _ => { /* ignore other events */ }
-                    } */
-
-                    Ok(KeyboardHidEvent::Unknown)
-                }
-
-                Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
-            }
+            Ok(KeyboardHidEvent::Unknown)
         }
     }
 
@@ -864,9 +778,9 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                                     //     }
                                     // }
 
-                                    thread::sleep(Duration::from_millis(
-                                        constants::DEVICE_MICRO_DELAY,
-                                    ));
+                                    // thread::sleep(Duration::from_millis(
+                                    //     constants::DEVICE_MICRO_DELAY,
+                                    // ));
                                 }
 
                                 Err(_) => return Err(HwDeviceError::WriteError {}.into()),
@@ -881,13 +795,13 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                         let led_map = led_map.to_vec();
 
                         let led_map = Array2::from_shape_vec(
-                            (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
+                            (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
                             led_map,
                         )?;
 
                         let led_map = led_map.slice(s![
-                            self.allocated_zone.x..(self.allocated_zone.x + NUM_COLS as i32),
                             self.allocated_zone.y..(self.allocated_zone.y + NUM_ROWS as i32),
+                            self.allocated_zone.x..(self.allocated_zone.x + NUM_COLS as i32),
                         ]);
 
                         let shape = ((NUM_LEDS,), Order::RowMajor);
@@ -895,7 +809,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
 
                         const BUFFER_SIZE: usize =
                             4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1)) + 2;
-                        let mut buffer = [0x0_u8; BUFFER_SIZE];
+                        let mut buffer = [0x00_u8; BUFFER_SIZE];
 
                         // init sequence
                         buffer[0..4].copy_from_slice(&[
@@ -909,23 +823,23 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                         let mut cntr = 0;
 
                         for i in (4..BUFFER_SIZE).step_by(2) {
+                            let encoded_color = encode_color(
+                                led_map.get(cntr).unwrap_or(&RGBA {
+                                    r: 0,
+                                    g: 0,
+                                    b: 0,
+                                    a: 0,
+                                }),
+                                self.brightness,
+                            );
+
+                            buffer[i..i + 2].copy_from_slice(&encoded_color.to_le_bytes());
+
+                            cntr += 1;
+
                             if i % 64 == 0 {
                                 buffer[i] = 0x0;
                                 submit_packet(led_dev, &buffer[(i - 64)..=i])?;
-                            } else {
-                                let encoded_color = encode_color(
-                                    led_map.get(cntr).unwrap_or(&RGBA {
-                                        r: 0,
-                                        g: 0,
-                                        b: 0,
-                                        a: 0,
-                                    }),
-                                    self.brightness,
-                                );
-
-                                buffer[i..i + 2].copy_from_slice(&encoded_color.to_le_bytes());
-
-                                cntr += 1;
                             }
                         }
 
