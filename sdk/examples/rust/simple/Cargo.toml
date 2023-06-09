@@ -45,7 +45,7 @@ i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-rust-embed = { version = "6.6.1", features = ["compression"] }
+rust-embed = { version = "6.7.0", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 eruption-sdk = { path = "../../../lib/rust/eruption-rs" }

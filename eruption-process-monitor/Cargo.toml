@@ -76,13 +76,13 @@ dbus-tree = "0.9.2"
 dyn-clone = "1.0.11"
 dyn-clonable = "0.9.0"
 indexmap = "1.9.3"
-libc = "0.2.145"
+libc = "0.2.146"
 nix = "0.26.2"
 atty = "0.2.14"
 serde_json = "1.0.96"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 regex = "1.8.4"
-serde = { version = "1.0.163", features = ["derive"] }
+serde = { version = "1.0.164", features = ["derive"] }
 tokio = { version = "1.28.2", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
@@ -118,7 +118,7 @@ i18n-embed = { version = "0.13.9", features = [
   "desktop-requester",
 ] }
 i18n-embed-fl = "0.6.7"
-rust-embed = { version = "6.6.1", features = ["compression"] }
+rust-embed = { version = "6.7.0", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 

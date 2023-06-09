@@ -47,12 +47,12 @@ debug-async = []
 [dependencies]
 mimalloc = { version = "0.1.37", optional = true, default-features = false }
 cfg-if = "1.0.0"
-libc = "0.2.145"
+libc = "0.2.146"
 atty = "0.2.14"
 nix = "0.26.2"
 walkdir = "2.3.3"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-serde = { version = "1.0.163", features = ["derive"] }
+serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.96"
 indexmap = { version = "1.9.3", features = ["serde"] }
 tokio = { version = "1.28.2", features = ["full", "tracing", "test-util"] }
@@ -84,20 +84,20 @@ paste = "1.0.12"
 colorgrad = "0.6.2"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 dbus = { version = "0.9.7", optional = true }
-cairo-rs = "0.17.0"
-glib = "0.17.9"
-glib-macros = "0.17.9"
-gio = "0.17.9"
+cairo-rs = "0.17.10"
+glib = "0.17.10"
+glib-macros = "0.17.10"
+gio = "0.17.10"
 gdk = "0.17.1"
-gdk-pixbuf = "0.17.0"
-pango = "0.17.4"
-glib-sys = "0.17.4"
+gdk-pixbuf = "0.17.10"
+pango = "0.17.10"
+glib-sys = "0.17.10"
 gtk-sys = "0.17.0"
-gobject-sys = "0.17.4"
-gio-sys = "0.17.4"
+gobject-sys = "0.17.10"
+gio-sys = "0.17.10"
 gdk-sys = "0.17.0"
 gtk = { version = "0.17.1", features = ["v3_24"] }
-pangocairo = "0.17.0"
+pangocairo = "0.17.10"
 sourceview4 = { version = "0.4.0", optional = true }
 # sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs", optional = true }
 i18n-embed = { version = "0.13.9", features = [
@@ -105,7 +105,7 @@ i18n-embed = { version = "0.13.9", features = [
   "desktop-requester",
 ] }
 i18n-embed-fl = "0.6.7"
-rust-embed = { version = "6.6.1", features = ["compression"] }
+rust-embed = { version = "6.7.0", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 eruption-sdk = { path = "../sdk/lib/rust/eruption-rs" }

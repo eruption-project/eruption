@@ -52,8 +52,8 @@ colored = "2.0.0"
 lazy_static = "1.4.0"
 thread_local = "1.1.7"
 dyn-clonable = "0.9.0"
-libc = "0.2.145"
-tempfile = "3.5.0"
+libc = "0.2.146"
+tempfile = "3.6.0"
 rayon = "1.7.0"
 jwalk = "0.8.1"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
@@ -86,7 +86,7 @@ i18n-embed = { version = "0.13.9", features = [
   "desktop-requester",
 ] }
 i18n-embed-fl = "0.6.7"
-rust-embed = { version = "6.6.1", features = ["compression"] }
+rust-embed = { version = "6.7.0", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 
