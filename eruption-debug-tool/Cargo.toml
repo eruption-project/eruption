@@ -44,7 +44,7 @@ debug-async = []
 lazy_static = "1.4.0"
 cfg-if = "1.0.0"
 flume = "0.10.14"
-clap = { version = "4.3.2", features = ["derive"] }
+clap = { version = "4.3.5", features = ["derive"] }
 clap_complete = "4.3.1"
 colored = "2.0.0"
 ctrlc = { version = "3.4.0", features = ["termination"] }
@@ -52,7 +52,7 @@ libc = "0.2.146"
 nix = "0.26.2"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 serde = { version = "1.0.164", features = ["derive"] }
-serde_json = "1.0.96"
+serde_json = "1.0.97"
 tokio = { version = "1.28.2", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"

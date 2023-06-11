@@ -66,7 +66,7 @@ sensor-gnome-shellext = []
 cfg-if = "1.0.0"
 async-trait = "0.1.68"
 byteorder = "1.4.3"
-clap = { version = "4.3.2", features = ["derive"] }
+clap = { version = "4.3.5", features = ["derive"] }
 clap_complete = "4.3.1"
 ctrlc = { version = "3.4.0", features = ["termination"] }
 config = "0.13.3"
@@ -79,7 +79,7 @@ indexmap = "1.9.3"
 libc = "0.2.146"
 nix = "0.26.2"
 atty = "0.2.14"
-serde_json = "1.0.96"
+serde_json = "1.0.97"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
 regex = "1.8.4"
 serde = { version = "1.0.164", features = ["derive"] }
