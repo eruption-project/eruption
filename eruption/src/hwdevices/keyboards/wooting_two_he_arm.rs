@@ -808,7 +808,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                         let led_map = led_map.to_shape(shape)?;
 
                         const BUFFER_SIZE: usize =
-                            4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1)) + 2;
+                            4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1));
                         let mut buffer = [0x00_u8; BUFFER_SIZE];
 
                         // init sequence
@@ -838,8 +838,8 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             cntr += 1;
 
                             if i % 64 == 0 {
-                                buffer[i] = 0x0;
                                 submit_packet(led_dev, &buffer[(i - 64)..=i])?;
+                                buffer[i] = 0x0;
                             }
                         }
 
