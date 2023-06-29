@@ -1199,7 +1199,7 @@ fn run_main_loop(
         // remove all failed devices
         #[cfg(not(target_os = "windows"))]
         for idx in failed_kbd_rxs.read().iter() {
-            // warn!("Removing keyboard rx with index {idx}");
+            warn!("Removing failed keyboard device with index {idx}");
             // kbd_rxs.remove(*idx);
 
             if let Some(device) = crate::KEYBOARD_DEVICES.write().get_mut(*idx) {
@@ -1211,9 +1211,9 @@ fn run_main_loop(
             }
         }
 
-        #[cfg(not(target_os = "windows"))]
+        // #[cfg(not(target_os = "windows"))]
         for idx in failed_mouse_rxs.read().iter() {
-            // warn!("Removing mouse rx with index {idx}");
+            warn!("Removing failed mouse device with index {idx}");
             // mouse_rxs.remove(*idx);
 
             if let Some(device) = crate::MOUSE_DEVICES.write().get_mut(*idx) {
@@ -1227,9 +1227,9 @@ fn run_main_loop(
 
         // #[cfg(not(target_os = "windows"))]
         // for idx in failed_misc_rxs.read().iter() {
-        //     // warn!("Removing misc rx with index {idx}");
+        //     warn!("Removing failed misc device with index {idx}");
         //     // misc_rxs.remove(*idx);
-        //
+
         //     if let Some(device) = crate::MISC_DEVICES.write().get_mut(*idx) {
         //         let _ = device
         //             .write()
@@ -1241,7 +1241,6 @@ fn run_main_loop(
 
         // terminate the main loop (and later re-enter it) on device failure
         // in most cases eruption should better be restarted
-
         #[cfg(target_os = "windows")]
         if device_has_failed || (result.is_err() && !timedout) {
             return Err(MainError::DeviceFailed {}.into());

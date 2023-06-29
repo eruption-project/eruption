@@ -215,24 +215,19 @@ You may want to use the command line tool `xprop` to find the relevant informati
 
                 let instance_and_class = class.and_then(|class| parse_wm_class(&class));
 
-                let pid = pid.and_then(|pid| Some(parse_pid(&pid)));
+                let pid = pid.map(|pid| parse_pid(&pid));
 
                 let result = self::X11SensorData {
                     window_name: name
-                        .and_then(|name| Some(parse_string_property(&name).to_owned()))
-                        .unwrap_or_else(|| "".to_string())
-                        .to_string(),
+                        .map(|name| parse_string_property(&name).to_owned())
+                        .unwrap_or_else(|| "".to_string()),
                     window_instance: instance_and_class
                         .clone()
-                        .and_then(|(ref instance, _)| Some(instance.to_owned()))
-                        .unwrap_or_else(|| "".to_string())
-                        .to_string()
-                        .clone(),
+                        .map(|(ref instance, _)| instance.to_owned())
+                        .unwrap_or_else(|| "".to_string()),
                     window_class: instance_and_class
-                        .and_then(|(_, ref class)| Some(class.to_owned()))
-                        .unwrap_or_else(|| "".to_string())
-                        .to_string()
-                        .clone(),
+                        .map(|(_, ref class)| class.to_owned())
+                        .unwrap_or_else(|| "".to_string()),
                     pid: pid.unwrap_or(0),
                 };
 
