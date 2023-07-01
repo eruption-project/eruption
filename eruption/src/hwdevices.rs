@@ -713,6 +713,7 @@ pub struct Zone {
     pub y: i32,
     pub width: i32,
     pub height: i32,
+    pub enabled: bool,
 }
 
 impl mlua::UserData for Zone {
@@ -724,6 +725,8 @@ impl mlua::UserData for Zone {
 
         fields.add_field_method_get("width", |_, this| Ok(this.width));
         fields.add_field_method_get("height", |_, this| Ok(this.height));
+
+        fields.add_field_method_get("enabled", |_, this| Ok(this.enabled));
     }
 }
 
@@ -731,37 +734,39 @@ impl dbus::arg::Arg for Zone {
     const ARG_TYPE: dbus::arg::ArgType = dbus::arg::ArgType::Struct;
 
     fn signature() -> dbus::Signature<'static> {
-        dbus::Signature::from("(iiii)")
+        dbus::Signature::from("(iiiib)")
     }
 }
 
 impl dbus::arg::Append for Zone {
     fn append_by_ref(&self, i: &mut dbus::arg::IterAppend) {
-        i.append((self.x, self.y, self.width, self.height));
+        i.append((self.x, self.y, self.width, self.height, self.enabled));
     }
 }
 
 #[allow(unused)]
 impl Zone {
     #[inline]
-    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+    pub fn new(x: i32, y: i32, width: i32, height: i32, enabled: bool) -> Self {
         Self {
             x,
             y,
             width,
             height,
+            enabled,
         }
     }
 
     pub fn defaults_for(device_class: DeviceClass) -> Self {
-        const SCALE_FACTOR: i32 = 2;
+        const SCALE_FACTOR: i32 = 1;
 
         match device_class {
             DeviceClass::Keyboard => Self {
-                x: constants::CANVAS_WIDTH as i32 / 2 - 12 * SCALE_FACTOR,
-                y: constants::CANVAS_HEIGHT as i32 / 2 - 5 * SCALE_FACTOR,
-                width: 21 * SCALE_FACTOR,
-                height: 6 * SCALE_FACTOR,
+                x: 0,
+                y: 0,
+                width: constants::CANVAS_WIDTH as i32,
+                height: constants::CANVAS_HEIGHT as i32,
+                enabled: true,
             },
 
             DeviceClass::Mouse => Self {
@@ -769,6 +774,7 @@ impl Zone {
                 y: constants::CANVAS_HEIGHT as i32 / 2 - 2 * SCALE_FACTOR,
                 width: 5 * SCALE_FACTOR,
                 height: 5 * SCALE_FACTOR,
+                enabled: true,
             },
 
             DeviceClass::Misc => Self {
@@ -776,6 +782,7 @@ impl Zone {
                 y: constants::CANVAS_HEIGHT as i32 / 2 - 10 * SCALE_FACTOR,
                 width: 8 * SCALE_FACTOR,
                 height: SCALE_FACTOR,
+                enabled: true,
             },
 
             DeviceClass::Unknown => Self::empty(),
@@ -789,6 +796,7 @@ impl Zone {
             y: 0,
             width: 0,
             height: 0,
+            enabled: false,
         }
     }
 

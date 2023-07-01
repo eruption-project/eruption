@@ -200,9 +200,9 @@ fn set_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
 }
 
 fn set_device_zone_allocation(m: &super::MethodInfo) -> MethodResult {
-    let (device, zone): (u64, (i32, i32, i32, i32)) = m.msg.read2()?;
+    let (device, zone): (u64, (i32, i32, i32, i32, bool)) = m.msg.read2()?;
 
-    let zone = Zone::new(zone.0, zone.1, zone.2, zone.3);
+    let zone = Zone::new(zone.0, zone.1, zone.2, zone.3, zone.4);
 
     if zone.x < 0
         || zone.x > constants::CANVAS_WIDTH as i32
