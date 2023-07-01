@@ -105,49 +105,44 @@ fn find_profile_index(slot_index: usize, treestore: &gtk::TreeStore) -> Result<u
 /// Set the global state of the Eruption GUI application
 /// e.g.: "Connected" or "Disconnected"
 pub fn set_application_state(state: ConnectionState, builder: &gtk::Builder) -> Result<()> {
-    let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
+    // let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
 
-    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
+    // let outer_stack: gtk::Stack = builder.object("outer_stack").unwrap();
+    // let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
 
     // let restart_eruption_daemon_button: gtk::Button =
     //     builder.object("restart_eruption_button_global").unwrap();
 
     // let header_bar: gtk::HeaderBar = builder.object("header_bar").unwrap();
 
-    let switch_bar: gtk::Frame = builder.object("switch_bar").unwrap();
-    let slot_bar: gtk::Box = builder.object("slot_bar").unwrap();
+    // let switch_bar: gtk::Frame = builder.object("switch_bar").unwrap();
+    // let slot_bar: gtk::Box = builder.object("slot_bar").unwrap();
 
     match state {
-        ConnectionState::Initializing => { /* Do nothing */ }
-
-        ConnectionState::Disconnected => {
-            events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+        ConnectionState::Initializing => {
+            *crate::CONNECTION_STATE.write() = ConnectionState::Initializing;
 
             update_main_window(builder)?;
-            notification_box_global.show_now();
+        }
 
-            switch_bar.hide();
-            slot_bar.hide();
+        ConnectionState::Disconnected => {
+            *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
 
-            for child in main_stack.children()[0..main_stack.children().len() - 2].iter() {
-                child.hide();
-            }
+            events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+            events::GAINED_CONNECTION.store(false, Ordering::SeqCst);
+
+            update_main_window(builder)?;
         }
 
         ConnectionState::Connected => {
+            *crate::CONNECTION_STATE.write() = ConnectionState::Connected;
+
             events::LOST_CONNECTION.store(false, Ordering::SeqCst);
+            events::GAINED_CONNECTION.store(true, Ordering::SeqCst);
 
             update_main_window(builder)?;
-            notification_box_global.hide();
-
-            switch_bar.show();
-            slot_bar.show();
-
-            for child in main_stack.children()[0..main_stack.children().len() - 2].iter() {
-                child.show();
-            }
         }
     }
 
@@ -937,12 +932,15 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     let style = gtk::CssProvider::new();
 
     #[cfg(not(target_os = "windows"))]
-    gtk::CssProvider::load_from_resource(&style, "/org/eruption/eruption-gui-gtk3/styles/app.css");
+    gtk::CssProvider::load_from_resource(
+        &style,
+        "/org/eruption/eruption-gui-gtk3/styles/default.css",
+    );
 
     #[cfg(target_os = "windows")]
     gtk::CssProvider::load_from_resource(
         &style,
-        "/org/eruption/eruption-gui-gtk3/styles/app-windows.css",
+        "/org/eruption/eruption-gui-gtk3/styles/windows.css",
     );
 
     gtk::StyleContext::add_provider_for_screen(&screen, &style, gtk::STYLE_PROVIDER_PRIORITY_USER);
@@ -1081,6 +1079,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     initialize_sub_pages_and_spawn_dbus_threads(application, &builder);
 
     main_window.show_all();
+    update_main_window(&builder)?;
 
     // timers::register_timer(
     //     timers::GLOBAL_CONFIG_TIMER_ID,
@@ -1099,7 +1098,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     timers::register_timer(
         timers::HOTPLUG_TIMER_ID,
         TimerMode::Periodic,
-        1000,
+        500,
         clone!(@weak application => @default-return Ok(()), move || {
             // if crate::dbus_client::ping().is_err() {
             //     set_application_state(ConnectionState::Disconnected, &builder)?;
@@ -1127,8 +1126,6 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
             if events::LOST_CONNECTION.load(Ordering::SeqCst) {
                 set_application_state(ConnectionState::Disconnected, &builder)?;
-
-                *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
                 crate::LOST_CONNECTION.store(false, Ordering::SeqCst);
 
                 notifications::warn(
@@ -1139,36 +1136,62 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
             } else if events::GAINED_CONNECTION.load(Ordering::SeqCst) {
                 set_application_state(ConnectionState::Connected, &builder)?;
-
-                *crate::CONNECTION_STATE.write() = ConnectionState::Connected;
                 events::GAINED_CONNECTION.store(false, Ordering::SeqCst);
 
-                // apparently the Eruption daemon came back online, so now we have to
-                // re-establish the SDK client connection
+                let mut state = STATE.write();
+
+                state.active_slot = util::get_active_slot().ok();
+                state.active_profile = util::get_active_profile().ok();
+
+                let _ = dbus_client::spawn_dbus_event_loop_system(&builder, &update_ui_state);
+                let _ = dbus_client::spawn_dbus_event_loop_session(&builder, &update_ui_state);
+
+                update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
+            }
+
+            if *crate::CONNECTION_STATE.read() == ConnectionState::Initializing ||
+               *crate::CONNECTION_STATE.read() == ConnectionState::Disconnected {
+
+                // connect to Eruption daemon
                 match Connection::new(ConnectionType::Local) {
                     Ok(connection) => {
-                        let _ = connection
-                            .connect()
-                            .map_err(|e| tracing::error!("Connection failed: {e}"));
 
-                        *crate::CONNECTION.lock() = Some(connection.clone());
+                        if let Err(e) = connection.connect() {
+                            tracing::error!("Could not connect to Eruption daemon: {e}");
 
-                        if connection.connect().is_ok() {
+                            *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+                            events::LOST_CONNECTION.store(true, Ordering::SeqCst);
+                        } else {
                             let _ = connection
                                 .get_server_status()
                                 .map_err(|e| tracing::error!("{e}"));
+
+                            *crate::CONNECTION.lock() = Some(connection);
+
+                            notifications::info(
+                                "Successfully re-established connection to the Eruption daemon",
+                            );
+
+                            *crate::CONNECTION_STATE.write() = ConnectionState::Connected;
+                            events::LOST_CONNECTION.store(true, Ordering::SeqCst);
                         }
                     }
 
                     Err(e) => {
-                        events::LOST_CONNECTION.store(true, Ordering::SeqCst);
-                        *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
-
                         tracing::error!("Could not connect to Eruption daemon: {}", e);
+
+                        *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+                        events::LOST_CONNECTION.store(true, Ordering::SeqCst);
                     }
                 }
 
-                notifications::info("Successfully re-established connection to the Eruption daemon");
+                let mut state = STATE.write();
+
+                state.active_slot = util::get_active_slot().ok();
+                state.active_profile = util::get_active_profile().ok();
+
+                let _ = dbus_client::spawn_dbus_event_loop_system(&builder, &update_ui_state);
+                let _ = dbus_client::spawn_dbus_event_loop_session(&builder, &update_ui_state);
 
                 update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
             }
@@ -1224,7 +1247,12 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 }
 
 pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
-    let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
+    let outer_stack: gtk::Stack = builder.object("outer_stack").unwrap();
+    // let main_stack: gtk::Stack = builder.object("main_stack").unwrap();
+
+    let stack_switcher: gtk::StackSwitcher = builder.object("stack_switcher").unwrap();
+    let brightness_scale: gtk::Scale = builder.object("brightness_scale").unwrap();
+
     // let canvas_stack: gtk::Stack = builder.object("canvas_stack").unwrap();
     let keyboard_devices_stack: gtk::Stack = builder.object("keyboard_devices_stack").unwrap();
     let mouse_devices_stack: gtk::Stack = builder.object("mouse_devices_stack").unwrap();
@@ -1271,21 +1299,19 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         }
     }
 
-    if *crate::CONNECTION_STATE.read() == ConnectionState::Initializing
-        || *crate::CONNECTION_STATE.read() == ConnectionState::Disconnected
-    {
-        let no_connection_template = gtk::Builder::from_resource(
-            "/org/eruption/eruption-gui-gtk3/ui/no-connection-template.ui",
-        );
+    if *crate::CONNECTION_STATE.read() == ConnectionState::Initializing {
+        outer_stack.set_visible_child_name("no_connection");
+
+        stack_switcher.set_visible(false);
+        brightness_scale.set_visible(false);
+    } else if *crate::CONNECTION_STATE.read() == ConnectionState::Disconnected {
+        outer_stack.set_visible_child_name("no_connection");
+
+        stack_switcher.set_visible(false);
+        brightness_scale.set_visible(false);
 
         let no_device_template =
             gtk::Builder::from_resource("/org/eruption/eruption-gui-gtk3/ui/no-device-template.ui");
-
-        let page: gtk::Grid = no_connection_template
-            .object("no_connection_template")
-            .unwrap();
-
-        main_stack.add_named(&page, "No Connection");
 
         let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
 
@@ -1305,9 +1331,10 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
 
         misc_devices_stack.add_titled(&page, "None", "None");
     } else if *crate::CONNECTION_STATE.read() == ConnectionState::Connected {
-        if let Some(w) = main_stack.child_by_name("No Connection") {
-            main_stack.remove(&w);
-        }
+        outer_stack.set_visible_child_name("eruption_gui");
+
+        stack_switcher.set_visible(true);
+        brightness_scale.set_visible(true);
 
         // instantiate the devices sub-pages
         let devices = dbus_client::get_managed_devices()?;

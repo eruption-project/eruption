@@ -22,12 +22,11 @@
     <file>img/roccat-kone-aimo-remastered.png</file>
     <file>img/roccat-kain-100.png</file>
     <file>img/roccat-kain-2xx.png</file>
-    <file compressed="true">styles/app.css</file>
-    <file compressed="true">styles/app-windows.css</file>
+    <file compressed="true">styles/default.css</file>
+    <file compressed="true">styles/windows.css</file>
     <file compressed="true">ui/main.glade</file>
     <file compressed="true">ui/about.glade</file>
     <file compressed="true">ui/rule.glade</file>
-    <file compressed="true">ui/no-connection-template.ui</file>
     <file compressed="true">ui/no-device-template.ui</file>
     <file compressed="true">ui/keyboard-device-template.ui</file>
     <file compressed="true">ui/mouse-device-template.ui</file>

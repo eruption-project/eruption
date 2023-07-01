@@ -19,7 +19,6 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use gdk::prelude::*;
 use gtk::prelude::*;
 
 pub mod create_color_scheme;

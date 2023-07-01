@@ -34,14 +34,14 @@ use parking_lot::RwLock;
 
 use crate::timers::TimerMode;
 use crate::zone::Zone;
-use crate::{constants, dbus_client, notifications, timers, ConnectionState};
+use crate::{constants, dbus_client, notifications, timers};
 use crate::{events, util};
 use lazy_static::lazy_static;
 
 use super::hwdevices::keyboards::get_keyboard_device;
 use super::hwdevices::mice::get_mouse_device;
 use super::hwdevices::misc::get_misc_device;
-use super::main_window::{set_application_state, CURSOR_TYPE};
+use super::main_window::CURSOR_TYPE;
 use super::Pages;
 
 const BORDER: (f64, f64) = (8.0, 8.0);
@@ -106,14 +106,6 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let canvas_lightness_scale: gtk::Scale = builder.object("canvas_lightness_scale").unwrap();
 
     let devices_treeview: gtk::TreeView = builder.object("devices_tree_view").unwrap();
-
-    if let Err(e) = crate::dbus_client::ping() {
-        tracing::error!("Lost connection to the Eruption daemon: {e}");
-        set_application_state(ConnectionState::Disconnected, builder)?;
-    } else {
-        tracing::info!("Connected to the Eruption daemon");
-        set_application_state(ConnectionState::Connected, builder)?;
-    };
 
     reset_postproc_button.connect_clicked(
         clone!(@weak canvas_hue_scale, @weak canvas_saturation_scale, @weak canvas_lightness_scale => move |_btn| {
@@ -191,6 +183,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     ]);
 
     let devices = dbus_client::get_managed_devices()?;
+    let zones = dbus_client::get_devices_zone_allocations()?;
 
     let mut index = 0_u32;
 
@@ -203,7 +196,11 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Keyboard");
 
-        let enabled = dbus_client::is_device_enabled(index as u64)?;
+        let enabled = zones
+            .iter()
+            .find(|&v| v.0 == index as u64)
+            .map(|v| v.1.enabled)
+            .unwrap_or(false);
 
         devices_treestore.insert_with_values(
             None,
@@ -231,7 +228,11 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Mouse");
 
-        let enabled = dbus_client::is_device_enabled(index as u64)?;
+        let enabled = zones
+            .iter()
+            .find(|&v| v.0 == index as u64)
+            .map(|v| v.1.enabled)
+            .unwrap_or(false);
 
         devices_treestore.insert_with_values(
             None,
@@ -259,7 +260,11 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Misc");
 
-        let enabled = dbus_client::is_device_enabled(index as u64)?;
+        let enabled = zones
+            .iter()
+            .find(|&v| v.0 == index as u64)
+            .map(|v| v.1.enabled)
+            .unwrap_or(false);
 
         devices_treestore.insert_with_values(
             None,
@@ -308,10 +313,25 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             &(!value).to_value(),
         );
 
-        dbus_client::set_device_enabled(device_index, !value).unwrap_or_else(|e| {
-            tracing::error!("Could not set device status: {e}");
-            notifications::error(&format!("Could not set device status: {e}"));
-        });
+        let mut zones = ZONES.write();
+        let zone = zones.iter_mut().find(|v| v.0 == device_index);
+
+        match zone {
+            Some(zone) => {
+                let mut zone = zone.1;
+                zone.enabled = !value;
+
+                dbus_client::set_device_zone_allocation(device_index, &zone).unwrap_or_else(|e| {
+                    tracing::error!("Could not set device zone status: {e}");
+                    notifications::error(&format!("Could not set device zone status: {e}"));
+                });
+            }
+
+            None => {
+                tracing::error!("Could not find the devices zone");
+                notifications::error(&format!("Could not find the devices zone"));
+            }
+        }
     }));
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
@@ -509,6 +529,7 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
     ]);
 
     let devices = dbus_client::get_managed_devices()?;
+    let zones = dbus_client::get_devices_zone_allocations()?;
 
     let mut index = 0_u32;
 
@@ -521,7 +542,11 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Keyboard");
 
-        let enabled = dbus_client::is_device_enabled(index as u64)?;
+        let enabled = zones
+            .iter()
+            .find(|&v| v.0 == index as u64)
+            .map(|v| v.1.enabled)
+            .unwrap_or(false);
 
         devices_treestore.insert_with_values(
             None,
@@ -549,7 +574,11 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Mouse");
 
-        let enabled = dbus_client::is_device_enabled(index as u64)?;
+        let enabled = zones
+            .iter()
+            .find(|&v| v.0 == index as u64)
+            .map(|v| v.1.enabled)
+            .unwrap_or(false);
 
         devices_treestore.insert_with_values(
             None,
@@ -577,7 +606,11 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let device_type = String::from("Misc");
 
-        let enabled = dbus_client::is_device_enabled(index as u64)?;
+        let enabled = zones
+            .iter()
+            .find(|&v| v.0 == index as u64)
+            .map(|v| v.1.enabled)
+            .unwrap_or(false);
 
         devices_treestore.insert_with_values(
             None,
@@ -868,7 +901,7 @@ fn render_canvas(
 
     if mode == RenderMode::Zones {
         // dim lightness in zone allocation mode
-        hsl.2 = -0.7;
+        hsl.2 = -0.5;
     }
 
     // paint all cells of the canvas
@@ -1009,7 +1042,7 @@ fn paint_zone(
 
             let color = (0.8, 0.8, 0.8, 0.3);
             let color2 = (0.8, 0.8, 0.8, 0.3);
-            rounded_rectangle(cr, x, y, width, height, 12.0, &color, &color2)?;
+            rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
         }
 
         ZoneDrawState::Hover => {
@@ -1020,7 +1053,7 @@ fn paint_zone(
 
             let color = (0.8, 0.8, 0.8, 0.5);
             let color2 = (0.8, 0.8, 0.8, 0.5);
-            rounded_rectangle(cr, x, y, width, height, 12.0, &color, &color2)?;
+            rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
         }
 
         ZoneDrawState::Selected => {
@@ -1031,7 +1064,7 @@ fn paint_zone(
 
             let color = (0.4, 0.4, 0.85, 0.75);
             let color2 = (0.4, 0.4, 0.85, 0.75);
-            rounded_rectangle(cr, x, y, width, height, 12.0, &color, &color2)?;
+            rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
         }
 
         ZoneDrawState::SelectedHover => {
@@ -1042,7 +1075,7 @@ fn paint_zone(
 
             let color = (0.4, 0.4, 0.85, 0.8);
             let color2 = (0.4, 0.4, 0.85, 0.8);
-            rounded_rectangle(cr, x, y, width, height, 12.0, &color, &color2)?;
+            rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
         }
     }
 

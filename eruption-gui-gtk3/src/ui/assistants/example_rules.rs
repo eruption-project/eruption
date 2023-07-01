@@ -19,6 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+/*
+
 pub struct ExampleRulesAssistant {}
 
 impl ExampleRulesAssistant {
@@ -26,3 +28,5 @@ impl ExampleRulesAssistant {
         Self {}
     }
 }
+
+ */

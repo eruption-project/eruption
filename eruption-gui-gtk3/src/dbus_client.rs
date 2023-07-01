@@ -630,6 +630,7 @@ pub fn get_devices_zone_allocations() -> Result<Vec<(u64, Zone)>> {
                     y: v.1 .1,
                     width: v.1 .2,
                     height: v.1 .3,
+                    enabled: v.1 .4,
                 },
             )
         })
@@ -651,8 +652,13 @@ pub fn set_devices_zone_allocations(zones: &[(u64, Zone)]) -> Result<()> {
 
     let zones = zones
         .iter()
-        .map(|(device, zone)| (*device, (zone.x, zone.y, zone.width, zone.height)))
-        .collect::<Vec<(u64, (i32, i32, i32, i32))>>();
+        .map(|(device, zone)| {
+            (
+                *device,
+                (zone.x, zone.y, zone.width, zone.height, zone.enabled),
+            )
+        })
+        .collect::<Vec<(u64, (i32, i32, i32, i32, bool))>>();
 
     status_proxy.set_devices_zone_allocations(zones)?;
 
@@ -670,13 +676,13 @@ pub fn set_device_zone_allocation(device: u64, zone: &Zone) -> Result<()> {
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let zone = (zone.x, zone.y, zone.width, zone.height);
+    let zone = (zone.x, zone.y, zone.width, zone.height, zone.enabled);
     status_proxy.set_device_zone_allocation(device, zone)?;
 
     Ok(())
 }
 
-/// Enable or disable rendering on a managed device
+/// Enable or disable a managed device
 pub fn set_device_enabled(device_index: u64, enabled: bool) -> Result<()> {
     use devices::OrgEruptionDevice;
 
@@ -692,16 +698,18 @@ pub fn set_device_enabled(device_index: u64, enabled: bool) -> Result<()> {
     Ok(())
 }
 
-/// Enable or disable rendering on a managed device
-pub fn is_device_enabled(_device_index: u64) -> Result<bool> {
+/// Is a managed device enabled or disabled
+pub fn is_device_enabled(device_index: u64) -> Result<bool> {
+    use devices::OrgEruptionDevice;
+
     let conn = Connection::new_system()?;
-    let _devices_proxy = conn.with_proxy(
+    let devices_proxy = conn.with_proxy(
         "org.eruption",
         "/org/eruption/devices",
         Duration::from_secs(constants::DBUS_TIMEOUT_MILLIS as u64),
     );
 
-    let result = true; // devices_proxy.is_device_enabled(device_index)?;
+    let result = devices_proxy.is_device_enabled(device_index)?;
 
     Ok(result)
 }

@@ -150,7 +150,7 @@ lazy_static! {
     pub static ref STATE: Arc<RwLock<State>> = Arc::new(RwLock::new(State::new()));
 
     /// Are we connected to the Eruption daemon?
-    pub static ref CONNECTION_STATE: Arc<RwLock<ConnectionState>> = Arc::new(RwLock::new(ConnectionState::Connected));
+    pub static ref CONNECTION_STATE: Arc<RwLock<ConnectionState>> = Arc::new(RwLock::new(ConnectionState::Initializing));
 
     /// Current connection to the Eruption daemon (Eruption SDK)
     pub static ref CONNECTION: Arc<Mutex<Option<Connection>>> = Arc::new(Mutex::new(None));
@@ -247,31 +247,42 @@ Copyright (c) 2019-2023, The Eruption Development Team
 /// Update the global color map vector
 pub fn update_color_map() -> Result<()> {
     if let Some(connection) = crate::CONNECTION.lock().as_ref() {
-        let canvas = connection.get_canvas()?;
+        if let Ok(canvas) = connection.get_canvas() {
+            let mut colors = Vec::with_capacity(constants::CANVAS_SIZE);
+            for i in 0..CANVAS_SIZE {
+                let color = RGBA {
+                    r: canvas[i].r(),
+                    g: canvas[i].g(),
+                    b: canvas[i].b(),
+                    a: canvas[i].a(),
+                };
 
-        let mut colors = Vec::with_capacity(constants::CANVAS_SIZE);
-        for i in 0..CANVAS_SIZE {
-            let color = RGBA {
-                r: canvas[i].r(),
-                g: canvas[i].g(),
-                b: canvas[i].b(),
-                a: canvas[i].a(),
-            };
+                colors.push(color);
+            }
 
-            colors.push(color);
+            let mut color_map = crate::COLOR_MAP.lock();
+            *color_map = colors;
+
+            Ok(())
+        } else {
+            crate::LOST_CONNECTION.store(true, Ordering::SeqCst);
+
+            Err(MainError::ConnectionError {
+                description: "Could not connect to Eruption".to_string(),
+            }
+            .into())
         }
-
-        let mut color_map = crate::COLOR_MAP.lock();
-        *color_map = colors;
-
-        Ok(())
     } else {
+        // Err(MainError::ConnectionError {
+        //     description: "Not connect to the Eruption daemon".to_string(),
+        // }
+        // .into())
+
+        tracing::warn!("Not connect to the Eruption daemon");
+
         crate::LOST_CONNECTION.store(true, Ordering::SeqCst);
 
-        Err(MainError::ConnectionError {
-            description: "Could not connect to Eruption".to_string(),
-        }
-        .into())
+        Ok(())
     }
 }
 
@@ -445,92 +456,98 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             dbus_client::Message::ProfileChanged(ref profile) => {
                 events::ignore_next_ui_events(1);
 
-                match STATE.read().active_slot.unwrap() {
-                    0 => {
-                        // slot 1
-                        let combo_box: gtk::ComboBox = builder.object("slot1_combo").unwrap();
+                match STATE.read().active_slot {
+                    Some(slot) => match slot {
+                        0 => {
+                            // slot 1
+                            let combo_box: gtk::ComboBox = builder.object("slot1_combo").unwrap();
 
-                        if let Some(model) = combo_box.model() {
-                            model.foreach(|model, _path, iter| {
-                                let file = model.value(iter, 2).get::<String>().unwrap();
-                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                            if let Some(model) = combo_box.model() {
+                                model.foreach(|model, _path, iter| {
+                                    let file = model.value(iter, 2).get::<String>().unwrap();
+                                    let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                                if *profile == file {
-                                    // found a match
-                                    combo_box.set_active_iter(Some(iter));
+                                    if *profile == file {
+                                        // found a match
+                                        combo_box.set_active_iter(Some(iter));
 
-                                    true
-                                } else {
-                                    false
-                                }
-                            });
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                });
+                            }
                         }
-                    }
 
-                    1 => {
-                        // slot 2
-                        let combo_box: gtk::ComboBox = builder.object("slot2_combo").unwrap();
+                        1 => {
+                            // slot 2
+                            let combo_box: gtk::ComboBox = builder.object("slot2_combo").unwrap();
 
-                        if let Some(model) = combo_box.model() {
-                            model.foreach(|model, _path, iter| {
-                                let file = model.value(iter, 2).get::<String>().unwrap();
-                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                            if let Some(model) = combo_box.model() {
+                                model.foreach(|model, _path, iter| {
+                                    let file = model.value(iter, 2).get::<String>().unwrap();
+                                    let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                                if *profile == file {
-                                    // found a match
-                                    combo_box.set_active_iter(Some(iter));
+                                    if *profile == file {
+                                        // found a match
+                                        combo_box.set_active_iter(Some(iter));
 
-                                    true
-                                } else {
-                                    false
-                                }
-                            });
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                });
+                            }
                         }
-                    }
 
-                    2 => {
-                        // slot 3
-                        let combo_box: gtk::ComboBox = builder.object("slot3_combo").unwrap();
+                        2 => {
+                            // slot 3
+                            let combo_box: gtk::ComboBox = builder.object("slot3_combo").unwrap();
 
-                        if let Some(model) = combo_box.model() {
-                            model.foreach(|model, _path, iter| {
-                                let file = model.value(iter, 2).get::<String>().unwrap();
-                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                            if let Some(model) = combo_box.model() {
+                                model.foreach(|model, _path, iter| {
+                                    let file = model.value(iter, 2).get::<String>().unwrap();
+                                    let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                                if *profile == file {
-                                    // found a match
-                                    combo_box.set_active_iter(Some(iter));
+                                    if *profile == file {
+                                        // found a match
+                                        combo_box.set_active_iter(Some(iter));
 
-                                    true
-                                } else {
-                                    false
-                                }
-                            });
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                });
+                            }
                         }
-                    }
 
-                    3 => {
-                        // slot 4
-                        let combo_box: gtk::ComboBox = builder.object("slot4_combo").unwrap();
+                        3 => {
+                            // slot 4
+                            let combo_box: gtk::ComboBox = builder.object("slot4_combo").unwrap();
 
-                        if let Some(model) = combo_box.model() {
-                            model.foreach(|model, _path, iter| {
-                                let file = model.value(iter, 2).get::<String>().unwrap();
-                                let file = PathBuf::from(file).to_string_lossy().to_string();
+                            if let Some(model) = combo_box.model() {
+                                model.foreach(|model, _path, iter| {
+                                    let file = model.value(iter, 2).get::<String>().unwrap();
+                                    let file = PathBuf::from(file).to_string_lossy().to_string();
 
-                                if *profile == file {
-                                    // found a match
-                                    combo_box.set_active_iter(Some(iter));
+                                    if *profile == file {
+                                        // found a match
+                                        combo_box.set_active_iter(Some(iter));
 
-                                    true
-                                } else {
-                                    false
-                                }
-                            });
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                });
+                            }
                         }
-                    }
 
-                    _ => tracing::error!("Internal error detected"),
+                        _ => tracing::error!("Internal error detected"),
+                    },
+
+                    None => {
+                        tracing::error!("Invalid slot")
+                    }
                 }
 
                 events::reenable_ui_events();
@@ -654,6 +671,39 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
     }
 
     Ok(())
+}
+
+/// initialize global state
+pub fn initialize_global_state_and_connection() {
+    let mut state = STATE.write();
+
+    state.active_slot = util::get_active_slot().ok();
+    state.active_profile = util::get_active_profile().ok();
+
+    // connect to Eruption daemon
+    match Connection::new(ConnectionType::Local) {
+        Ok(connection) => {
+            if let Err(e) = connection.connect() {
+                tracing::error!("Could not connect to Eruption daemon: {e}");
+
+                *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+            } else {
+                let _ = connection
+                    .get_server_status()
+                    .map_err(|e| tracing::error!("{e}"));
+
+                *crate::CONNECTION.lock() = Some(connection);
+
+                *crate::CONNECTION_STATE.write() = ConnectionState::Connected;
+            }
+        }
+
+        Err(e) => {
+            tracing::error!("Could not connect to Eruption daemon: {}", e);
+
+            *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+        }
+    }
 }
 
 /// Main program entrypoint
@@ -791,34 +841,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
-        {
-            // initialize global state
-            let mut state = STATE.write();
-
-            state.active_slot = util::get_active_slot().ok();
-            state.active_profile = util::get_active_profile().ok();
-        }
-
-        // connect to Eruption daemon
-        match Connection::new(ConnectionType::Local) {
-            Ok(connection) => {
-                let _ = connection
-                    .connect()
-                    .map_err(|e| tracing::error!("Connection failed: {e}"));
-
-                *crate::CONNECTION.lock() = Some(connection.clone());
-
-                if connection.connect().is_ok() {
-                    let _ = connection
-                        .get_server_status()
-                        .map_err(|e| tracing::error!("{e}"));
-                }
-            }
-
-            Err(e) => {
-                tracing::error!("Could not connect to Eruption daemon: {}", e);
-            }
-        }
+        initialize_global_state_and_connection();
 
         if let Err(e) = ui::main_window::initialize_main_window(app) {
             tracing::error!("Could not start the Eruption GUI: {}", e);

@@ -5,16 +5,17 @@ use dbus::arg;
 use dbus::blocking;
 
 pub trait OrgEruptionCanvas {
-    fn get_devices_zone_allocations(&self)
-        -> Result<Vec<(u64, (i32, i32, i32, i32))>, dbus::Error>;
+    fn get_devices_zone_allocations(
+        &self,
+    ) -> Result<Vec<(u64, (i32, i32, i32, i32, bool))>, dbus::Error>;
     fn set_device_zone_allocation(
         &self,
         device: u64,
-        zone: (i32, i32, i32, i32),
+        zone: (i32, i32, i32, i32, bool),
     ) -> Result<(), dbus::Error>;
     fn set_devices_zone_allocations(
         &self,
-        zones: Vec<(u64, (i32, i32, i32, i32))>,
+        zones: Vec<(u64, (i32, i32, i32, i32, bool))>,
     ) -> Result<(), dbus::Error>;
     fn hue(&self) -> Result<f64, dbus::Error>;
     fn set_hue(&self, value: f64) -> Result<(), dbus::Error>;
@@ -124,15 +125,15 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 {
     fn get_devices_zone_allocations(
         &self,
-    ) -> Result<Vec<(u64, (i32, i32, i32, i32))>, dbus::Error> {
+    ) -> Result<Vec<(u64, (i32, i32, i32, i32, bool))>, dbus::Error> {
         self.method_call("org.eruption.Canvas", "GetDevicesZoneAllocations", ())
-            .and_then(|r: (Vec<(u64, (i32, i32, i32, i32))>,)| Ok(r.0))
+            .and_then(|r: (Vec<(u64, (i32, i32, i32, i32, bool))>,)| Ok(r.0))
     }
 
     fn set_device_zone_allocation(
         &self,
         device: u64,
-        zone: (i32, i32, i32, i32),
+        zone: (i32, i32, i32, i32, bool),
     ) -> Result<(), dbus::Error> {
         self.method_call(
             "org.eruption.Canvas",
@@ -143,7 +144,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn set_devices_zone_allocations(
         &self,
-        zones: Vec<(u64, (i32, i32, i32, i32))>,
+        zones: Vec<(u64, (i32, i32, i32, i32, bool))>,
     ) -> Result<(), dbus::Error> {
         self.method_call("org.eruption.Canvas", "SetDevicesZoneAllocations", (zones,))
     }

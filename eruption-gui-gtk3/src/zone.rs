@@ -21,52 +21,25 @@
 
 use std::fmt::{Display, Formatter};
 
-use crate::{constants, dbus_client::DeviceClass};
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Zone {
     pub x: i32,
     pub y: i32,
     pub width: i32,
     pub height: i32,
+    pub enabled: bool,
 }
 
 #[allow(unused)]
 impl Zone {
     #[inline]
-    pub fn new(x: i32, y: i32, width: i32, height: i32) -> Self {
+    pub fn new(x: i32, y: i32, width: i32, height: i32, enabled: bool) -> Self {
         Self {
             x,
             y,
             width,
             height,
-        }
-    }
-
-    pub fn defaults_for(device_class: DeviceClass) -> Self {
-        match device_class {
-            DeviceClass::Keyboard => Self {
-                x: constants::CANVAS_WIDTH as i32 / 2 - 11,
-                y: constants::CANVAS_HEIGHT as i32 / 2 - 3,
-                width: 21,
-                height: 6,
-            },
-
-            DeviceClass::Mouse => Self {
-                x: constants::CANVAS_WIDTH as i32 - 6,
-                y: constants::CANVAS_HEIGHT as i32 / 2 - 2,
-                width: 5,
-                height: 5,
-            },
-
-            DeviceClass::Misc => Self {
-                x: constants::CANVAS_WIDTH as i32 / 2 - 3,
-                y: constants::CANVAS_HEIGHT as i32 / 2 - 2,
-                width: 5,
-                height: 5,
-            },
-
-            DeviceClass::Unknown => Self::empty(),
+            enabled,
         }
     }
 
@@ -77,6 +50,7 @@ impl Zone {
             y: 0,
             width: 0,
             height: 0,
+            enabled: false,
         }
     }
 
