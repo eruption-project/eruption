@@ -38,6 +38,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand param 'Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten'
             cand names 'Slot-Namen anzeigen oder ändern'
             cand canvas 'Nachbearbeitungs-Filter für die globale Leinwand konfigurieren'
+            cand zones 'Zonen auf der globalen Leinwand konfigurieren'
             cand effects 'Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen'
             cand rules 'Automatisierungsregeln anzeigen und verwalten'
             cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
@@ -422,6 +423,56 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
         }
         &'eruptionctl;canvas;help;help'= {
         }
+        &'eruptionctl;zones'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand list 'List all allocated zones'
+            cand get 'Get the allocated zone of a specific device'
+            cand set 'Set the allocated zone of a specific device'
+            cand enable 'Enable rendering to the zone of a specific device'
+            cand disable 'Disable rendering to the zone of a specific device'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;zones;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;zones;get'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;zones;set'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;zones;enable'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;zones;disable'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'eruptionctl;zones;help'= {
+            cand list 'List all allocated zones'
+            cand get 'Get the allocated zone of a specific device'
+            cand set 'Set the allocated zone of a specific device'
+            cand enable 'Enable rendering to the zone of a specific device'
+            cand disable 'Disable rendering to the zone of a specific device'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'eruptionctl;zones;help;list'= {
+        }
+        &'eruptionctl;zones;help;get'= {
+        }
+        &'eruptionctl;zones;help;set'= {
+        }
+        &'eruptionctl;zones;help;enable'= {
+        }
+        &'eruptionctl;zones;help;disable'= {
+        }
+        &'eruptionctl;zones;help;help'= {
+        }
         &'eruptionctl;effects'= {
             cand -h 'Print help'
             cand --help 'Print help'
@@ -676,6 +727,7 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
             cand param 'Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten'
             cand names 'Slot-Namen anzeigen oder ändern'
             cand canvas 'Nachbearbeitungs-Filter für die globale Leinwand konfigurieren'
+            cand zones 'Zonen auf der globalen Leinwand konfigurieren'
             cand effects 'Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen'
             cand rules 'Automatisierungsregeln anzeigen und verwalten'
             cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
@@ -804,6 +856,23 @@ set edit:completion:arg-completer[eruptionctl] = {|@words|
         &'eruptionctl;help;canvas;saturation'= {
         }
         &'eruptionctl;help;canvas;lightness'= {
+        }
+        &'eruptionctl;help;zones'= {
+            cand list 'List all allocated zones'
+            cand get 'Get the allocated zone of a specific device'
+            cand set 'Set the allocated zone of a specific device'
+            cand enable 'Enable rendering to the zone of a specific device'
+            cand disable 'Disable rendering to the zone of a specific device'
+        }
+        &'eruptionctl;help;zones;list'= {
+        }
+        &'eruptionctl;help;zones;get'= {
+        }
+        &'eruptionctl;help;zones;set'= {
+        }
+        &'eruptionctl;help;zones;enable'= {
+        }
+        &'eruptionctl;help;zones;disable'= {
         }
         &'eruptionctl;help;effects'= {
             cand enable 'Enable an effect'

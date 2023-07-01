@@ -60,6 +60,9 @@ _eruptionctl() {
             eruptionctl,switch)
                 cmd="eruptionctl__switch"
                 ;;
+            eruptionctl,zones)
+                cmd="eruptionctl__zones"
+                ;;
             eruptionctl__about,eruption)
                 cmd="eruptionctl__about__eruption"
                 ;;
@@ -408,6 +411,9 @@ _eruptionctl() {
             eruptionctl__help,switch)
                 cmd="eruptionctl__help__switch"
                 ;;
+            eruptionctl__help,zones)
+                cmd="eruptionctl__help__zones"
+                ;;
             eruptionctl__help__about,eruption)
                 cmd="eruptionctl__help__about__eruption"
                 ;;
@@ -570,6 +576,21 @@ _eruptionctl() {
             eruptionctl__help__switch,slot)
                 cmd="eruptionctl__help__switch__slot"
                 ;;
+            eruptionctl__help__zones,disable)
+                cmd="eruptionctl__help__zones__disable"
+                ;;
+            eruptionctl__help__zones,enable)
+                cmd="eruptionctl__help__zones__enable"
+                ;;
+            eruptionctl__help__zones,get)
+                cmd="eruptionctl__help__zones__get"
+                ;;
+            eruptionctl__help__zones,list)
+                cmd="eruptionctl__help__zones__list"
+                ;;
+            eruptionctl__help__zones,set)
+                cmd="eruptionctl__help__zones__set"
+                ;;
             eruptionctl__names,help)
                 cmd="eruptionctl__names__help"
                 ;;
@@ -720,6 +741,42 @@ _eruptionctl() {
             eruptionctl__switch__help,slot)
                 cmd="eruptionctl__switch__help__slot"
                 ;;
+            eruptionctl__zones,disable)
+                cmd="eruptionctl__zones__disable"
+                ;;
+            eruptionctl__zones,enable)
+                cmd="eruptionctl__zones__enable"
+                ;;
+            eruptionctl__zones,get)
+                cmd="eruptionctl__zones__get"
+                ;;
+            eruptionctl__zones,help)
+                cmd="eruptionctl__zones__help"
+                ;;
+            eruptionctl__zones,list)
+                cmd="eruptionctl__zones__list"
+                ;;
+            eruptionctl__zones,set)
+                cmd="eruptionctl__zones__set"
+                ;;
+            eruptionctl__zones__help,disable)
+                cmd="eruptionctl__zones__help__disable"
+                ;;
+            eruptionctl__zones__help,enable)
+                cmd="eruptionctl__zones__help__enable"
+                ;;
+            eruptionctl__zones__help,get)
+                cmd="eruptionctl__zones__help__get"
+                ;;
+            eruptionctl__zones__help,help)
+                cmd="eruptionctl__zones__help__help"
+                ;;
+            eruptionctl__zones__help,list)
+                cmd="eruptionctl__zones__help__list"
+                ;;
+            eruptionctl__zones__help,set)
+                cmd="eruptionctl__zones__help__set"
+                ;;
             *)
                 ;;
         esac
@@ -727,7 +784,7 @@ _eruptionctl() {
 
     case "${cmd}" in
         eruptionctl)
-            opts="-v -r -c -h -V --verbose --repeat --config --help --version status switch config devices profiles scripts color-schemes param names canvas effects rules completions manpages about help"
+            opts="-v -r -c -h -V --verbose --repeat --config --help --version status switch config devices profiles scripts color-schemes param names canvas zones effects rules completions manpages about help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2247,7 +2304,7 @@ _eruptionctl() {
             return 0
             ;;
         eruptionctl__help)
-            opts="status switch config devices profiles scripts color-schemes param names canvas effects rules completions manpages about help"
+            opts="status switch config devices profiles scripts color-schemes param names canvas zones effects rules completions manpages about help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3240,6 +3297,90 @@ _eruptionctl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        eruptionctl__help__zones)
+            opts="list get set enable disable"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__zones__disable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__zones__enable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__zones__get)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__zones__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__help__zones__set)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         eruptionctl__manpages)
             opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -4040,6 +4181,188 @@ _eruptionctl() {
             ;;
         eruptionctl__switch__slot)
             opts="-h --help <INDEX>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones)
+            opts="-h --help list get set enable disable help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__disable)
+            opts="-h --help <DEVICE>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__enable)
+            opts="-h --help <DEVICE>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__get)
+            opts="-h --help <DEVICE>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__help)
+            opts="list get set enable disable help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__help__disable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__help__enable)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__help__get)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__help__set)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__list)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruptionctl__zones__set)
+            opts="-h --help <DEVICE> [X] [Y] [WIDTH] [HEIGHT] true false"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

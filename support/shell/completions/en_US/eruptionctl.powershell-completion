@@ -41,6 +41,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
             [CompletionResult]::new('canvas', 'canvas', [CompletionResultType]::ParameterValue, 'Configure post-processing filters of the global canvas')
+            [CompletionResult]::new('zones', 'zones', [CompletionResultType]::ParameterValue, 'Configure device-specific zones on the global canvas')
             [CompletionResult]::new('effects', 'effects', [CompletionResultType]::ParameterValue, 'Special effects like Ambient, image overlays or animations')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
@@ -525,6 +526,69 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
         'eruptionctl;canvas;help;help' {
             break
         }
+        'eruptionctl;zones' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all allocated zones')
+            [CompletionResult]::new('get', 'get', [CompletionResultType]::ParameterValue, 'Get the allocated zone of a specific device')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the allocated zone of a specific device')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable rendering to the zone of a specific device')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable rendering to the zone of a specific device')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;zones;list' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;zones;get' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;zones;set' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;zones;enable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;zones;disable' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'eruptionctl;zones;help' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all allocated zones')
+            [CompletionResult]::new('get', 'get', [CompletionResultType]::ParameterValue, 'Get the allocated zone of a specific device')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the allocated zone of a specific device')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable rendering to the zone of a specific device')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable rendering to the zone of a specific device')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'eruptionctl;zones;help;list' {
+            break
+        }
+        'eruptionctl;zones;help;get' {
+            break
+        }
+        'eruptionctl;zones;help;set' {
+            break
+        }
+        'eruptionctl;zones;help;enable' {
+            break
+        }
+        'eruptionctl;zones;help;disable' {
+            break
+        }
+        'eruptionctl;zones;help;help' {
+            break
+        }
         'eruptionctl;effects' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
@@ -845,6 +909,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('param', 'param', [CompletionResultType]::ParameterValue, 'Get or set script parameters on the currently active profile')
             [CompletionResult]::new('names', 'names', [CompletionResultType]::ParameterValue, 'Naming related commands such as renaming of profile slots')
             [CompletionResult]::new('canvas', 'canvas', [CompletionResultType]::ParameterValue, 'Configure post-processing filters of the global canvas')
+            [CompletionResult]::new('zones', 'zones', [CompletionResultType]::ParameterValue, 'Configure device-specific zones on the global canvas')
             [CompletionResult]::new('effects', 'effects', [CompletionResultType]::ParameterValue, 'Special effects like Ambient, image overlays or animations')
             [CompletionResult]::new('rules', 'rules', [CompletionResultType]::ParameterValue, 'Rules related sub-commands')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')
@@ -1017,6 +1082,29 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             break
         }
         'eruptionctl;help;canvas;lightness' {
+            break
+        }
+        'eruptionctl;help;zones' {
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all allocated zones')
+            [CompletionResult]::new('get', 'get', [CompletionResultType]::ParameterValue, 'Get the allocated zone of a specific device')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set the allocated zone of a specific device')
+            [CompletionResult]::new('enable', 'enable', [CompletionResultType]::ParameterValue, 'Enable rendering to the zone of a specific device')
+            [CompletionResult]::new('disable', 'disable', [CompletionResultType]::ParameterValue, 'Disable rendering to the zone of a specific device')
+            break
+        }
+        'eruptionctl;help;zones;list' {
+            break
+        }
+        'eruptionctl;help;zones;get' {
+            break
+        }
+        'eruptionctl;help;zones;set' {
+            break
+        }
+        'eruptionctl;help;zones;enable' {
+            break
+        }
+        'eruptionctl;help;zones;disable' {
             break
         }
         'eruptionctl;help;effects' {

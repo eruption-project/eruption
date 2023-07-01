@@ -809,6 +809,103 @@ esac
     ;;
 esac
 ;;
+(zones)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_eruptionctl__zones_commands" \
+"*::: :->zones" \
+&& ret=0
+
+    case $state in
+    (zones)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-zones-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(get)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device:' \
+&& ret=0
+;;
+(set)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device:' \
+'::x:' \
+'::y:' \
+'::width:' \
+'::height:' \
+'::enabled:(true false)' \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device:' \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__zones__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-zones-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(get)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(set)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
 (effects)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help]' \
@@ -1624,6 +1721,42 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
+(zones)
+_arguments "${_arguments_options[@]}" \
+":: :_eruptionctl__help__zones_commands" \
+"*::: :->zones" \
+&& ret=0
+
+    case $state in
+    (zones)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:eruptionctl-help-zones-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(get)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(set)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(enable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(disable)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (effects)
 _arguments "${_arguments_options[@]}" \
 ":: :_eruptionctl__help__effects_commands" \
@@ -1822,6 +1955,7 @@ _eruptionctl_commands() {
 'param:Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten' \
 'names:Slot-Namen anzeigen oder ändern' \
 'canvas:Nachbearbeitungs-Filter für die globale Leinwand konfigurieren' \
+'zones:Zonen auf der globalen Leinwand konfigurieren' \
 'effects:Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen' \
 'rules:Automatisierungsregeln anzeigen und verwalten' \
 'completions:Shell Definitionen für Autovervollständigung erzeugen' \
@@ -2234,6 +2368,11 @@ _eruptionctl__help__rules__disable_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help rules disable commands' commands "$@"
 }
+(( $+functions[_eruptionctl__help__zones__disable_commands] )) ||
+_eruptionctl__help__zones__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help zones disable commands' commands "$@"
+}
 (( $+functions[_eruptionctl__rules__disable_commands] )) ||
 _eruptionctl__rules__disable_commands() {
     local commands; commands=()
@@ -2243,6 +2382,16 @@ _eruptionctl__rules__disable_commands() {
 _eruptionctl__rules__help__disable_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl rules help disable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__disable_commands] )) ||
+_eruptionctl__zones__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones disable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__help__disable_commands] )) ||
+_eruptionctl__zones__help__disable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones help disable commands' commands "$@"
 }
 (( $+functions[_eruptionctl__devices__distance_commands] )) ||
 _eruptionctl__devices__distance_commands() {
@@ -2358,6 +2507,11 @@ _eruptionctl__help__rules__enable_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help rules enable commands' commands "$@"
 }
+(( $+functions[_eruptionctl__help__zones__enable_commands] )) ||
+_eruptionctl__help__zones__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help zones enable commands' commands "$@"
+}
 (( $+functions[_eruptionctl__rules__enable_commands] )) ||
 _eruptionctl__rules__enable_commands() {
     local commands; commands=()
@@ -2367,6 +2521,16 @@ _eruptionctl__rules__enable_commands() {
 _eruptionctl__rules__help__enable_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl rules help enable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__enable_commands] )) ||
+_eruptionctl__zones__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones enable commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__help__enable_commands] )) ||
+_eruptionctl__zones__help__enable_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones help enable commands' commands "$@"
 }
 (( $+functions[_eruptionctl__about__eruption_commands] )) ||
 _eruptionctl__about__eruption_commands() {
@@ -2382,6 +2546,21 @@ _eruptionctl__about__help__eruption_commands() {
 _eruptionctl__help__about__eruption_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help about eruption commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__zones__get_commands] )) ||
+_eruptionctl__help__zones__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help zones get commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__get_commands] )) ||
+_eruptionctl__zones__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones get commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__help__get_commands] )) ||
+_eruptionctl__zones__help__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones help get commands' commands "$@"
 }
 (( $+functions[_eruptionctl__about__help_commands] )) ||
 _eruptionctl__about__help_commands() {
@@ -2551,6 +2730,7 @@ _eruptionctl__help_commands() {
 'param:Lesen oder schreiben von Parameterwerten von aktuell laufenden Scripten' \
 'names:Slot-Namen anzeigen oder ändern' \
 'canvas:Nachbearbeitungs-Filter für die globale Leinwand konfigurieren' \
+'zones:Zonen auf der globalen Leinwand konfigurieren' \
 'effects:Spezialeffekte wie z.B. Ambient, Bildoverlays oder Animationen' \
 'rules:Automatisierungsregeln anzeigen und verwalten' \
 'completions:Shell Definitionen für Autovervollständigung erzeugen' \
@@ -2655,6 +2835,23 @@ _eruptionctl__switch__help_commands() {
 _eruptionctl__switch__help__help_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl switch help help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__help_commands] )) ||
+_eruptionctl__zones__help_commands() {
+    local commands; commands=(
+'list:List all allocated zones' \
+'get:Get the allocated zone of a specific device' \
+'set:Set the allocated zone of a specific device' \
+'enable:Enable rendering to the zone of a specific device' \
+'disable:Disable rendering to the zone of a specific device' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl zones help commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__help__help_commands] )) ||
+_eruptionctl__zones__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones help help commands' commands "$@"
 }
 (( $+functions[_eruptionctl__canvas__help__hue_commands] )) ||
 _eruptionctl__canvas__help__hue_commands() {
@@ -2878,6 +3075,11 @@ _eruptionctl__help__scripts__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help scripts list commands' commands "$@"
 }
+(( $+functions[_eruptionctl__help__zones__list_commands] )) ||
+_eruptionctl__help__zones__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help zones list commands' commands "$@"
+}
 (( $+functions[_eruptionctl__names__help__list_commands] )) ||
 _eruptionctl__names__help__list_commands() {
     local commands; commands=()
@@ -2917,6 +3119,16 @@ _eruptionctl__scripts__help__list_commands() {
 _eruptionctl__scripts__list_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl scripts list commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__help__list_commands] )) ||
+_eruptionctl__zones__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones help list commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__list_commands] )) ||
+_eruptionctl__zones__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones list commands' commands "$@"
 }
 (( $+functions[_eruptionctl__help__manpages_commands] )) ||
 _eruptionctl__help__manpages_commands() {
@@ -3148,6 +3360,11 @@ _eruptionctl__help__names__set_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl help names set commands' commands "$@"
 }
+(( $+functions[_eruptionctl__help__zones__set_commands] )) ||
+_eruptionctl__help__zones__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl help zones set commands' commands "$@"
+}
 (( $+functions[_eruptionctl__names__help__set_commands] )) ||
 _eruptionctl__names__help__set_commands() {
     local commands; commands=()
@@ -3157,6 +3374,16 @@ _eruptionctl__names__help__set_commands() {
 _eruptionctl__names__set_commands() {
     local commands; commands=()
     _describe -t commands 'eruptionctl names set commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__help__set_commands] )) ||
+_eruptionctl__zones__help__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones help set commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones__set_commands] )) ||
+_eruptionctl__zones__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruptionctl zones set commands' commands "$@"
 }
 (( $+functions[_eruptionctl__help__names__set-all_commands] )) ||
 _eruptionctl__help__names__set-all_commands() {
@@ -3283,6 +3510,29 @@ _eruptionctl__switch_commands() {
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl switch commands' commands "$@"
+}
+(( $+functions[_eruptionctl__help__zones_commands] )) ||
+_eruptionctl__help__zones_commands() {
+    local commands; commands=(
+'list:List all allocated zones' \
+'get:Get the allocated zone of a specific device' \
+'set:Set the allocated zone of a specific device' \
+'enable:Enable rendering to the zone of a specific device' \
+'disable:Disable rendering to the zone of a specific device' \
+    )
+    _describe -t commands 'eruptionctl help zones commands' commands "$@"
+}
+(( $+functions[_eruptionctl__zones_commands] )) ||
+_eruptionctl__zones_commands() {
+    local commands; commands=(
+'list:List all allocated zones' \
+'get:Get the allocated zone of a specific device' \
+'set:Set the allocated zone of a specific device' \
+'enable:Enable rendering to the zone of a specific device' \
+'disable:Disable rendering to the zone of a specific device' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'eruptionctl zones commands' commands "$@"
 }
 
 if [ "$funcstack[1]" = "_eruptionctl" ]; then
