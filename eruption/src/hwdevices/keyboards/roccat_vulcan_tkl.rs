@@ -22,7 +22,11 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
+use ndarray::{s, ArrayView2};
 use parking_lot::{Mutex, RwLock};
+use resize::Pixel::RGB8;
+use resize::Type;
+use rgb::RGB8;
 use std::collections::HashMap;
 use std::{any::Any, mem::size_of, time::Duration};
 use std::{sync::Arc, thread};
@@ -967,63 +971,117 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
-                        #[inline]
-                        fn index_to_canvas(index: usize) -> usize {
-                            let index = ROWS_TOPOLOGY
-                                .iter()
-                                .position(|e| *e as usize == index)
-                                .unwrap_or(0);
+                        if self.allocated_zone.enabled {
+                            let canvas = ArrayView2::from_shape(
+                                (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
+                                led_map,
+                            )?;
 
-                            let x = index % NUM_COLS;
-                            let y = index / NUM_COLS;
+                            let canvas = canvas.reversed_axes();
 
-                            let scale_x = 1; // constants::CANVAS_WIDTH / NUM_COLS;
-                            let scale_y = 1; // constants::CANVAS_HEIGHT / NUM_ROWS;
+                            let canvas = canvas.slice(s![
+                                self.allocated_zone.x..self.allocated_zone.x2(),
+                                self.allocated_zone.y..self.allocated_zone.y2(),
+                            ]);
 
-                            // let x = index % NUM_COLS + (NUM_COLS / 2);
-                            // let y = index / NUM_COLS + (NUM_ROWS / 2);
+                            // resize
+                            let (w1, h1) = (
+                                self.allocated_zone.width as usize,
+                                self.allocated_zone.height as usize,
+                            );
+                            let (w2, h2) = (NUM_COLS, NUM_ROWS);
 
-                            let result = (constants::CANVAS_WIDTH * y * scale_y) + (x * scale_x);
+                            let canvas = canvas.map(|v| RGB8::new(v.r, v.g, v.b)).into_raw_vec();
+                            let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
-                            result.clamp(0, constants::CANVAS_SIZE - 1)
-                        }
+                            let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
 
-                        // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
-                        // values for all 12 keys are first then come the green values etc.
+                            resizer.resize(&canvas, &mut led_map)?;
 
-                        let mut buffer: [u8; 448] = [0; 448];
-                        buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
+                            // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
+                            // values for all 12 keys are first then come the green values etc.
 
-                        for i in 0..LED_INDICES {
-                            let color = led_map[index_to_canvas(i)];
-                            let offset = ((i / 12) * 36) + (i % 12);
+                            const BUFFER_SIZE: usize = 448;
+                            let mut buffer: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
+                            buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
 
-                            buffer[offset + 4] =
-                                (color.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
-                            buffer[offset + 4 + 12] =
-                                (color.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
-                            buffer[offset + 4 + 24] =
-                                (color.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
-                        }
+                            for i in 0..NUM_LEDS {
+                                let color = led_map.get(i).unwrap_or(&RGB8 { r: 0, g: 0, b: 0 });
 
-                        for bytes in buffer.chunks(64) {
-                            let mut tmp: [u8; 65] = [0; 65];
-                            tmp[1..65].copy_from_slice(bytes);
+                                let offset = ((i / 12) * 36) + (i % 12);
+                                buffer[offset + 4] =
+                                    (color.r as f32 * (self.brightness as f32 / 100.0)).floor()
+                                        as u8;
+                                buffer[offset + 4 + 12] =
+                                    (color.g as f32 * (self.brightness as f32 / 100.0)).floor()
+                                        as u8;
+                                buffer[offset + 4 + 24] =
+                                    (color.b as f32 * (self.brightness as f32 / 100.0)).floor()
+                                        as u8;
+                            }
 
-                            match led_dev.write(&tmp) {
-                                Ok(len) => {
-                                    if len < 65 {
-                                        return Err(HwDeviceError::WriteError {}.into());
+                            for bytes in buffer.chunks(64) {
+                                let mut tmp: [u8; 65] = [0; 65];
+                                tmp[1..65].copy_from_slice(bytes);
+
+                                match led_dev.write(&tmp) {
+                                    Ok(len) => {
+                                        if len < 65 {
+                                            return Err(HwDeviceError::WriteError {}.into());
+                                        }
+                                    }
+
+                                    Err(_) => {
+                                        // the device has failed or has been disconnected
+                                        self.is_initialized = false;
+                                        self.is_opened = false;
+                                        self.has_failed = true;
+
+                                        return Err(HwDeviceError::InvalidResult {}.into());
                                     }
                                 }
+                            }
+                        } else {
+                            // zone is disabled, so black-out the device
 
-                                Err(_) => {
-                                    // the device has failed or has been disconnected
-                                    self.is_initialized = false;
-                                    self.is_opened = false;
-                                    self.has_failed = true;
+                            const BUFFER_SIZE: usize = 448;
+                            let mut buffer: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
+                            buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
 
-                                    return Err(HwDeviceError::InvalidResult {}.into());
+                            for i in 0..NUM_LEDS {
+                                let color = RGB8 { r: 0, g: 0, b: 0 };
+
+                                let offset = ((i / 12) * 36) + (i % 12);
+                                buffer[offset + 4] =
+                                    (color.r as f32 * (self.brightness as f32 / 100.0)).floor()
+                                        as u8;
+                                buffer[offset + 4 + 12] =
+                                    (color.g as f32 * (self.brightness as f32 / 100.0)).floor()
+                                        as u8;
+                                buffer[offset + 4 + 24] =
+                                    (color.b as f32 * (self.brightness as f32 / 100.0)).floor()
+                                        as u8;
+                            }
+
+                            for bytes in buffer.chunks(64) {
+                                let mut tmp: [u8; 65] = [0; 65];
+                                tmp[1..65].copy_from_slice(bytes);
+
+                                match led_dev.write(&tmp) {
+                                    Ok(len) => {
+                                        if len < 65 {
+                                            return Err(HwDeviceError::WriteError {}.into());
+                                        }
+                                    }
+
+                                    Err(_) => {
+                                        // the device has failed or has been disconnected
+                                        self.is_initialized = false;
+                                        self.is_opened = false;
+                                        self.has_failed = true;
+
+                                        return Err(HwDeviceError::InvalidResult {}.into());
+                                    }
                                 }
                             }
                         }

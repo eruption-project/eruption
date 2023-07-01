@@ -23,8 +23,11 @@ use bitfield_struct::bitfield;
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use ndarray::{s, Array2, Order};
+use ndarray::{s, ArrayView2};
 use parking_lot::{Mutex, RwLock};
+use resize::Pixel::RGB8;
+use resize::Type;
+use rgb::RGB8;
 use std::any::Any;
 use std::collections::HashMap;
 use std::time::Duration;
@@ -745,7 +748,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                     } else {
                         #[inline]
                         #[rustfmt::skip]
-                        fn encode_color(color: &RGBA, brightness: i32) -> u16 {
+                        fn encode_color(color: &RGB8, brightness: i32) -> u16 {
                             let mut encoded_color: u16 = 0x0000;
 
                             encoded_color |= ((color.b as f32 * (brightness as f32 / 100.0)).floor() as u16 & 0xf8) >> 3;
@@ -792,54 +795,88 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                         // this device uses a row major layout, starting at the top row, going down
                         // to the bottom row; so we have to transpose the color map to the right layout
 
-                        let led_map = led_map.to_vec();
+                        if self.allocated_zone.enabled {
+                            let canvas = ArrayView2::from_shape(
+                                (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
+                                led_map,
+                            )?;
 
-                        let led_map = Array2::from_shape_vec(
-                            (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
-                            led_map,
-                        )?;
+                            let canvas = canvas.reversed_axes();
 
-                        let led_map = led_map.slice(s![
-                            self.allocated_zone.y..(self.allocated_zone.y + NUM_ROWS as i32),
-                            self.allocated_zone.x..(self.allocated_zone.x + NUM_COLS as i32),
-                        ]);
+                            let canvas = canvas.slice(s![
+                                self.allocated_zone.x..self.allocated_zone.x2(),
+                                self.allocated_zone.y..self.allocated_zone.y2(),
+                            ]);
 
-                        let shape = ((NUM_LEDS,), Order::RowMajor);
-                        let led_map = led_map.to_shape(shape)?;
-
-                        const BUFFER_SIZE: usize =
-                            4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1));
-                        let mut buffer = [0x00_u8; BUFFER_SIZE];
-
-                        // init sequence
-                        buffer[0..4].copy_from_slice(&[
-                            0x00,
-                            0xd0,
-                            0xda,
-                            Command::RAW_COLORS_REPORT as u8,
-                        ]);
-
-                        // encode color sequence and submit a packet on every 64th byte to the device
-                        let mut cntr = 0;
-
-                        for i in (4..BUFFER_SIZE).step_by(2) {
-                            let encoded_color = encode_color(
-                                led_map.get(cntr).unwrap_or(&RGBA {
-                                    r: 0,
-                                    g: 0,
-                                    b: 0,
-                                    a: 0,
-                                }),
-                                self.brightness,
+                            // resize
+                            let (w1, h1) = (
+                                self.allocated_zone.width as usize,
+                                self.allocated_zone.height as usize,
                             );
+                            let (w2, h2) = (NUM_COLS, NUM_ROWS);
 
-                            buffer[i..i + 2].copy_from_slice(&encoded_color.to_le_bytes());
+                            let canvas = canvas.map(|v| RGB8::new(v.r, v.g, v.b)).into_raw_vec();
+                            let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
-                            cntr += 1;
+                            let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
 
-                            if i % 64 == 0 {
-                                submit_packet(led_dev, &buffer[(i - 64)..=i])?;
-                                buffer[i] = 0x0;
+                            resizer.resize(&canvas, &mut led_map)?;
+
+                            const BUFFER_SIZE: usize =
+                                4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1));
+                            let mut buffer = [0x00_u8; BUFFER_SIZE];
+
+                            // init sequence
+                            buffer[0..4].copy_from_slice(&[
+                                0x00,
+                                0xd0,
+                                0xda,
+                                Command::RAW_COLORS_REPORT as u8,
+                            ]);
+
+                            // encode color sequence and submit a packet on every 64th byte to the device
+                            let mut cntr = 0;
+
+                            for i in (4..BUFFER_SIZE).step_by(2) {
+                                let encoded_color = encode_color(
+                                    led_map.get(cntr).unwrap_or(&RGB8 { r: 0, g: 0, b: 0 }),
+                                    self.brightness,
+                                );
+
+                                buffer[i..i + 2].copy_from_slice(&encoded_color.to_le_bytes());
+
+                                cntr += 1;
+
+                                if i % 64 == 0 {
+                                    submit_packet(led_dev, &buffer[(i - 64)..=i])?;
+                                    buffer[i] = 0x0;
+                                }
+                            }
+                        } else {
+                            // zone is disabled, so black-out the device
+                            const BUFFER_SIZE: usize =
+                                4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1));
+                            let mut buffer = [0x00_u8; BUFFER_SIZE];
+
+                            // init sequence
+                            buffer[0..4].copy_from_slice(&[
+                                0x00,
+                                0xd0,
+                                0xda,
+                                Command::RAW_COLORS_REPORT as u8,
+                            ]);
+
+                            // encode color sequence and submit a packet on every 64th byte to the device
+
+                            for i in (4..BUFFER_SIZE).step_by(2) {
+                                let encoded_color = encode_color(&RGB8 { r: 0, g: 0, b: 0 }, 0);
+
+                                buffer[i..i + 2].copy_from_slice(&encoded_color.to_le_bytes());
+
+                                if i % 64 == 0 {
+                                    submit_packet(led_dev, &buffer[(i - 64)..=i])?;
+                                    buffer[i] = 0x0;
+                                }
                             }
                         }
 
