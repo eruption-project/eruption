@@ -2,14 +2,14 @@
 <node name="/org/eruption/canvas">
   <interface name="org.eruption.Canvas">
     <method name="GetDevicesZoneAllocations">
-      <arg name="zones" type="a(t(iiii))" direction="out"/>
+      <arg name="zones" type="a(t(iiiib))" direction="out"/>
     </method>
     <method name="SetDeviceZoneAllocation">
       <arg name="device" type="t" direction="in"/>
-      <arg name="zone" type="(iiii)" direction="in"/>
+      <arg name="zone" type="(iiiib)" direction="in"/>
     </method>
     <method name="SetDevicesZoneAllocations">
-      <arg name="zones" type="a(t(iiii))" direction="in"/>
+      <arg name="zones" type="a(t(iiiib))" direction="in"/>
     </method>
     <property name="Hue" type="d" access="readwrite"/>
     <property name="Lightness" type="d" access="readwrite"/>

@@ -26,6 +26,7 @@ manpages-about = Generate manual pages
 
 about-about = Show information about Eruption
 canvas-about = Configure post-processing filters of the global canvas
+zones-about = Configure device-specific zones on the global canvas
 config-about = Configuration related sub-commands
 color-scheme-about = Define, import or delete a named color scheme
 devices-about = Get or set some device specific configuration parameters

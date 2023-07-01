@@ -26,6 +26,7 @@ manpages-about = Manual pages erzeugen
 
 about-about = Informationen über Eruption anzeigen
 canvas-about = Nachbearbeitungs-Filter für die globale Leinwand konfigurieren
+zones-about = Zonen auf der globalen Leinwand konfigurieren
 config-about = Laufzeit Konfiguration des Eruption Daemons bearbeiten
 color-scheme-about = Ein Farbschema definieren, importieren oder löschen
 devices-about = Gerätespezifische Konfiguration bearbeiten

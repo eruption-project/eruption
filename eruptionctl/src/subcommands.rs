@@ -34,6 +34,7 @@ mod rules;
 mod scripts;
 mod status;
 mod switch;
+mod zones;
 
 use crate::translations::tr;
 
@@ -103,25 +104,31 @@ pub enum Subcommands {
         command: canvas::CanvasSubcommands,
     },
 
-    #[clap(display_order = 10,about(tr!("effects-about")))]
+    #[clap(display_order = 10, about(tr!("zones-about")))]
+    Zones {
+        #[clap(subcommand)]
+        command: zones::ZonesSubcommands,
+    },
+
+    #[clap(display_order = 11,about(tr!("effects-about")))]
     Effects {
         #[clap(subcommand)]
         command: effects::EffectsSubcommands,
     },
 
-    #[clap(display_order = 11, about(tr!("rules-about")))]
+    #[clap(display_order = 12, about(tr!("rules-about")))]
     Rules {
         #[clap(subcommand)]
         command: rules::RulesSubcommands,
     },
 
-    #[clap(display_order = 12, hide = true, about(tr!("completions-about")))]
+    #[clap(display_order = 13, hide = true, about(tr!("completions-about")))]
     Completions { shell: clap_complete::Shell },
 
-    #[clap(display_order = 13, hide = true, about(tr!("manpages-about")))]
+    #[clap(display_order = 14, hide = true, about(tr!("manpages-about")))]
     Manpages {},
 
-    #[clap(display_order = 14, about(tr!("about-about")))]
+    #[clap(display_order = 15, about(tr!("about-about")))]
     About {
         #[clap(subcommand)]
         command: about::AboutSubcommands,
@@ -144,6 +151,7 @@ pub async fn handle_command(subcommand: Subcommands) -> Result<()> {
         } => param::handle_command(script, parameter, value).await,
         Subcommands::Names { command } => names::handle_command(command).await,
         Subcommands::Canvas { command } => canvas::handle_command(command).await,
+        Subcommands::Zones { command } => zones::handle_command(command).await,
         Subcommands::Effects { command } => effects::handle_command(command).await,
         Subcommands::Rules { command } => rules::handle_command(command).await,
         Subcommands::Completions { shell } => completions::handle_command(shell).await,
