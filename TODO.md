@@ -42,7 +42,6 @@ _This is a non-exhaustive listing of planned features:_
 ## TODO
 
 - Update all manpages
-- Update all DBus interfaces in rust code
 - keyboard and misc gui pages: make battery/signal-strength controls the same as on mice page
 - Improve 2D-primitives drawing/rasterization API
 - Improve hardware acceleration with Vulkan/WebGPU (GPGPU)
