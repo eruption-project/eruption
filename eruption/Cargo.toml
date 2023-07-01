@@ -66,12 +66,12 @@ nix = "0.26.2"
 atty = "0.2.14"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.99"
-tokio = { version = "1.29.0", features = ["full", "tracing", "test-util"] }
+tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.3", features = ["all"] }
 windows-named-pipe = { git = "https://github.com/X3n0m0rph59/windows-named-pipe", branch = "main", optional = true }
 winapi = { version = "0.3.9", features =["namedpipeapi"], optional = true}
 ctrlc = { version = "3.4.0", features = ["termination"] }
-clap = "4.3.9"
+clap = "4.3.10"
 hotwatch = "0.5.0"
 config = "0.13.3"
 eyre = "0.6.8"
@@ -90,7 +90,7 @@ rand = "0.8.5"
 colorgrad = "0.6.2"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 raqote = "0.8.2"
-# rgb = { version = "0.8.36", features = ["argb", "serde"] }
+rgb = { version = "0.8.36", features = ["argb", "serde"] }
 # image = "0.24.6"
 # imageproc = { version = "0.23.0", features = ["rayon"] }
 resize = "0.7.4"
@@ -100,7 +100,7 @@ ndarray = { version = "0.15.6", features = ["rayon"] }
 transpose = "0.2.2"
 noise = "0.8.2"
 simdnoise = "3.1.6"
-sysinfo = "0.29.2"
+sysinfo = "0.29.3"
 bincode = "2.0.0-rc.3"
 rustfft = "6.1.0"
 toml = "0.7.5"
@@ -119,7 +119,7 @@ i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-rust-embed = { version = "6.7.0", features = ["compression"] }
+rust-embed = { version = "6.8.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 same-file = "1"
@@ -145,7 +145,7 @@ mlua = { version = "0.9.0-beta.3", features = ["lua54", "vendored"] }
 [dev-dependencies]
 pretty_assertions = "1.3.0"
 thiserror = "1.0.40"
-tokio = { version = "1.29.0", features = ["full", "tracing", "test-util"] }
+tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [build-dependencies]
