@@ -25,7 +25,7 @@ require "debug"
 color_map = {}
 
 ticks = 0
-power_envelope = 16.0
+power_envelope = 8.0
 
 -- event handler functions --
 function on_startup(config)
@@ -42,9 +42,9 @@ function on_tick(delta)
     end
 
     local spectrum = get_audio_spectrum()
-    local num_buckets = canvas_width
+    local num_buckets = canvas_width / 2
 
-    for col = 1, canvas_width do
+    for col = 0, canvas_width do
         local bucket = trunc(num_buckets / canvas_width * col)
         local val = n(spectrum[bucket])
 
