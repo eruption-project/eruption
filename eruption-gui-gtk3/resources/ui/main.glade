@@ -299,7 +299,6 @@ The Eruption Development Team
     <property name="width-request">1440</property>
     <property name="height-request">1000</property>
     <property name="can-focus">False</property>
-    <property name="window-position">center-always</property>
     <property name="icon-name">keyboard-brightness-symbolic</property>
     <property name="show-menubar">False</property>
     <child>
@@ -3232,6 +3231,7 @@ The Eruption Development Team
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">Eruption GUI</property>
         <property name="spacing">8</property>
+        <property name="show-close-button">True</property>
         <child>
           <object class="GtkStackSwitcher" id="stack_switcher">
             <property name="visible">True</property>
@@ -3334,6 +3334,9 @@ The Eruption Development Team
             <property name="pack-type">end</property>
             <property name="position">6</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
       </object>
     </child>

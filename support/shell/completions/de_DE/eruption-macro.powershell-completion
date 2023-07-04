@@ -25,7 +25,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-macro' -ScriptBlock {
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verboser Modus (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('-V', 'V ', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'Zeigt eine Liste der verfügbaren Makros in einer Lua Datei')
             [CompletionResult]::new('record', 'record', [CompletionResultType]::ParameterValue, 'Zeichnet eine Tastensequenz auf und speichert sie als Makro')

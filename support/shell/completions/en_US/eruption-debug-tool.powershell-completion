@@ -25,7 +25,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('-V', 'V ', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available devices, use this first to find out the index of the device to use')
             [CompletionResult]::new('report', 'report', [CompletionResultType]::ParameterValue, 'Generate a report for the specified device')

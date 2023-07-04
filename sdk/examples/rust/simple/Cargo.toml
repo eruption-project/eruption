@@ -36,10 +36,10 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-thiserror = "1.0.40"
+thiserror = "1.0.43"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-clap = "4.3.10"
+clap = "4.3.11"
 lazy_static = "1.4.0"
 i18n-embed = { version = "0.13.9", features = [
   "fluent-system",

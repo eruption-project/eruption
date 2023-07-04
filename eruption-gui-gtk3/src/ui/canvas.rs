@@ -514,8 +514,9 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
     // let application = application.as_ref();
 
     // let main_window: gtk::ApplicationWindow = builder.object("main_window").unwrap();
-
     // let notification_box_global: gtk::Box = builder.object("notification_box_global").unwrap();
+
+    let canvas_stack: Stack = builder.object("canvas_stack").unwrap();
 
     let devices_tree_view: gtk::TreeView = builder.object("devices_tree_view").unwrap();
 
@@ -631,6 +632,8 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     devices_tree_view.set_model(Some(&devices_treestore));
     devices_tree_view.show_all();
+
+    canvas_stack.set_visible_child_name("page0");
 
     Ok(())
 }

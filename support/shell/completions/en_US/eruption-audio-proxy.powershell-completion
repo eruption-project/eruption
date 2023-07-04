@@ -27,7 +27,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-audio-proxy' -ScriptBl
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('-V', 'V ', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('daemon', 'daemon', [CompletionResultType]::ParameterValue, 'Run in background')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Generate shell completions')

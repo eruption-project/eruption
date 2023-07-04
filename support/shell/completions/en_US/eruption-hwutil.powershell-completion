@@ -29,7 +29,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-hwutil' -ScriptBlock {
             [CompletionResult]::new('--repeat', 'repeat', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('-V', 'V ', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available devices, use this first to find out the index of the device to address')
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Query device specific status like e.g.: Signal Strength/Battery Level')

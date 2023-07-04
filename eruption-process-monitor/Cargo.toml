@@ -64,10 +64,10 @@ sensor-gnome-shellext = []
 
 [dependencies]
 cfg-if = "1.0.0"
-async-trait = "0.1.68"
+async-trait = "0.1.71"
 byteorder = "1.4.3"
-clap = { version = "4.3.10", features = ["derive"] }
-clap_complete = "4.3.1"
+clap = { version = "4.3.11", features = ["derive"] }
+clap_complete = "4.3.2"
 ctrlc = { version = "3.4.0", features = ["termination"] }
 config = "0.13.3"
 dbus = "0.9.7"
@@ -79,10 +79,10 @@ indexmap = "2.0.0"
 libc = "0.2.147"
 nix = "0.26.2"
 atty = "0.2.14"
-serde_json = "1.0.99"
+serde_json = "1.0.100"
 parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-regex = "1.8.4"
-serde = { version = "1.0.164", features = ["derive"] }
+regex = "1.9.1"
+serde = { version = "1.0.167", features = ["derive"] }
 tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
@@ -93,10 +93,10 @@ tracing-subscriber = { version = "0.3.17", features = [
   "registry",
   "env-filter",
 ] }
-console-subscriber = { version = "0.1.9", features = ["parking_lot"] }
+console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
 flume = "0.10.14"
-toml = "0.7.5"
-thiserror = "1.0.40"
+toml = "0.7.6"
+thiserror = "1.0.43"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hotwatch = "0.5.0"
@@ -123,5 +123,5 @@ unic-langid = "0.9.1"
 icecream = "0.1.0"
 
 [dev-dependencies]
-pretty_assertions = "1.3.0"
+pretty_assertions = "1.4.0"
 tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
