@@ -66,6 +66,11 @@ key_to_index['DEL'] = 102
 key_to_index['END'] = 106
 key_to_index['PGDWN'] = 111
 
+key_to_index['UP'] = 91
+key_to_index['DOWN'] = 92
+key_to_index['LEFT'] = 87
+key_to_index['RIGHT'] = 96
+
 key_to_index['1'] = 7
 key_to_index['2'] = 13
 key_to_index['3'] = 19
