@@ -37,8 +37,8 @@ sudo dnf install protobuf-devel systemd-devel dbus-devel hidapi-devel libevdev-d
 #### On OpenSuse-based distros
 
 ```shell
-sudo zypper in cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-x11-devel spirv-tools shaderc acl \
-    libhidapi-devel luajit-devel libevdev-devel protobuf-devel gtk3-devel gtksourceview4-devel
+sudo zypper install cmake gcc libdbus-c++-devel libgudev-1_0-devel libX11-devel xorg-x11-devel acl \
+  libhidapi-devel lua54-devel libevdev-devel protobuf-devel gtk3-devel gtksourceview4-devel libcap-progs
 ```
 
 #### On Debian-based distros
