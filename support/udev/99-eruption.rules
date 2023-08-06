@@ -35,6 +35,8 @@ ACTION=="remove", GOTO="eruption_end"
 # ROCCAT Vulcan 100/120/121
 ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service", RUN+="/usr/bin/setfacl -m u:eruption:rw %N"
 ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service", RUN+="/usr/bin/setfacl -m u:eruption:rw %N"
+ACTION=="add", SUBSYSTEMS=="input", KERNEL=="input*" ENV{ID_VENDOR_ID}=="1e7d", ENV{ID_MODEL_ID}=="307a", ENV{ID_USB_INTERFACE_NUM}=="03" RUN+="/usr/bin/chmod 666 $sys$devpath/inhibited"
+ACTION=="add", SUBSYSTEMS=="input", KERNEL=="input*" ENV{ID_VENDOR_ID}=="1e7d", ENV{ID_MODEL_ID}=="3098", ENV{ID_USB_INTERFACE_NUM}=="03" RUN+="/usr/bin/chmod 666 $sys$devpath/inhibited"
 
 # ROCCAT Vulcan Pro
 ACTION=="add|change", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="30f7", TAG+="systemd", ENV{SYSTEMD_WANTS}+="eruption-hotplug-helper.service", RUN+="/usr/bin/setfacl -m u:eruption:rw %N"

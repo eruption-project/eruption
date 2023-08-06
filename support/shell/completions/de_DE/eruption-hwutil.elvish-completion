@@ -22,6 +22,8 @@ set edit:completion:arg-completer[eruption-hwutil] = {|@words|
             cand --config 'Sets the configuration file to use'
             cand -v 'Verbose mode (-v, -vv, -vvv, etc.)'
             cand --verbose 'Verbose mode (-v, -vv, -vvv, etc.)'
+            cand -i 'Send the hardware commands only after a keypress, where applicable'
+            cand --interactive 'Send the hardware commands only after a keypress, where applicable'
             cand -r 'Repeat output until ctrl+c is pressed'
             cand --repeat 'Repeat output until ctrl+c is pressed'
             cand -h 'Print help'

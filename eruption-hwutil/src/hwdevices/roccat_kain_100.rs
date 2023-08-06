@@ -24,7 +24,7 @@ use std::time::Duration;
 use std::{cell::RefCell, thread};
 
 #[allow(unused)]
-use crate::{constants, eprintln_v, println_v};
+use crate::{constants, interact, eprintln_v, println_v};
 
 use super::{DeviceStatus, DeviceTrait, HwDeviceError, Result, RGBA};
 
@@ -162,6 +162,7 @@ impl RoccatKain100 {
 
 impl DeviceTrait for RoccatKain100 {
     fn send_init_sequence(&self) -> Result<()> {
+        interact::prompt("Press any key to send initialization sequence.");
         println_v!(1, "Sending device init sequence...");
 
         if !self.is_bound {
@@ -333,7 +334,7 @@ impl DeviceTrait for RoccatKain100 {
             },
         ])?;
 
-        thread::sleep(Duration::from_millis(500));
+        interact::prompt_or_wait("Press any key to change colors.", Duration::from_millis(500));
 
         self.send_led_map(&[
             RGBA {
@@ -350,7 +351,7 @@ impl DeviceTrait for RoccatKain100 {
             },
         ])?;
 
-        thread::sleep(Duration::from_millis(500));
+        interact::prompt_or_wait("Press any key to change colors.", Duration::from_millis(500));
 
         self.send_led_map(&[
             RGBA {

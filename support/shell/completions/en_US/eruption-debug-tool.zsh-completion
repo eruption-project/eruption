@@ -17,6 +17,8 @@ _eruption-debug-tool() {
     _arguments "${_arguments_options[@]}" \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-i[Send the hardware commands only after a keypress, where applicable]' \
+'--interactive[Send the hardware commands only after a keypress, where applicable]' \
 '-h[Print help]' \
 '--help[Print help]' \
 '-V[Print version]' \
@@ -92,6 +94,13 @@ _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (run-tests)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+':device -- The index of the device, can be found with the list sub-command:' \
+&& ret=0
+;;
+(toggle-udev-inhibited)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help]' \
 '--help[Print help]' \
@@ -202,6 +211,10 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
+(toggle-udev-inhibited)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
 (utils)
 _arguments "${_arguments_options[@]}" \
 ":: :_eruption-debug-tool__help__utils_commands" \
@@ -251,6 +264,7 @@ _eruption-debug-tool_commands() {
 'read-raw:Read data from device' \
 'write-raw:Send data to device (dangerous)' \
 'run-tests:Send a device specific init sequence and try to set colors' \
+'toggle-udev-inhibited:Toggle the "inhibited" attribute of the udev device if it'\''s sending bad inputs events' \
 'utils:Special utility functions, like searching for CRC polynoms and parameters' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
@@ -279,6 +293,7 @@ _eruption-debug-tool__help_commands() {
 'read-raw:Read data from device' \
 'write-raw:Send data to device (dangerous)' \
 'run-tests:Send a device specific init sequence and try to set colors' \
+'toggle-udev-inhibited:Toggle the "inhibited" attribute of the udev device if it'\''s sending bad inputs events' \
 'utils:Special utility functions, like searching for CRC polynoms and parameters' \
 'completions:Generate shell completions' \
 'help:Print this message or the help of the given subcommand(s)' \
@@ -377,6 +392,16 @@ _eruption-debug-tool__help__state-diff_commands() {
 _eruption-debug-tool__state-diff_commands() {
     local commands; commands=()
     _describe -t commands 'eruption-debug-tool state-diff commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__help__toggle-udev-inhibited_commands] )) ||
+_eruption-debug-tool__help__toggle-udev-inhibited_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool help toggle-udev-inhibited commands' commands "$@"
+}
+(( $+functions[_eruption-debug-tool__toggle-udev-inhibited_commands] )) ||
+_eruption-debug-tool__toggle-udev-inhibited_commands() {
+    local commands; commands=()
+    _describe -t commands 'eruption-debug-tool toggle-udev-inhibited commands' commands "$@"
 }
 (( $+functions[_eruption-debug-tool__help__trace_commands] )) ||
 _eruption-debug-tool__help__trace_commands() {

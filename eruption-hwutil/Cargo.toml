@@ -72,6 +72,7 @@ color-eyre = "0.6.2"
 bitvec = "1.0.1"
 byteorder = "1.4.3"
 hidapi = { git = "https://github.com/X3n0m0rph59/hidapi-rs.git", rev = "a842fd6", default-features = false, features = ["linux-native"] }
+udev = "0.7"
 hexdump = "0.1.1"
 serialport = "4.2.0"
 crc8 = "0.1.1"

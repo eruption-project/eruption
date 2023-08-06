@@ -40,6 +40,7 @@ use tracing::*;
 
 mod constants;
 mod hwdevices;
+mod interact;
 mod util;
 
 use util::{DeviceState, HexSlice};
@@ -78,6 +79,12 @@ macro_rules! println_v {
         println!()
     };
 
+    ($verbosity : expr) => {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!()
+        }
+    };
+
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
         if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!($l, $($params),*)
@@ -86,7 +93,7 @@ macro_rules! println_v {
 
     ($verbosity : expr, $($params : tt) *) => {
         if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
-            println!($($params),*)
+            println!($($params)*)
         }
     };
 }
@@ -97,6 +104,12 @@ macro_rules! eprintln_v {
         eprintln!()
     };
 
+    ($verbosity : expr) => {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!()
+        }
+    };
+
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
         if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!($l, $($params),*)
@@ -105,7 +118,7 @@ macro_rules! eprintln_v {
 
     ($verbosity : expr, $($params : tt) *) => {
         if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
-            eprintln!($($params),*)
+            eprintln!($($params)*)
         }
     };
 }
@@ -135,6 +148,10 @@ pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[clap(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
+
+    /// Send the hardware commands only after a keypress, where applicable
+    #[arg(short, long)]
+    interactive: bool,
 
     #[clap(subcommand)]
     command: Subcommands,
@@ -210,6 +227,12 @@ pub enum Subcommands {
 
     /// Send a device specific init sequence and try to set colors
     RunTests {
+        /// The index of the device, can be found with the list sub-command
+        device: usize,
+    },
+
+    /// Toggle the "inhibited" attribute of the udev device if it's sending bad inputs events.
+    ToggleUdevInhibited {
         /// The index of the device, can be found with the list sub-command
         device: usize,
     },
@@ -311,6 +334,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
     *OPTIONS.lock() = Some(opts.clone());
 
+    interact::INTERACTIVE.store(opts.interactive, Ordering::SeqCst);
+
     match opts.command {
         Subcommands::List => {
             println!();
@@ -322,7 +347,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 Ok(hidapi) => {
                     for (index, device) in hidapi.device_list().enumerate() {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -362,7 +387,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 Ok(hidapi) => {
                     if let Some((index, device)) = hidapi.device_list().enumerate().nth(device) {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -405,7 +430,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 Ok(hidapi) => {
                     if let Some((index, device)) = hidapi.device_list().enumerate().nth(device) {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -465,7 +490,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         hidapi.device_list().enumerate().nth(device_index)
                     {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -551,7 +576,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         hidapi.device_list().enumerate().nth(device_index)
                     {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -594,7 +619,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         hidapi.device_list().enumerate().nth(device_index)
                     {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -635,7 +660,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         hidapi.device_list().enumerate().nth(device_index)
                     {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -678,7 +703,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         hidapi.device_list().enumerate().nth(device_index)
                     {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -718,7 +743,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -736,6 +761,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 )?;
 
                                 hwdev.send_init_sequence()?;
+
+                                interact::prompt("Press any key to send the test pattern.");
                                 hwdev.send_test_pattern()?;
                             } else {
                                 error!("Could not open the device, is the device in use?");
@@ -785,6 +812,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             }
                         }
 
+                        interact::prompt("Press any key to send the test pattern.");
+
                         device.send_led_off_sequence()?;
                     }
 
@@ -792,6 +821,47 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         tracing::error!("Could not bind the device: {}", e);
                     }
                 }
+            }
+        }
+
+        Subcommands::ToggleUdevInhibited {
+            device: device_index
+        } => {
+            if device_index < 255 - 4 {
+                // create the one and only hidapi instance
+                match hidapi::HidApi::new() {
+                    Ok(hidapi) => {
+                        if let Some((index, device)) =
+                            hidapi.device_list().enumerate().nth(device_index)
+                        {
+                            println!(
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
+                                format!("{index:02}").bold(),
+                                device.vendor_id(),
+                                device.product_id(),
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold(),
+                                device.interface_number()
+                            );
+
+                            interact::prompt("Press any key to toggle the \"inhibited\" attribute.");
+                            let workaround_attempt = util::udev_inhibited_workaround(
+                                device.vendor_id(),
+                                device.product_id(),
+                                device.interface_number());
+                            if let Err(err) = workaround_attempt {
+                                error!("Udev \"inhibited\" workaround failed: {:?}", err)
+                            }
+
+                        }
+                    }
+
+                    Err(_) => {
+                        error!("Could not open HIDAPI");
+                    }
+                }
+            } else {
+                println!("Udev \"inhibited\" workaround is inapplicable.");
             }
         }
 
