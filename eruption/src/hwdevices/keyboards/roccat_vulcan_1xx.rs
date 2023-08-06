@@ -1173,6 +1173,13 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
             self.send_led_map(&led_map)?;
 
+            // The "inhibited" attribute must be toggled after the the LEDs are updated.  Doing it before has no effect.
+            hwdevices::attempt_udev_inhibited_workaround(
+                self.get_usb_vid(),
+                self.get_usb_pid(),
+                LED_INTERFACE,
+            );
+
             Ok(())
         }
     }

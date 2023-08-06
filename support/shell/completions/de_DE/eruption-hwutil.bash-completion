@@ -79,7 +79,7 @@ _eruption-hwutil() {
 
     case "${cmd}" in
         eruption__hwutil)
-            opts="-v -r -c -h -V --verbose --repeat --config --help --version list status blackout firmware completions help"
+            opts="-v -i -r -c -h -V --verbose --interactive --repeat --config --help --version list status blackout firmware completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

@@ -24,7 +24,7 @@ use crate::hwdevices::{keyboards::*, mice::*, misc::*};
 
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
-
+use eyre::eyre;
 use hidapi::HidApi;
 use lazy_static::lazy_static;
 use mlua::prelude::*;
@@ -32,6 +32,7 @@ use parking_lot::RwLock;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde::{self, Deserialize};
 use std::collections::{HashMap, HashSet};
+use std::ffi::OsStr;
 use std::fmt::{Display, Formatter};
 use std::u8;
 use std::{any::Any, sync::Arc, thread};
@@ -2069,6 +2070,56 @@ pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
         }
 
         Err(_e) => Err(HwDeviceError::UdevError {}.into()),
+    }
+}
+
+/// For some devices, such as the Vulcan 1xx, after sending the report to update the LEDs, the device's evdev LED interface
+/// goes crazy and starts spewing out KEY_UNKNOWN events.  This is ignored by X and Wayland, but is interpreted as real key
+/// stroke inputs on virtual consoles.  As best as I can tell, this behavior is a bug somewhere in udev/evdev/hidraw.  As a
+/// workaround, toggling the "inhibited" attribute back and forth as a privileged user silences these events for as long as
+/// the device is plugged in.  Not all Roccat devices require this workaround, headphones don't, but I don't know which all
+/// do and which don't.  Note that this workaround can also be applied manually by writing to the "inhibited" file found at
+/// path "/sys/class/input/eventX/inhibited", where the X in "eventX" is the udev number associated with the LED interface.
+pub fn udev_inhibited_workaround(
+    vendor_id: u16,
+    product_id: u16,
+    interface_num: i32,
+) -> Result<()> {
+    let interface_num_str = format!("{interface_num:02}");
+    let interface_num_osstr = OsStr::new(&interface_num_str);
+
+    let mut enumerator = udev::Enumerator::new()?;
+    enumerator.match_subsystem("input")?;
+    enumerator.match_property("ID_VENDOR_ID", format!("{vendor_id:04x}"))?;
+    enumerator.match_property("ID_MODEL_ID", format!("{product_id:04x}"))?;
+    enumerator.match_property("ID_USB_INTERFACE_NUM", &interface_num_str)?;
+    enumerator.match_attribute("inhibited", "0")?;
+
+    enumerator
+        .scan_devices()?
+        .find(|dev| {
+            // For some reason, the above match_property() still brings back devices with different interface_nums, so filter again.
+            dev.property_value("ID_USB_INTERFACE_NUM")
+                .map_or(false, |value| value == interface_num_osstr)
+        })
+        .map_or_else(
+            || Err(eyre!("Udev device not found.")),
+            |mut dev| {
+                // Toggling the value on and off is enough to quiet spurious events.
+                dev.set_attribute_value("inhibited", "1")?;
+                dev.set_attribute_value("inhibited", "0")?;
+                Ok(())
+            },
+        )
+}
+
+pub fn attempt_udev_inhibited_workaround(vendor_id: u16, product_id: u16, interface_num: i32) {
+    let workaround_attempt = udev_inhibited_workaround(vendor_id, product_id, interface_num);
+    if let Err(err) = workaround_attempt {
+        warn!("Udev \"inhibited\" workaround failed: {}", err);
+        warn!("Continuing anyway.");
+    } else {
+        info!("Udev \"inhibited\" workaround succeeded.");
     }
 }
 

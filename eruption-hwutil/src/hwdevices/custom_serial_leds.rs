@@ -29,7 +29,7 @@ use std::{sync::Arc, time::Duration};
 use super::{HwDeviceError, RGBA};
 
 #[allow(unused)]
-use crate::{constants, eprintln_v, println_v};
+use crate::{constants, interact, eprintln_v, println_v};
 
 const BAUD_RATE: u32 = 460800;
 const NUM_LEDS: usize = 80;
@@ -59,6 +59,7 @@ impl CustomSerialLeds {
     }
 
     pub fn send_init_sequence(&mut self) -> Result<()> {
+        interact::prompt("Press any key to send initialization sequence.");
         // some devices need many iterations to sync, so we need to try multiple times
         for _ in 0..8 {
             let led_map = [RGBA {

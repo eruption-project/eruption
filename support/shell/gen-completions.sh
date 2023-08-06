@@ -19,11 +19,19 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 function gen_completions {
-	./target/release/"$1" "completions" "bash" >"support/shell/completions/$LANG/$1.bash-completion"
-	./target/release/"$1" "completions" "elvish" >"support/shell/completions/$LANG/$1.elvish-completion"
-	./target/release/"$1" "completions" "fish" >"support/shell/completions/$LANG/$1.fish-completion"
-	./target/release/"$1" "completions" "powershell" >"support/shell/completions/$LANG/$1.powershell-completion"
-	./target/release/"$1" "completions" "zsh" >"support/shell/completions/$LANG/$1.zsh-completion"
+	executable=./target/debug/"$1"
+	[[ -x "$executable" ]] || executable=./target/release/"$1"
+	if [[ ! -x "$executable" ]]; then
+		echo "No executable found for $1."
+		return
+	fi
+	echo "Creating $LANG completions for $1 using $executable"
+
+	"$executable" "completions" "bash" >"support/shell/completions/$LANG/$1.bash-completion"
+	"$executable" "completions" "elvish" >"support/shell/completions/$LANG/$1.elvish-completion"
+	"$executable" "completions" "fish" >"support/shell/completions/$LANG/$1.fish-completion"
+	"$executable" "completions" "powershell" >"support/shell/completions/$LANG/$1.powershell-completion"
+	"$executable" "completions" "zsh" >"support/shell/completions/$LANG/$1.zsh-completion"
 }
 
 # supported locales
@@ -31,6 +39,7 @@ languages=('en_US' 'de_DE')
 
 for l in "${languages[@]}"; do
 	export LANG=$l
+	export LC_ALL=$l
 	mkdir -p "support/shell/completions/$LANG/"
 
 	# gen_completions "eruption"

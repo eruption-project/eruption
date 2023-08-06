@@ -36,6 +36,9 @@ _eruption-debug-tool() {
             eruption__debug__tool,state-diff)
                 cmd="eruption__debug__tool__state__diff"
                 ;;
+            eruption__debug__tool,toggle-udev-inhibited)
+                cmd="eruption__debug__tool__toggle__udev__inhibited"
+                ;;
             eruption__debug__tool,trace)
                 cmd="eruption__debug__tool__trace"
                 ;;
@@ -72,6 +75,9 @@ _eruption-debug-tool() {
             eruption__debug__tool__help,state-diff)
                 cmd="eruption__debug__tool__help__state__diff"
                 ;;
+            eruption__debug__tool__help,toggle-udev-inhibited)
+                cmd="eruption__debug__tool__help__toggle__udev__inhibited"
+                ;;
             eruption__debug__tool__help,trace)
                 cmd="eruption__debug__tool__help__trace"
                 ;;
@@ -106,7 +112,7 @@ _eruption-debug-tool() {
 
     case "${cmd}" in
         eruption__debug__tool)
-            opts="-v -h -V --verbose --help --version list report trace state-diff read write read-raw write-raw run-tests utils completions help"
+            opts="-v -i -h -V --verbose --interactive --help --version list report trace state-diff read write read-raw write-raw run-tests toggle-udev-inhibited utils completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -134,7 +140,7 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__help)
-            opts="list report trace state-diff read write read-raw write-raw run-tests utils completions help"
+            opts="list report trace state-diff read write read-raw write-raw run-tests toggle-udev-inhibited utils completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -246,6 +252,20 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__help__state__diff)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__help__toggle__udev__inhibited)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -400,6 +420,20 @@ _eruption-debug-tool() {
             return 0
             ;;
         eruption__debug__tool__state__diff)
+            opts="-h --help <DEVICE>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        eruption__debug__tool__toggle__udev__inhibited)
             opts="-h --help <DEVICE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )

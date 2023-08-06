@@ -20,9 +20,11 @@
 */
 
 use colored::*;
+use eyre::eyre;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
+use std::ffi::OsStr;
 use std::sync::Arc;
 use std::{collections::HashMap, fmt, fs};
 use std::{num::ParseIntError, path::Path};
@@ -214,4 +216,40 @@ pub fn find_crc8_from_params(sum: u8, buf: &[u8], p: &[(u8, u8)]) -> Vec<(u8, u8
     }
 
     result
+}
+
+/// For some devices, such as the Vulcan 1xx, after sending the report to update the LEDs, the device's evdev LED interface
+/// goes crazy and starts spewing out KEY_UNKNOWN events.  This is ignored by X and Wayland, but is interpreted as real key
+/// stroke inputs on virtual consoles.  As best as I can tell, this behavior is a bug somewhere in udev/evdev/hidraw.  As a
+/// workaround, toggling the "inhibited" attribute back and forth as a privileged user silences these events for as long as
+/// the device is plugged in.  Not all Roccat devices require this workaround, headphones don't, but I don't know which all
+/// do and which don't.  Note that this workaround can also be applied manually by writing to the "inhibited" file found at
+/// path "/sys/class/input/eventX/inhibited", where the X in "eventX" is the udev number associated with the LED interface.
+pub fn udev_inhibited_workaround(vendor_id: u16, product_id: u16, interface_num: i32) -> Result<()> {
+    let interface_num_str = format!("{interface_num:02}");
+    let interface_num_osstr = OsStr::new(&interface_num_str);
+
+    let mut enumerator = udev::Enumerator::new()?;
+    enumerator.match_subsystem("input")?;
+    enumerator.match_property("ID_VENDOR_ID", format!("{vendor_id:04x}"))?;
+    enumerator.match_property("ID_MODEL_ID", format!("{product_id:04x}"))?;
+    enumerator.match_property("ID_USB_INTERFACE_NUM", &interface_num_str)?;
+    enumerator.match_attribute("inhibited", "0")?;
+
+    enumerator
+        .scan_devices()?
+        .find(|dev| {
+            // For some reason, the above match_property() still brings back devices with different interface_nums, so filter again.
+            dev.property_value("ID_USB_INTERFACE_NUM")
+                .map_or(false, |value| value == interface_num_osstr)
+        })
+        .map_or_else(
+            || Err(eyre!("Udev device not found.")),
+            |mut dev|
+            {
+                // Toggling the value on and off is enough to quiet spurious events.
+                dev.set_attribute_value("inhibited", "1")?;
+                dev.set_attribute_value("inhibited", "0")?;
+                Ok(())
+            })
 }

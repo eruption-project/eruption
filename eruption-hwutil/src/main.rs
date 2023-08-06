@@ -47,6 +47,7 @@ use tracing::error;
 mod constants;
 mod device;
 mod hwdevices;
+mod interact;
 mod util;
 
 #[derive(RustEmbed)]
@@ -83,6 +84,12 @@ macro_rules! println_v {
         println!()
     };
 
+    ($verbosity : expr) => {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            println!()
+        }
+    };
+
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
         if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!($l, $($params),*)
@@ -91,7 +98,7 @@ macro_rules! println_v {
 
     ($verbosity : expr, $($params : tt) *) => {
         if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
-            println!($($params),*)
+            println!($($params)*)
         }
     };
 }
@@ -102,6 +109,12 @@ macro_rules! eprintln_v {
         eprintln!()
     };
 
+    ($verbosity : expr) => {
+        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+            eprintln!()
+        }
+    };
+
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
         if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!($l, $($params),*)
@@ -110,7 +123,7 @@ macro_rules! eprintln_v {
 
     ($verbosity : expr, $($params : tt) *) => {
         if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
-            eprintln!($($params),*)
+            eprintln!($($params)*)
         }
     };
 }
@@ -144,6 +157,10 @@ pub struct Options {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[clap(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
+
+    /// Send the hardware commands only after a keypress, where applicable
+    #[arg(short, long)]
+    interactive: bool,
 
     /// Repeat output until ctrl+c is pressed
     #[clap(short, long)]
@@ -275,6 +292,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
     *OPTIONS.lock() = Some(opts.clone());
 
+    interact::INTERACTIVE.store(opts.interactive, Ordering::SeqCst);
+
     // process configuration file
     let config_file = opts
         .config
@@ -301,19 +320,24 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             match hidapi::HidApi::new() {
                 Ok(hidapi) => {
                     for (index, device) in hidapi.device_list().enumerate() {
-                        if let Some(_device_info) =
-                            device::get_device_info(device.vendor_id(), device.product_id())
-                        {
-                            println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
-                                format!("{index:02}").bold(),
-                                device.vendor_id(),
-                                device.product_id(),
-                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                                device.product_string().unwrap_or("<unknown>").bold(),
-                                device.interface_number(),
-                                device.usage_page(),
-                            )
+                        if device.interface_number() == 0 {
+                            if opts.verbose > 0 {
+                                println!(
+                                    "Index: {}: ID: {:04x}:{:04x} {}/{}",
+                                    format!("{index:02}").bold(),
+                                    device.vendor_id(),
+                                    device.product_id(),
+                                    device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                    device.product_string().unwrap_or("<unknown>").bold()
+                                );
+                            } else {
+                                println!(
+                                    "{}: {}/{}",
+                                    format!("{index:02}").bold(),
+                                    device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                    device.product_string().unwrap_or("<unknown>").bold()
+                                );
+                            }
                         }
                     }
 
@@ -350,16 +374,25 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         let term = console::Term::stdout();
 
-                        println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} iface: {}:{:x}",
-                            format!("{index:02}").bold(),
-                            device.vendor_id(),
-                            device.product_id(),
-                            device.manufacturer_string().unwrap_or("<unknown>").bold(),
-                            device.product_string().unwrap_or("<unknown>").bold(),
-                            device.interface_number(),
-                            device.usage_page(),
-                        );
+                        if opts.verbose > 0 {
+                            println!(
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} iface: {}:{:x}",
+                                format!("{index:02}").bold(),
+                                device.vendor_id(),
+                                device.product_id(),
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold(),
+                                device.interface_number(),
+                                device.usage_page(),
+                            );
+                        } else {
+                            println!(
+                                "{}: {}/{}",
+                                format!("{index:02}").bold(),
+                                device.manufacturer_string().unwrap_or("<unknown>").bold(),
+                                device.product_string().unwrap_or("<unknown>").bold()
+                            );
+                        }
 
                         if let Ok(dev) = device.open_device(&hidapi) {
                             let hwdev = hwdevices::bind_device(
@@ -459,7 +492,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     {
                         if opts.verbose > 1 {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -487,6 +520,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                             println_v!(1, "Polling device status...");
 
+                            interact::prompt("Press any key to send blackout.");
+
                             hwdev.send_led_map(
                                 &[hwdevices::RGBA {
                                     r: 0x00,
@@ -507,7 +542,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
-        Subcommands::Firmware { command: _ } => {}
+        Subcommands::Firmware { command: _ } => {
+            error!("Firmware command is not yet implemented.");
+        }
 
         Subcommands::Completions { shell } => {
             const BIN_NAME: &str = env!("CARGO_PKG_NAME");
