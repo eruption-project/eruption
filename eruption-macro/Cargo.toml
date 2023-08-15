@@ -42,15 +42,18 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap = { version = "4.3.11", features = ["derive"] }
+clap = { version = "4.3.24", features = ["derive"] }
 clap_complete = "4.3.2"
 ctrlc = { version = "3.4.0", features = ["termination"] }
 colored = "2.0.4"
 comfy-table = "7.0.1"
 libc = "0.2.147"
-nix = "0.26.2"
-parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
+nix = "0.27.1"
+parking_lot = { version = "0.12.1", features = [
+  "send_guard",
+  "hardware-lock-elision",
+] }
+tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
@@ -61,13 +64,13 @@ tracing-subscriber = { version = "0.3.17", features = [
   "env-filter",
 ] }
 console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
-flume = "0.10.14"
-thiserror = "1.0.43"
+flume = "0.11.0"
+thiserror = "1.0.47"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
 chrono = { version = "0.4.26", features = ["serde"] }
-regex = "1.9.1"
+regex = "1.9.3"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"
 udev = { version = "0.7", optional = true }
@@ -76,10 +79,10 @@ lazy_static = "1.4.0"
 bitvec = "1.0.1"
 walkdir = "2.3.3"
 maplit = "1.0.2"
-pest = "2.7.0"
-pest_derive = "2.7.0"
-serde = { version = "1.0.167", features = ["derive"] }
-serde_json = "1.0.100"
+pest = "2.7.2"
+pest_derive = "2.7.2"
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0.105"
 serde_json_any_key = "2.0.0"
 i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
@@ -91,16 +94,18 @@ unic-langid = "0.9.1"
 icecream = "0.1.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "d3d0d88706824536889723564dceeff4ffc5c2a9", default-features = false, features = ["linux-native"] }
-# mlua = { version = "0.9.0-beta.2", features = ["luajit"] }
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "d3d0d88706824536889723564dceeff4ffc5c2a9", default-features = false, features = [
+  "linux-native",
+] }
+# mlua = { version = "0.9.1", features = ["luajit"] }
 # lua-src = "546.0.0"
-mlua = { version = "0.9.0-beta.3", features = ["lua54", "vendored"] }
+mlua = { version = "0.9.1", features = ["lua54", "vendored"] }
 
 [target.'cfg(windows)'.dependencies]
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "d3d0d88706824536889723564dceeff4ffc5c2a9" }
-lua-src = "546.0.0"
-mlua = { version = "0.9.0-beta.3", features = ["lua54", "vendored"] }
+lua-src = "546.0.1"
+mlua = { version = "0.9.1", features = ["lua54", "vendored"] }
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
-tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
+tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }

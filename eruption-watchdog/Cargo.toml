@@ -41,15 +41,18 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-flume = "0.10.14"
-clap = { version = "4.3.11", features = ["derive"] }
+flume = "0.11.0"
+clap = { version = "4.3.24", features = ["derive"] }
 clap_complete = "4.3.2"
 ctrlc = { version = "3.4.0", features = ["termination"] }
 lazy_static = "1.4.0"
 libc = "0.2.147"
 atty = "0.2.14"
-parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
+parking_lot = { version = "0.12.1", features = [
+  "send_guard",
+  "hardware-lock-elision",
+] }
+tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
@@ -60,7 +63,7 @@ tracing-subscriber = { version = "0.3.17", features = [
   "env-filter",
 ] }
 console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
-thiserror = "1.0.43"
+thiserror = "1.0.47"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 lockfile = "0.4.0"
@@ -76,4 +79,4 @@ eruption-sdk = { path = "../sdk/lib/rust/eruption-rs" }
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
-tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
+tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }

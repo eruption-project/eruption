@@ -32,9 +32,9 @@ keywords = ["eruption", "linux", "led", "driver", "linux", "kernel", "module"]
 categories = ["hardware-support"]
 
 [dependencies]
-bitflags = "2.1.0"
+bitflags = "2.4.0"
 
 [build-dependencies]
-bindgen = "0.65.1"
+bindgen = "0.66.1"
 cc = "1.0.79"
 shlex = "1.1.0"

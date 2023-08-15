@@ -43,16 +43,19 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap = { version = "4.3.11", features = ["derive"] }
+clap = { version = "4.3.24", features = ["derive"] }
 clap_complete = "4.3.2"
-serde = { version = "1.0.167", features = ["derive"] }
+serde = { version = "1.0.188", features = ["derive"] }
 lazy_static = "1.4.0"
-flume = "0.10.14"
+flume = "0.11.0"
 libc = "0.2.147"
-nix = "0.26.2"
+nix = { version = "0.27.1", features = ["poll", "socket"] }
 atty = "0.2.14"
-parking_lot = { version = "0.12.1", features = ["send_guard", "hardware-lock-elision"] }
-tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
+parking_lot = { version = "0.12.1", features = [
+  "send_guard",
+  "hardware-lock-elision",
+] }
+tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.3", features = ["all"] }
 ctrlc = { version = "3.4.0", features = ["termination"] }
 tracing = "0.1.37"
@@ -65,12 +68,12 @@ tracing-subscriber = { version = "0.3.17", features = [
   "env-filter",
 ] }
 console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
-thiserror = "1.0.43"
+thiserror = "1.0.47"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hound = "3.5.0"
-libpulse-binding = { version = "2.27.1", default-features = false }
-libpulse-simple-binding = { version = "2.27.1", default-features = false }
+libpulse-binding = { version = "2.28.1", default-features = false }
+libpulse-simple-binding = { version = "2.28.1", default-features = false }
 rust-pulsectl = { git = "https://github.com/X3n0m0rph59/pulsectl.git", branch = "master" }
 # dbus = "0.9.3"
 # dbus-tree = "0.9.1"
@@ -89,7 +92,7 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
-tokio = { version = "1.29.1", features = ["full", "tracing", "test-util"] }
+tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 
 [build-dependencies]
 prost-build = "0.11.9"
