@@ -80,5 +80,5 @@ default = 0xd0ff0000
 [[config."Audio Visualizer #3 (Spectrum Analyzer)"]]
 type = 'float'
 name = 'opacity'
-value = 0.95
-default = 0.95
+value = 0.85
+default = 0.85

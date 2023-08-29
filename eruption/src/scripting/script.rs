@@ -447,7 +447,7 @@ fn on_tick(call_helper: &mut RunningScriptCallHelper, param: u32) -> Result<Runn
 
 fn realize_color_map() -> Result<RunningScriptResult> {
     #[inline]
-    fn alpha_blend(src: &[RGBA], dst: &mut [RGBA], factor: f32) {
+    fn alpha_blend(src: &[RGBA], dst: &mut [RGBA]) {
         assert_eq!(src.len(), dst.len());
 
         dst.par_iter_mut()
@@ -456,26 +456,22 @@ fn realize_color_map() -> Result<RunningScriptResult> {
                 let src_alpha = src_pixel.a as f32 / 255.0;
                 let dst_alpha = dst_pixel.a as f32 / 255.0;
 
-                let blend_alpha = (src_alpha * factor) + dst_alpha * (1.0 - factor);
+                let blend_factor = 1.0 - src_alpha;
 
-                if blend_alpha > 0.0 {
-                    let blend_factor = (src_alpha * factor) / blend_alpha;
+                let blended_pixel = RGBA {
+                    r: ((src_pixel.r as f32 * src_alpha
+                        + dst_pixel.r as f32 * dst_alpha * blend_factor)
+                        .round()) as u8,
+                    g: ((src_pixel.g as f32 * src_alpha
+                        + dst_pixel.g as f32 * dst_alpha * blend_factor)
+                        .round()) as u8,
+                    b: ((src_pixel.b as f32 * src_alpha
+                        + dst_pixel.b as f32 * dst_alpha * blend_factor)
+                        .round()) as u8,
+                    a: 255,
+                };
 
-                    let blended_pixel = RGBA {
-                        r: ((src_pixel.r as f32 * blend_factor
-                            + dst_pixel.r as f32 * (1.0 - blend_factor))
-                            .round()) as u8,
-                        g: ((src_pixel.g as f32 * blend_factor
-                            + dst_pixel.g as f32 * (1.0 - blend_factor))
-                            .round()) as u8,
-                        b: ((src_pixel.b as f32 * blend_factor
-                            + dst_pixel.b as f32 * (1.0 - blend_factor))
-                            .round()) as u8,
-                        a: (blend_alpha * 255.0).round() as u8,
-                    };
-
-                    *dst_pixel = blended_pixel;
-                }
+                *dst_pixel = blended_pixel;
             });
     }
 
@@ -484,7 +480,7 @@ fn realize_color_map() -> Result<RunningScriptResult> {
             LED_MAP
                 .write()
                 .chunks_exact_mut(constants::CANVAS_SIZE)
-                .for_each(|chunks| alpha_blend(&foreground.borrow(), chunks, 0.5));
+                .for_each(|chunks| alpha_blend(&foreground.borrow(), chunks));
         });
     }
 

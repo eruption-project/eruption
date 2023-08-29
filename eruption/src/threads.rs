@@ -833,7 +833,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             if saved_frame_generation_eruption_sdk.load(Ordering::SeqCst) < current_frame_generation_eruption_sdk {
                                 let sdk_led_map = sdk_support::LED_MAP.read();
                                 script::LED_MAP.write().par_chunks_exact_mut(constants::CANVAS_SIZE).for_each(|chunks| {
-                                    alpha_blend(&sdk_led_map, chunks, 0.5);
+                                    alpha_blend(&sdk_led_map, chunks, 0.85);
                                 });
                             }
 
@@ -843,7 +843,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 let uleds_led_map = uleds::LED_MAP.read();
 
                                 script::LED_MAP.write().par_chunks_exact_mut(constants::CANVAS_SIZE).for_each(|chunks| {
-                                    alpha_blend(&uleds_led_map, chunks, 0.5);
+                                    alpha_blend(&uleds_led_map, chunks, 0.85);
                                 });
                             }
 
