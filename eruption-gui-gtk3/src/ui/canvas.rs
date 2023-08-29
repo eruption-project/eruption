@@ -20,6 +20,7 @@
 */
 
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
@@ -49,6 +50,9 @@ const BORDER: (f64, f64) = (8.0, 8.0);
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 lazy_static! {
+    /// Managed devices
+    pub static ref DEVICE_INFO: Arc<RwLock<HashMap<u64, (String, String)>>> = Arc::new(RwLock::new(HashMap::new()));
+
     /// Per-device allocated zones on the unified canvas
     pub static ref ZONES: Arc<RwLock<Vec<(u64, Zone)>>> = Arc::new(RwLock::new(vec![]));
 
@@ -81,7 +85,7 @@ struct Rectangle {
 
 thread_local! {
     // Pango font description, used to render the captions on the visual representation of keyboard
-    static FONT_DESC: RefCell<pango::FontDescription> = RefCell::new(pango::FontDescription::from_string("Roboto demibold 22"));
+    static FONT_DESC: RefCell<pango::FontDescription> = RefCell::new(pango::FontDescription::from_string("Roboto demibold 12"));
 }
 
 /// Initialize page "Canvas"
@@ -291,7 +295,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     let cell = gtk::CellRendererToggle::builder().build();
 
-    cell.connect_toggled(clone!(@weak devices_treeview => move |_f, p| {
+    cell.connect_toggled(clone!(@weak drawing_area_zones, @weak devices_treeview => move |_f, p| {
         let devices_treestore: gtk::TreeStore = devices_treeview
             .model()
             .unwrap()
@@ -332,6 +336,8 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
                 notifications::error(&format!("Could not find the devices zone"));
             }
         }
+
+        drawing_area_zones.queue_draw();
     }));
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
@@ -396,7 +402,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     let lightness = canvas_lightness_scale.value();
 
     // drawing areas
-    drawing_area_preview.connect_draw(clone!(@weak notification_box_global => @default-return gtk::Inhibit(true), move |da: &gtk::DrawingArea, context: &cairo::Context| {
+    drawing_area_preview.connect_draw(clone!(@weak notification_box_global => @default-return glib::Propagation::Proceed, move |da: &gtk::DrawingArea, context: &cairo::Context| {
         if let Err(_e) = render_canvas(
             RenderMode::Preview,
             da,
@@ -488,9 +494,56 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     //     }),
     // )?;
 
+    fetch_device_info(builder)?;
     fetch_allocated_zones(builder)?;
 
     canvas_stack.set_visible_child_name("page0");
+
+    Ok(())
+}
+
+pub fn fetch_device_info(_builder: &gtk::Builder) -> Result<()> {
+    let mut device_info = DEVICE_INFO.write();
+
+    let devices = dbus_client::get_managed_devices()?;
+
+    let mut index = 0;
+
+    // add keyboard devices
+    for _device_ids in devices.0 {
+        let device = get_keyboard_device(index as u64)?;
+
+        let make = device.get_make_and_model().0;
+        let model = device.get_make_and_model().1;
+
+        device_info.insert(index, (make.to_string(), model.to_string()));
+
+        index += 1;
+    }
+
+    // add mouse devices
+    for _device_ids in devices.1 {
+        let device = get_mouse_device(index as u64)?;
+
+        let make = device.get_make_and_model().0;
+        let model = device.get_make_and_model().1;
+
+        device_info.insert(index, (make.to_string(), model.to_string()));
+
+        index += 1;
+    }
+
+    // add misc devices
+    for _device_ids in devices.2 {
+        let device = get_misc_device(index as u64)?;
+
+        let make = device.get_make_and_model().0;
+        let model = device.get_make_and_model().1;
+
+        device_info.insert(index, (make.to_string(), model.to_string()));
+
+        index += 1;
+    }
 
     Ok(())
 }
@@ -693,7 +746,8 @@ fn drawing_area_button_press(
                         let cell_y = cell_y.floor() as i32;
 
                         // check whether we are hovering the cursor over the current zone
-                        if cell_x >= zone.x
+                        if zone.enabled
+                            && cell_x >= zone.x
                             && cell_x <= zone.x2()
                             && cell_y >= zone.y
                             && cell_y <= zone.y2()
@@ -778,7 +832,8 @@ fn drawing_area_motion_notify(
                 let cell_y = cell_y.floor() as i32;
 
                 // check whether we are hovering the cursor over the current zone
-                if cell_x >= zone.x
+                if zone.enabled
+                    && cell_x >= zone.x
                     && cell_x <= zone.x2()
                     && cell_y >= zone.y
                     && cell_y <= zone.y2()
@@ -902,7 +957,7 @@ fn render_canvas(
     context: &cairo::Context,
 ) -> Result<()> {
     let width = da.allocated_width() as f64 - 400.0;
-    let height = da.allocated_height() as f64;
+    let height = da.allocated_height() as f64 - 15.0;
 
     let scale_factor = 1.0; // width / (constants::CANVAS_WIDTH as f64 * 15.0);
 
@@ -910,10 +965,10 @@ fn render_canvas(
 
     if mode == RenderMode::Zones {
         // dim lightness in zone allocation mode
-        hsl.2 = -0.5;
+        hsl.2 = -0.45;
     }
 
-    // paint all cells of the canvas
+    // paint all cells of the canvasr
     for (i, color) in led_colors.iter().enumerate() {
         paint_cell(i, color, hsl, context, width, height, scale_factor)?;
     }
@@ -943,16 +998,18 @@ fn render_canvas(
                     state = ZoneDrawState::Normal;
                 }
 
-                paint_zone(
-                    context,
-                    width,
-                    height,
-                    &layout,
-                    *device,
-                    zone,
-                    state,
-                    scale_factor,
-                )?;
+                if zone.enabled {
+                    paint_zone(
+                        context,
+                        width,
+                        height,
+                        &layout,
+                        *device,
+                        zone,
+                        state,
+                        scale_factor,
+                    )?;
+                }
             }
 
             Ok(())
@@ -1044,8 +1101,8 @@ fn paint_zone(
 
     match state {
         ZoneDrawState::Normal => {
-            let x = zone.x as f64 * pixel_width;
-            let y = zone.y as f64 * pixel_height;
+            let x = BORDER.0 + zone.x as f64 * pixel_width;
+            let y = BORDER.1 + zone.y as f64 * pixel_height;
             let width = zone.width as f64 * pixel_width;
             let height = zone.height as f64 * pixel_height;
 
@@ -1055,8 +1112,8 @@ fn paint_zone(
         }
 
         ZoneDrawState::Hover => {
-            let x = zone.x as f64 * pixel_width;
-            let y = zone.y as f64 * pixel_height;
+            let x = BORDER.0 + zone.x as f64 * pixel_width;
+            let y = BORDER.1 + zone.y as f64 * pixel_height;
             let width = zone.width as f64 * pixel_width;
             let height = zone.height as f64 * pixel_height;
 
@@ -1066,8 +1123,8 @@ fn paint_zone(
         }
 
         ZoneDrawState::Selected => {
-            let x = zone.x as f64 * pixel_width;
-            let y = zone.y as f64 * pixel_height;
+            let x = BORDER.0 + zone.x as f64 * pixel_width;
+            let y = BORDER.1 + zone.y as f64 * pixel_height;
             let width = zone.width as f64 * pixel_width;
             let height = zone.height as f64 * pixel_height;
 
@@ -1077,8 +1134,8 @@ fn paint_zone(
         }
 
         ZoneDrawState::SelectedHover => {
-            let x = zone.x as f64 * pixel_width;
-            let y = zone.y as f64 * pixel_height;
+            let x = BORDER.0 + zone.x as f64 * pixel_width;
+            let y = BORDER.1 + zone.y as f64 * pixel_height;
             let width = zone.width as f64 * pixel_width;
             let height = zone.height as f64 * pixel_height;
 
@@ -1089,12 +1146,23 @@ fn paint_zone(
     }
 
     // draw caption
+    let device_info = DEVICE_INFO.read();
+    let make_and_model = device_info.get(&device);
+
+    let make = make_and_model
+        .map(|v| v.0.clone())
+        .unwrap_or_else(|| "<unknown>".to_string());
+
+    let model = make_and_model
+        .map(|v| v.1.clone())
+        .unwrap_or_else(|| "<unknown>".to_string());
+
     cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
     cr.move_to(
         BORDER.0 + (zone.x as f64 * pixel_width * scale_factor) + 14.5,
-        BORDER.1 + (zone.y as f64 * pixel_height * scale_factor) + 2.0,
+        BORDER.1 + (zone.y as f64 * pixel_height * scale_factor) + 12.0,
     );
-    layout.set_text(&format!("{}", device));
+    layout.set_text(&format!("{}: {} {}", device, make, model));
     pangocairo::show_layout(cr, layout);
 
     Ok(())
@@ -1142,10 +1210,10 @@ fn paint_cell(
 
     cr.set_source_rgba(color.0, color.1, color.2, 1.0);
     cr.rectangle(
-        cell_def.x - 0.5,
-        cell_def.y - 0.5,
-        cell_def.width + 0.5,
-        cell_def.height + 0.5,
+        cell_def.x,
+        cell_def.y,
+        cell_def.width + 1.0,
+        cell_def.height + 1.0,
     );
     cr.fill()?;
 
