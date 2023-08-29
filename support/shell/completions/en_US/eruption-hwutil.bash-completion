@@ -383,4 +383,4 @@ _eruption-hwutil() {
     esac
 }
 
-complete -F _eruption-hwutil -o bashdefault -o default eruption-hwutil
+complete -F _eruption-hwutil -o nosort -o bashdefault -o default eruption-hwutil

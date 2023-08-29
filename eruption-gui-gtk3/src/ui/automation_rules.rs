@@ -21,7 +21,7 @@
 
 use gdk::prelude::ActionMapExt;
 use glib::{clone, Cast, StaticType, ToValue};
-use glib::{Continue, IsA};
+use glib::{ControlFlow, IsA};
 use gtk::glib;
 use gtk::prelude::BuilderExtManual;
 use gtk::prelude::ButtonExt;
@@ -447,12 +447,12 @@ pub fn initialize_automation_rules_page<A: IsA<gtk::Application>>(
 
             glib::timeout_add_local(
                 Duration::from_millis(1000),
-                clone!(@weak builder => @default-return Continue(true), move || {
+                clone!(@weak builder => @default-return ControlFlow::Continue, move || {
                     if let Err(e) = update_automation_rules_page(&builder) {
                         tracing::error!("{}", e);
-                        Continue(true)
+                        ControlFlow::Continue
                     } else {
-                        Continue(false)
+                        ControlFlow::Break
                     }
                 }),
             );

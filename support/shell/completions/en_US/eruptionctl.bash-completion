@@ -4378,4 +4378,4 @@ _eruptionctl() {
     esac
 }
 
-complete -F _eruptionctl -o bashdefault -o default eruptionctl
+complete -F _eruptionctl -o nosort -o bashdefault -o default eruptionctl

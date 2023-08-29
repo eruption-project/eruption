@@ -22,6 +22,7 @@
 pub mod animal;
 pub mod audio;
 pub mod canvas;
+#[cfg(feature = "hwaccel")]
 pub mod hwaccel;
 pub mod introspection;
 pub mod keyboard;
@@ -44,6 +45,7 @@ pub use animal::AnimalPlugin;
 pub use audio::AudioPlugin;
 
 pub use canvas::CanvasPlugin;
+#[cfg(feature = "hwaccel")]
 pub use hwaccel::HwAccelPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
@@ -141,6 +143,7 @@ pub fn register_plugins() -> Result<()> {
         .register_plugin(Box::new(AudioPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
+    #[cfg(feature = "hwaccel")]
     let _ = plugin_manager
         .register_plugin(Box::new(HwAccelPlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));

@@ -910,7 +910,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         } else {
                                             ratelimited::warn!("Skipping uninitialized device, trying to reinitialize it now...");
 
-                                            let hidapi: parking_lot::lock_api::RwLockReadGuard<parking_lot::RawRwLock, Option<hidapi::HidApi>> = crate::HIDAPI.read();
+                                            let hidapi = crate::HIDAPI.read();
                                             let hidapi = hidapi.as_ref().unwrap();
 
                                             device.open(hidapi).unwrap_or_else(|e| {

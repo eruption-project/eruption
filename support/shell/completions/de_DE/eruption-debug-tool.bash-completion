@@ -528,4 +528,4 @@ _eruption-debug-tool() {
     esac
 }
 
-complete -F _eruption-debug-tool -o bashdefault -o default eruption-debug-tool
+complete -F _eruption-debug-tool -o nosort -o bashdefault -o default eruption-debug-tool

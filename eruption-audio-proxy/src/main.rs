@@ -22,7 +22,6 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::mem::MaybeUninit;
-use std::os::unix::io::AsRawFd;
 use std::sync::atomic::AtomicI32;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -256,7 +255,7 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
 
                     // wait for socket to be ready
                     let mut poll_fds = [PollFd::new(
-                        socket.as_raw_fd(),
+                        &socket,
                         PollFlags::POLLIN
                             | PollFlags::POLLOUT
                             | PollFlags::POLLHUP

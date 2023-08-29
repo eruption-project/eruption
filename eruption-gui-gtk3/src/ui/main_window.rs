@@ -236,28 +236,28 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
         let slot_name = edit.text().to_string();
         util::set_slot_name(0, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     slot2_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
         util::set_slot_name(1, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     slot3_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
         util::set_slot_name(2, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     slot4_entry.connect_focus_out_event(|edit, _event| {
         let slot_name = edit.text().to_string();
         util::set_slot_name(3, &slot_name).unwrap_or_else(|e| tracing::error!("{}", e));
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     // profiles list
@@ -952,9 +952,10 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     main_window.set_icon_name(Some("/org/eruption/eruption-gui-gtk3/img/eruption-gui.png"));
 
     main_window.connect_delete_event(
-        clone!(@weak application => @default-return Inhibit(false), move |_, _| {
+        clone!(@weak application => @default-return glib::Propagation::Proceed, move |_, _| {
             application.quit();
-            Inhibit(false)
+
+            glib::Propagation::Proceed
         }),
     );
 
@@ -1061,18 +1062,18 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
     // special options
     ambientfx_switch.connect_state_set(
-        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
+        clone!(@weak main_window => @default-return glib::Propagation::Proceed, move |_sw, enabled| {
             util::set_ambient_effect(enabled).unwrap_or_else(|e| { tracing::error!("{}", e); });
 
-            gtk::Inhibit(false)
+            glib::Propagation::Proceed
         }),
     );
 
     soundfx_switch.connect_state_set(
-        clone!(@weak main_window => @default-return gtk::Inhibit(false), move |_sw, enabled| {
+        clone!(@weak main_window => @default-return glib::Propagation::Proceed, move |_sw, enabled| {
             util::set_sound_fx(enabled).unwrap_or_else(|e| { tracing::error!("{}", e); });
 
-            gtk::Inhibit(false)
+            glib::Propagation::Proceed
         }),
     );
 

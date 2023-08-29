@@ -92,7 +92,7 @@ pub fn spawn_dbus_event_loop_system(
     builder: &gtk::Builder,
     callback: &'static CallbackFn,
 ) -> Result<()> {
-    let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+    let (tx, rx) = glib::MainContext::channel(glib::Priority::DEFAULT);
 
     thread::spawn(move || -> Result<()> {
         let conn = Connection::new_system().unwrap();
@@ -273,11 +273,11 @@ pub fn spawn_dbus_event_loop_system(
 
     rx.attach(
         None,
-        clone!(@strong builder, @strong callback => @default-return glib::Continue(true), move |event| {
+        clone!(@strong builder, @strong callback => @default-return glib::ControlFlow::Continue, move |event| {
             callback(&builder, &event).unwrap();
             // thread::yield_now();
 
-            glib::Continue(true)
+            glib::ControlFlow::Continue
         }),
     );
 
@@ -291,7 +291,7 @@ pub fn spawn_dbus_event_loop_session(
 ) -> Result<()> {
     // use process_monitor::OrgEruptionProcessMonitorRules;
 
-    let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+    let (tx, rx) = glib::MainContext::channel(glib::Priority::DEFAULT);
 
     thread::spawn(move || -> Result<()> {
         let conn = Connection::new_session()?;
@@ -351,11 +351,12 @@ pub fn spawn_dbus_event_loop_session(
 
     rx.attach(
         None,
-        clone!(@strong builder, @strong callback => @default-return glib::Continue(true), move |event| {
+        clone!(@strong builder, @strong callback => @default-return glib::ControlFlow::Continue, move |event| {
             callback(&builder, &event).unwrap();
             // thread::yield_now();
 
-            glib::Continue(true)
+            glib::ControlFlow::Continue
+
         }),
     );
 

@@ -94,7 +94,7 @@ pub fn initialize_mouse_page(
         util::set_debounce(mouse_device_handle, state).unwrap();
         // }
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     angle_snapping_switch.connect_state_set(move |_s, state| {
@@ -102,7 +102,7 @@ pub fn initialize_mouse_page(
         util::set_angle_snapping(mouse_device_handle, state).unwrap();
         // }
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     // drawing area / mouse indicator
@@ -124,7 +124,7 @@ pub fn initialize_mouse_page(
             // }
         }
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     // near realtime update path

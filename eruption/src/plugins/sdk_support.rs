@@ -48,8 +48,6 @@ use std::mem::MaybeUninit;
 
 #[cfg(not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
-#[cfg(not(target_os = "windows"))]
-use std::os::unix::io::AsRawFd;
 
 #[cfg(target_os = "windows")]
 use std::path::Path;
@@ -515,7 +513,7 @@ impl SdkSupportPlugin {
 
                                     // wait for socket to be ready
                                     let mut poll_fds = [PollFd::new(
-                                        socket.as_raw_fd(),
+                                        &socket,
                                         PollFlags::POLLIN
                                             | PollFlags::POLLOUT
                                             | PollFlags::POLLHUP

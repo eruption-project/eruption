@@ -419,10 +419,10 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             }
         }
 
-        gtk::Inhibit(false)
+        false.into()
     }));
 
-    drawing_area_zones.connect_draw(clone!(@weak notification_box_global => @default-return gtk::Inhibit(true), move |da: &gtk::DrawingArea, context: &cairo::Context| {
+    drawing_area_zones.connect_draw(clone!(@weak notification_box_global => @default-return glib::Propagation::Proceed, move |da: &gtk::DrawingArea, context: &cairo::Context| {
         if let Err(_e) = render_canvas(RenderMode::Zones, da, (hue, saturation, lightness), context)
         {
             notification_box_global.show();
@@ -441,12 +441,12 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
             }
         }
 
-        gtk::Inhibit(false)
+        false.into()
     }));
 
     // We need to handle some events to support manipulation of per-device zones
     drawing_area_zones.connect_button_press_event(
-        clone!(@weak builder => @default-return gtk::Inhibit(true), move |da, event| drawing_area_button_press(da, event, &builder)),
+        clone!(@weak builder => @default-return glib::Propagation::Proceed, move |da, event| drawing_area_button_press(da, event, &builder)),
     );
     drawing_area_zones.connect_button_release_event(drawing_area_button_release);
 
@@ -664,7 +664,7 @@ fn drawing_area_button_press(
     da: &gtk::DrawingArea,
     event: &gdk::EventButton,
     builder: &gtk::Builder,
-) -> gtk::Inhibit {
+) -> glib::Propagation {
     da.queue_draw();
 
     match event.button() {
@@ -723,28 +723,34 @@ fn drawing_area_button_press(
                         }
                     }
 
-                    gtk::Inhibit(true)
+                    glib::Propagation::Proceed
                 }
 
-                _ => gtk::Inhibit(false),
+                _ => glib::Propagation::Stop,
             }
         }
 
-        _ => gtk::Inhibit(false),
+        _ => glib::Propagation::Stop,
     }
 }
 
-fn drawing_area_button_release(da: &gtk::DrawingArea, event: &gdk::EventButton) -> gtk::Inhibit {
+fn drawing_area_button_release(
+    da: &gtk::DrawingArea,
+    event: &gdk::EventButton,
+) -> glib::Propagation {
     da.queue_draw();
 
     match event.button() {
-        gdk::BUTTON_PRIMARY => gtk::Inhibit(true),
+        gdk::BUTTON_PRIMARY => glib::Propagation::Proceed,
 
-        _ => gtk::Inhibit(false),
+        _ => false.into(),
     }
 }
 
-fn drawing_area_motion_notify(da: &gtk::DrawingArea, event: &gdk::EventMotion) -> gtk::Inhibit {
+fn drawing_area_motion_notify(
+    da: &gtk::DrawingArea,
+    event: &gdk::EventMotion,
+) -> glib::Propagation {
     fn set_cursor(cursor: Option<gdk::CursorType>) {
         *CURSOR_TYPE.write() = cursor;
     }
@@ -882,10 +888,10 @@ fn drawing_area_motion_notify(da: &gtk::DrawingArea, event: &gdk::EventMotion) -
                 }
             }
 
-            gtk::Inhibit(true)
+            glib::Propagation::Proceed
         }
 
-        _ => gtk::Inhibit(false),
+        _ => glib::Propagation::Stop,
     }
 }
 

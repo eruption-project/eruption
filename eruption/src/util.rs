@@ -59,19 +59,24 @@ pub enum UtilError {
 /// Write out the current process' PID to the .pid file at `/run/eruption/eruption.pid`
 #[cfg(not(target_os = "windows"))]
 pub fn write_pid_file() -> Result<()> {
+    use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+
     let pid = getpid().as_raw();
     let text = format!("{pid}");
 
-    let fd = open(
-        &PathBuf::from(constants::PID_FILE),
-        OFlag::O_CREAT | OFlag::O_WRONLY,
-        Mode::from_bits(0o666).unwrap(),
-    )?;
+    let fd = unsafe {
+        OwnedFd::from_raw_fd(open(
+            &PathBuf::from(constants::PID_FILE),
+            OFlag::O_CREAT | OFlag::O_WRONLY,
+            Mode::from_bits(0o666).unwrap(),
+        )?)
+    };
 
-    flock(fd, FlockArg::LockExclusiveNonblock)?;
-    ftruncate(fd, 0)?;
+    flock(fd.as_raw_fd(), FlockArg::LockExclusiveNonblock)?;
 
-    write(fd, text.as_bytes())?;
+    ftruncate(&fd, 0)?;
+
+    write(fd.as_raw_fd(), text.as_bytes())?;
 
     Ok(())
 }

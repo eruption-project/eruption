@@ -687,4 +687,4 @@ _eruption-keymap() {
     esac
 }
 
-complete -F _eruption-keymap -o bashdefault -o default eruption-keymap
+complete -F _eruption-keymap -o nosort -o bashdefault -o default eruption-keymap

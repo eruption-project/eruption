@@ -26,7 +26,7 @@ use constants::CANVAS_SIZE;
 use eruption_sdk::connection::{Connection, ConnectionType};
 use events::LOST_CONNECTION;
 use gio::{prelude::*, ApplicationFlags};
-use glib::clone;
+use glib::{clone, ControlFlow};
 use glib::{OptionArg, OptionFlags};
 // use glib::{OptionArg, OptionFlags};
 use gtk::Application;
@@ -868,14 +868,14 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     // global timer support
     glib::idle_add_local(
-        clone!(@weak application => @default-return Continue(true), move || {
+        clone!(@weak application => @default-return ControlFlow::Continue, move || {
             if let Err(e) = timers::handle_timers() {
                 ratelimited::error!("An error occurred in a timer callback: {}", e);
             }
 
             thread::sleep(Duration::from_millis(1));
 
-            Continue(true)
+            ControlFlow::Continue
         }),
     );
 

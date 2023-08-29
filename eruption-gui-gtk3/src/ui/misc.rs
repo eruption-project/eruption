@@ -101,7 +101,7 @@ pub fn initialize_misc_page(
             // }
         }
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     // // near realtime update path

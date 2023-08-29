@@ -297,9 +297,6 @@ mod backends {
     use std::f32::consts::PI;
     use std::mem::MaybeUninit;
 
-    #[cfg(not(target_os = "windows"))]
-    use std::os::unix::io::AsRawFd;
-
     use std::time::Duration;
 
     use protocol::response::Payload;
@@ -461,7 +458,7 @@ mod backends {
 
                                 // wait for socket to be ready
                                 let mut poll_fds = [PollFd::new(
-                                    socket.as_raw_fd(),
+                                    &socket,
                                     PollFlags::POLLIN
                                         | PollFlags::POLLOUT
                                         | PollFlags::POLLHUP

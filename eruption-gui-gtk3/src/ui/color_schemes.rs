@@ -27,7 +27,7 @@ use gtk::{
     glib,
     prelude::{BuilderExtManual, TreeStoreExtManual},
     traits::{TreeModelExt, TreeSelectionExt, TreeStoreExt, TreeViewExt, WidgetExt},
-    Inhibit, TreeViewColumn,
+    TreeViewColumn,
 };
 use lazy_static::lazy_static;
 use parking_lot::RwLock;
@@ -223,7 +223,7 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
                 da.allocated_height() as f64,
             );
 
-            Inhibit(true)
+            glib::Propagation::Stop
         },
     );
 

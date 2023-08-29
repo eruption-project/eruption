@@ -97,9 +97,9 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
                 }
             }
 
-            gtk::Inhibit(false)
+            false.into()
         } else {
-            gtk::Inhibit(true)
+            true.into()
         }
     });
 
@@ -121,9 +121,9 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
                 }
             }
 
-            gtk::Inhibit(false)
+            false.into()
         } else {
-            gtk::Inhibit(true)
+            true.into()
         }
     });
 
@@ -143,9 +143,9 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
                 }
             }
 
-            gtk::Inhibit(false)
+            false.into()
         } else {
-            gtk::Inhibit(true)
+            true.into()
         }
     });
 
@@ -165,9 +165,9 @@ pub fn initialize_settings_page(builder: &gtk::Builder) -> Result<()> {
                 }
             }
 
-            gtk::Inhibit(false)
+            false.into()
         } else {
-            gtk::Inhibit(true)
+            true.into()
         }
     });
 
