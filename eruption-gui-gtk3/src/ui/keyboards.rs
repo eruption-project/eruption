@@ -96,7 +96,7 @@ pub fn initialize_keyboard_page(
             // }
         }
 
-        gtk::Inhibit(false)
+        false.into()
     });
 
     // // near realtime update path
