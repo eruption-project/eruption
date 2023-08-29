@@ -2312,6 +2312,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         let format_layer = tracing_subscriber::fmt::layer()
             .compact()
             .with_ansi(ansi)
+            .with_line_number(true)
             .with_filter(filter);
 
         cfg_if::cfg_if! {

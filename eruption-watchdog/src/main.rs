@@ -299,9 +299,17 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         // let filter = tracing_subscriber::EnvFilter::from_default_env();
         // let journald_layer = tracing_journald::layer()?.with_filter(filter);
 
+        #[cfg(not(target_os = "windows"))]
+        let ansi = true;
+
+        #[cfg(target_os = "windows")]
+        let ansi = false;
+
         let filter = tracing_subscriber::EnvFilter::from_default_env();
         let format_layer = tracing_subscriber::fmt::layer()
             .compact()
+            .with_ansi(ansi)
+            .with_line_number(true)
             .with_filter(filter);
 
         cfg_if::cfg_if! {
