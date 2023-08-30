@@ -19,6 +19,8 @@ _eruption-hwutil() {
 '--config=[Sets the configuration file to use]:CONFIG: ' \
 '*-v[Verbose mode (-v, -vv, -vvv, etc.)]' \
 '*--verbose[Verbose mode (-v, -vv, -vvv, etc.)]' \
+'-i[Send the hardware commands only after a keypress, where applicable]' \
+'--interactive[Send the hardware commands only after a keypress, where applicable]' \
 '-r[Repeat output until ctrl+c is pressed]' \
 '--repeat[Repeat output until ctrl+c is pressed]' \
 '-h[Print help]' \

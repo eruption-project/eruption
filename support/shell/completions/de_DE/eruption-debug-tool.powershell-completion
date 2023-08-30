@@ -23,6 +23,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
         'eruption-debug-tool' {
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('-i', 'i', [CompletionResultType]::ParameterName, 'Send the hardware commands only after a keypress, where applicable')
+            [CompletionResult]::new('--interactive', 'interactive', [CompletionResultType]::ParameterName, 'Send the hardware commands only after a keypress, where applicable')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
@@ -36,6 +38,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             [CompletionResult]::new('read-raw', 'read-raw', [CompletionResultType]::ParameterValue, 'Read data from device')
             [CompletionResult]::new('write-raw', 'write-raw', [CompletionResultType]::ParameterValue, 'Send data to device (dangerous)')
             [CompletionResult]::new('run-tests', 'run-tests', [CompletionResultType]::ParameterValue, 'Send a device specific init sequence and try to set colors')
+            [CompletionResult]::new('toggle-udev-inhibited', 'toggle-udev-inhibited', [CompletionResultType]::ParameterValue, 'Toggle the "inhibited" attribute of the udev device if it''s sending bad inputs events')
             [CompletionResult]::new('utils', 'utils', [CompletionResultType]::ParameterValue, 'Special utility functions, like searching for CRC polynoms and parameters')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Shell Definitionen für Autovervollständigung erzeugen')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
@@ -86,6 +89,11 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
+        'eruption-debug-tool;toggle-udev-inhibited' {
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
         'eruption-debug-tool;utils' {
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
@@ -124,6 +132,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             [CompletionResult]::new('read-raw', 'read-raw', [CompletionResultType]::ParameterValue, 'Read data from device')
             [CompletionResult]::new('write-raw', 'write-raw', [CompletionResultType]::ParameterValue, 'Send data to device (dangerous)')
             [CompletionResult]::new('run-tests', 'run-tests', [CompletionResultType]::ParameterValue, 'Send a device specific init sequence and try to set colors')
+            [CompletionResult]::new('toggle-udev-inhibited', 'toggle-udev-inhibited', [CompletionResultType]::ParameterValue, 'Toggle the "inhibited" attribute of the udev device if it''s sending bad inputs events')
             [CompletionResult]::new('utils', 'utils', [CompletionResultType]::ParameterValue, 'Special utility functions, like searching for CRC polynoms and parameters')
             [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, 'Shell Definitionen für Autovervollständigung erzeugen')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
@@ -154,6 +163,9 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-debug-tool' -ScriptBlo
             break
         }
         'eruption-debug-tool;help;run-tests' {
+            break
+        }
+        'eruption-debug-tool;help;toggle-udev-inhibited' {
             break
         }
         'eruption-debug-tool;help;utils' {

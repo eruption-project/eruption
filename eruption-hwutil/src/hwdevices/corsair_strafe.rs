@@ -26,7 +26,7 @@ use std::{sync::Arc, thread};
 use tracing::*;
 
 #[allow(unused)]
-use crate::{constants, eprintln_v, println_v};
+use crate::{constants, interact, eprintln_v, println_v};
 
 use super::{DeviceTrait, HwDeviceError, RGBA};
 
@@ -263,6 +263,7 @@ impl CorsairStrafe {
 
 impl DeviceTrait for CorsairStrafe {
     fn send_init_sequence(&self) -> Result<()> {
+        interact::prompt("Press any key to send initialization sequence.");
         println_v!(1, "Sending device init sequence...");
 
         if !self.is_bound {
@@ -492,6 +493,8 @@ impl DeviceTrait for CorsairStrafe {
                 a: 255,
             }; NUM_KEYS],
         )?;
+
+        interact::prompt_or_wait("Press any key to change colors.", Duration::from_millis(100));
 
         // test each LED
         for i in 0..NUM_KEYS {

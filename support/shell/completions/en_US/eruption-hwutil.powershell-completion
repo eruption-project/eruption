@@ -25,6 +25,8 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-hwutil' -ScriptBlock {
             [CompletionResult]::new('--config', 'config', [CompletionResultType]::ParameterName, 'Sets the configuration file to use')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
+            [CompletionResult]::new('-i', 'i', [CompletionResultType]::ParameterName, 'Send the hardware commands only after a keypress, where applicable')
+            [CompletionResult]::new('--interactive', 'interactive', [CompletionResultType]::ParameterName, 'Send the hardware commands only after a keypress, where applicable')
             [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
             [CompletionResult]::new('--repeat', 'repeat', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')

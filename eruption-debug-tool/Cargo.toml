@@ -46,6 +46,7 @@ flume = "0.10.14"
 clap = { version = "4.2.4", features = ["derive"] }
 clap_complete = "4.2.1"
 colored = "2.0.0"
+console = "0.15.5"
 ctrlc = { version = "3.2.5", features = ["termination"] }
 libc = "0.2.142"
 nix = "0.26.2"
@@ -68,6 +69,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
 hidapi = { git = "https://github.com/X3n0m0rph59/hidapi-rs.git", rev = "a842fd6", default-features = false, features = ["linux-native"] }
+udev = "0.7"
 bitvec = "1.0.1"
 byteorder = "1.4.3"
 serialport = "4.2.0"

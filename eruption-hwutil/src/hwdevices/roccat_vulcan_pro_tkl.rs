@@ -25,7 +25,7 @@ use std::{sync::Arc, thread};
 use tracing::*;
 
 #[allow(unused)]
-use crate::{constants, eprintln_v, println_v};
+use crate::{constants, interact, eprintln_v, println_v};
 
 use super::{DeviceTrait, HwDeviceError, RGBA};
 
@@ -346,6 +346,7 @@ impl RoccatVulcanProTKL {
 
 impl DeviceTrait for RoccatVulcanProTKL {
     fn send_init_sequence(&self) -> Result<()> {
+        interact::prompt("Press any key to send initialization sequence.");
         println_v!(1, "Sending device init sequence...");
 
         if !self.is_bound {
@@ -542,7 +543,7 @@ impl DeviceTrait for RoccatVulcanProTKL {
             }; 127],
         )?;
 
-        thread::sleep(Duration::from_millis(500));
+        interact::prompt_or_wait("Press any key to change colors.", Duration::from_millis(500));
 
         self.send_led_map(
             &[RGBA {

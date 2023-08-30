@@ -434,7 +434,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 Ok(hidapi) => {
                     for (index, device) in hidapi.device_list().enumerate() {
                         println!(
-                            "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                            "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                             format!("{index:02}").bold(),
                             device.vendor_id(),
                             device.product_id(),
@@ -478,7 +478,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             let mut ev_to_index: Vec<u8> = vec![0xff; 0x2ff + 1];
 
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -653,7 +653,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -792,7 +792,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             //     .expect("Invalid number");
 
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -1003,7 +1003,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             //     .expect("Invalid number");
 
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -1220,7 +1220,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             let mut neighbor_topology: Vec<u8> = vec![0xff; 2900];
 
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -1425,7 +1425,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -1537,7 +1537,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),
@@ -1647,7 +1647,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             hidapi.device_list().enumerate().nth(device_index)
                         {
                             println!(
-                                "Index: {}: ID: {:x}:{:x} {}/{} Subdev: {}",
+                                "Index: {}: ID: {:04x}:{:04x} {}/{} Subdev: {}",
                                 format!("{index:02}").bold(),
                                 device.vendor_id(),
                                 device.product_id(),

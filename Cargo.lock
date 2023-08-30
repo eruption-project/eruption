@@ -2170,6 +2170,7 @@ dependencies = [
  "clap_complete",
  "color-eyre",
  "colored",
+ "console",
  "console-subscriber",
  "crc16",
  "crc8",
@@ -2197,6 +2198,7 @@ dependencies = [
  "tracing-journald",
  "tracing-log",
  "tracing-subscriber",
+ "udev",
  "unic-langid",
 ]
 
@@ -2374,6 +2376,7 @@ dependencies = [
  "tracing-journald",
  "tracing-log",
  "tracing-subscriber",
+ "udev",
  "unic-langid",
 ]
 

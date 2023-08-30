@@ -25,7 +25,7 @@ use std::{cell::RefCell, thread};
 
 use crate::constants::DEVICE_SETTLE_MILLIS;
 #[allow(unused)]
-use crate::{constants, eprintln_v, println_v};
+use crate::{constants, interact, eprintln_v, println_v};
 
 use super::{DeviceStatus, DeviceTrait, HwDeviceError, Result, RGBA};
 
@@ -120,6 +120,7 @@ impl RoccatKoneProAir {
 
 impl DeviceTrait for RoccatKoneProAir {
     fn send_init_sequence(&self) -> Result<()> {
+        interact::prompt("Press any key to send initialization sequence.");
         println_v!(1, "Sending device init sequence...");
 
         if !self.is_bound {
@@ -325,7 +326,7 @@ impl DeviceTrait for RoccatKoneProAir {
             },
         ])?;
 
-        thread::sleep(Duration::from_millis(500));
+        interact::prompt_or_wait("Press any key to change colors.", Duration::from_millis(500));
 
         self.send_led_map(&[
             RGBA {
