@@ -1208,7 +1208,6 @@ const _EV_TO_INDEX_ANSI: [u8; 0x2ff + 1] = [
 ];
 
 #[rustfmt::skip]
-#[allow(dead_code)]
 pub const TOPOLOGY: [u8; 126] = [
     0, 0xff, 11, 12, 23, 24, 36,
     47, 85, 84, 49, 48, 59, 61,
