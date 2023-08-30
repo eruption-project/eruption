@@ -36,16 +36,16 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-thiserror = "1.0.40"
+thiserror = "1.0.47"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-clap = "4.2.4"
+clap = "4.3.24"
 lazy_static = "1.4.0"
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-rust-embed = { version = "6.6.1", features = ["compression"] }
+rust-embed = { version = "6.8.1", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 eruption-sdk = { path = "../../../lib/rust/eruption-rs" }

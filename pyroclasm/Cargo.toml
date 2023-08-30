@@ -42,17 +42,17 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-clap = { version = "4.2.4", features = ["derive"] }
-clap_complete = "4.2.1"
-libc = "0.2.142"
-nix = "0.26.2"
+clap = { version = "4.3.24", features = ["derive"] }
+clap_complete = "4.3.2"
+libc = "0.2.147"
+nix = "0.26.4"
 atty = "0.2.14"
 walkdir = "2.3.3"
 flume = { version = "0.10.14", features = ["async"] }
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
-serde = { version = "1.0.160", features = ["derive"] }
-serde_json = "1.0.96"
-tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0.105"
+tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
@@ -63,26 +63,26 @@ tracing-subscriber = { version = "0.3.17", features = [
   "registry",
   "env-filter",
 ] }
-console-subscriber = { version = "0.1.8", features = ["parking_lot"] }
+console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
 config = "0.13.3"
-uuid = { version = "1.3.1", features = ["serde", "v4"] }
-toml = "0.7.3"
+uuid = { version = "1.4.1", features = ["serde", "v4"] }
+toml = "0.7.6"
 indexmap = "1.9.3"
 byteorder = "1.4.3"
 lazy_static = "1.4.0"
-palette = "0.7.1"
-thiserror = "1.0.40"
+palette = "0.7.3"
+thiserror = "1.0.47"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-paste = "1.0.12"
+paste = "1.0.14"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"
-i18n-embed = { version = "0.13.8", features = [
+i18n-embed = { version = "0.13.9", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.6"
-rust-embed = { version = "6.6.1", features = ["compression"] }
+i18n-embed-fl = "0.6.7"
+rust-embed = { version = "6.8.1", features = ["compression"] }
 unic-langid = "0.9.1"
 image = { version = "0.24", features = ["jpeg", "png", "webp"] }
 egui = { version = "0.22", features = ["serde"] }
@@ -92,18 +92,18 @@ egui-bind = { version = "0.7", features = ["serde"] }
 # egui_hotkey = { version = "0.2.0", features = ["serde"] }
 # egui_logger = "0.2.2"
 egui-notify = "0.8"
-egui-modal = "0.2.2"
+egui-modal = "0.2.4"
 egui_inspect = "0.1.3"
 egui_file = "0.10"
 egui_dock = "0.6"
-egui_commonmark = { version = "0.7.2", features = [
+egui_commonmark = { version = "0.7.4", features = [
   "syntax_highlighting",
   "svg",
 ] }
 tiny-skia = "0.11"
-syntect = "5.0.0"
+syntect = "5.1.0"
 icecream = "0.1.0"
 
 [dev-dependencies]
-pretty_assertions = "1.3.0"
-tokio = { version = "1.27.0", features = ["full", "tracing", "test-util"] }
+pretty_assertions = "1.4.0"
+tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
