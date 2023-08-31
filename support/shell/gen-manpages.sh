@@ -19,7 +19,15 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 function gen_manpages {
-	./target/release/"$1" "manpages"
+	executable=./target/debug/"$1"
+	[[ -x "$executable" ]] || executable=./target/release/"$1"
+	if [[ ! -x "$executable" ]]; then
+		echo "No executable found for $1."
+		return
+	fi
+	echo "Creating $LANG manual pages for $1 using $executable"
+
+	"$executable" "manpages"
 }
 
 # supported locales

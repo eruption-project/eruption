@@ -19,7 +19,7 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 # exclude the following directories
-FILTER_ARGS="(support/redist)|(sdk/examples/python/venv)|(sdk/lib/python/eruption/transport/sdk_support_pb2.py)"
+FILTER_ARGS="(support/redist)|(support/dbus/interfaces/rust)|(sdk/examples/python/venv)|(sdk/lib/python/eruption/transport/sdk_support_pb2.py)"
 
 echo "The following files have no 'SPDX-License-Identifier' header:"
 echo
