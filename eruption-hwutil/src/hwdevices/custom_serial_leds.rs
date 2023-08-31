@@ -29,7 +29,7 @@ use std::{sync::Arc, time::Duration};
 use super::{HwDeviceError, RGBA};
 
 #[allow(unused)]
-use crate::{constants, interact, eprintln_v, println_v};
+use crate::{constants, eprintln_v, interact, println_v};
 
 const BAUD_RATE: u32 = 460800;
 const NUM_LEDS: usize = 80;

@@ -225,7 +225,11 @@ pub fn find_crc8_from_params(sum: u8, buf: &[u8], p: &[(u8, u8)]) -> Vec<(u8, u8
 /// the device is plugged in.  Not all Roccat devices require this workaround, headphones don't, but I don't know which all
 /// do and which don't.  Note that this workaround can also be applied manually by writing to the "inhibited" file found at
 /// path "/sys/class/input/eventX/inhibited", where the X in "eventX" is the udev number associated with the LED interface.
-pub fn udev_inhibited_workaround(vendor_id: u16, product_id: u16, interface_num: i32) -> Result<()> {
+pub fn udev_inhibited_workaround(
+    vendor_id: u16,
+    product_id: u16,
+    interface_num: i32,
+) -> Result<()> {
     let interface_num_str = format!("{interface_num:02}");
     let interface_num_osstr = OsStr::new(&interface_num_str);
 
@@ -245,11 +249,11 @@ pub fn udev_inhibited_workaround(vendor_id: u16, product_id: u16, interface_num:
         })
         .map_or_else(
             || Err(eyre!("Udev device not found.")),
-            |mut dev|
-            {
+            |mut dev| {
                 // Toggling the value on and off is enough to quiet spurious events.
                 dev.set_attribute_value("inhibited", "1")?;
                 dev.set_attribute_value("inhibited", "0")?;
                 Ok(())
-            })
+            },
+        )
 }

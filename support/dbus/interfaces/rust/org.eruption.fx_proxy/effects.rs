@@ -63,7 +63,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn ambient_effect(&self) -> Result<bool, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-            &self,
+            self,
             "org.eruption.fx_proxy.Effects",
             "AmbientEffect",
         )
@@ -71,7 +71,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn set_ambient_effect(&self, value: bool) -> Result<(), dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::set(
-            &self,
+            self,
             "org.eruption.fx_proxy.Effects",
             "AmbientEffect",
             value,

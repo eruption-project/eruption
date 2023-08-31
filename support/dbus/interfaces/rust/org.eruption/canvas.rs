@@ -151,7 +151,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn hue(&self) -> Result<f64, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-            &self,
+            self,
             "org.eruption.Canvas",
             "Hue",
         )
@@ -159,7 +159,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn lightness(&self) -> Result<f64, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-            &self,
+            self,
             "org.eruption.Canvas",
             "Lightness",
         )
@@ -167,7 +167,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn saturation(&self) -> Result<f64, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(
-            &self,
+            self,
             "org.eruption.Canvas",
             "Saturation",
         )
@@ -175,7 +175,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn set_hue(&self, value: f64) -> Result<(), dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::set(
-            &self,
+            self,
             "org.eruption.Canvas",
             "Hue",
             value,
@@ -184,7 +184,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn set_lightness(&self, value: f64) -> Result<(), dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::set(
-            &self,
+            self,
             "org.eruption.Canvas",
             "Lightness",
             value,
@@ -193,7 +193,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
 
     fn set_saturation(&self, value: f64) -> Result<(), dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::set(
-            &self,
+            self,
             "org.eruption.Canvas",
             "Saturation",
             value,
