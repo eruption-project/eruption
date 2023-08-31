@@ -37,7 +37,8 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = ["dbus-ipc", "mimalloc_allocator"]
+# default = ["dbus-ipc", "mimalloc_allocator"]
+default = ["dbus-ipc"]
 windows = ["dbus-ipc"]
 dbus-ipc = ["dbus"]
 mimalloc_allocator = ["mimalloc"]

@@ -653,9 +653,9 @@ checksum = "dc827186963e592360843fb5ba4b973e145841266c1357f7180c43526f2e5b61"
 
 [[package]]
 name = "bitfield-struct"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a176f34515e3ff0b2ddb47cdbe48ccf21772381fe364d1ad68ed04b9c5fb63a8"
+checksum = "eac32db62a43cf33353ce30b4a208b08193ea2086a1c6c004acb0073c706a29d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -916,9 +916,9 @@ dependencies = [
 
 [[package]]
 name = "chrono"
-version = "0.4.27"
+version = "0.4.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f56b4c72906975ca04becb8a30e102dfecddd0c06181e3e95ddc444be28881f8"
+checksum = "95ed24df0632f708f5f6d8082675bef2596f7084dee3dd55f632290bf35bfe0f"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
@@ -2313,7 +2313,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-debug-tool"
-version = "0.0.27"
+version = "0.0.28"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -2500,7 +2500,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-hwutil"
-version = "0.0.20"
+version = "0.0.21"
 dependencies = [
  "bitvec",
  "byteorder",
@@ -2754,7 +2754,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-util"
-version = "0.0.13"
+version = "0.0.14"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",

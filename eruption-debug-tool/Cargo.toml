@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-debug-tool"
-version = "0.0.27"
+version = "0.0.28"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
