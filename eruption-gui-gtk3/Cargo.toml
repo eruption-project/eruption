@@ -50,7 +50,7 @@ mimalloc = { version = "0.1.38", optional = true, default-features = false }
 cfg-if = "1.0.0"
 libc = "0.2.147"
 is-terminal = "0.4.9"
-nix = { version = "0.27.1", features = ["user"] }
+nix = { version = "0.27.1", features = ["user", "fs"] }
 walkdir = "2.3.3"
 parking_lot = { version = "0.12.1", features = [
   "send_guard",

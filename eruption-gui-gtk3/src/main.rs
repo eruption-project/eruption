@@ -850,6 +850,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
+        *crate::CONNECTION_STATE.write() = ConnectionState::Initializing;
         initialize_global_state_and_connection();
 
         if let Err(e) = ui::main_window::initialize_main_window(app) {

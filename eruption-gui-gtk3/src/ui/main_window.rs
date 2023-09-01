@@ -1152,6 +1152,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
 
             if *crate::CONNECTION_STATE.read() == ConnectionState::Initializing ||
                *crate::CONNECTION_STATE.read() == ConnectionState::Disconnected {
+                set_application_state(ConnectionState::Initializing, &builder)?;
 
                 // connect to Eruption daemon
                 match Connection::new(ConnectionType::Local) {
@@ -1301,12 +1302,13 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
     }
 
     if *crate::CONNECTION_STATE.read() == ConnectionState::Initializing {
-        outer_stack.set_visible_child_name("no_connection");
+        outer_stack.set_visible_child_name("connecting");
 
         stack_switcher.set_visible(false);
         brightness_scale.set_visible(false);
     } else if *crate::CONNECTION_STATE.read() == ConnectionState::Disconnected {
-        outer_stack.set_visible_child_name("no_connection");
+        // outer_stack.set_visible_child_name("no_connection");
+        outer_stack.set_visible_child_name("connecting");
 
         stack_switcher.set_visible(false);
         brightness_scale.set_visible(false);

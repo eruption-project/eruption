@@ -313,6 +313,96 @@ The Eruption Development Team
         <property name="vhomogeneous">False</property>
         <property name="transition-type">crossfade</property>
         <child>
+          <object class="GtkBox" id="connecting">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
+            <child type="center">
+              <placeholder/>
+            </child>
+            <child>
+              <!-- n-columns=3 n-rows=3 -->
+              <object class="GtkGrid" id="connecting_template">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <child>
+                  <object class="GtkLabel" id="connecting_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">end</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="xpad">8</property>
+                    <property name="ypad">8</property>
+                    <property name="label" translatable="yes">Connecting to Eruption</property>
+                    <style>
+                      <class name="heading_large"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSpinner" id="connecting_spinner">
+                    <property name="height-request">128</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="valign">start</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="active">True</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="name">connecting</property>
+            <property name="title" translatable="yes">Connecting to Eruption</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkBox" id="no_connection">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -321,7 +411,7 @@ The Eruption Development Team
               <placeholder/>
             </child>
             <child>
-              <!-- n-columns=3 n-rows=4 -->
+              <!-- n-columns=3 n-rows=3 -->
               <object class="GtkGrid" id="no_connection_template">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -388,26 +478,27 @@ The Eruption Development Team
                 <child>
                   <placeholder/>
                 </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">0</property>
               </packing>
             </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <style>
+              <class name="client"/>
+            </style>
           </object>
           <packing>
             <property name="name">no_connection</property>
             <property name="title" translatable="yes">No connection</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
@@ -2340,8 +2431,9 @@ The Eruption Development Team
                 </child>
                 <child>
                   <object class="GtkPaned">
-                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">True</property>
+                    <property name="no-show-all">True</property>
                     <property name="margin-start">8</property>
                     <property name="margin-end">8</property>
                     <property name="position">256</property>
@@ -2548,8 +2640,9 @@ The Eruption Development Team
                 </child>
                 <child>
                   <object class="GtkPaned">
-                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">True</property>
+                    <property name="no-show-all">True</property>
                     <property name="margin-start">8</property>
                     <property name="margin-end">8</property>
                     <property name="position">256</property>
@@ -3224,7 +3317,7 @@ The Eruption Development Team
           <packing>
             <property name="name">eruption_gui</property>
             <property name="title" translatable="yes">Eruption GUI</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
