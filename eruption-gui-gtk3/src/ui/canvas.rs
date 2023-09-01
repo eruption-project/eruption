@@ -511,7 +511,7 @@ pub fn fetch_device_info(_builder: &gtk::Builder) -> Result<()> {
 
     // add keyboard devices
     for _device_ids in devices.0 {
-        let device = get_keyboard_device(index as u64)?;
+        let device = get_keyboard_device(index)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
@@ -523,7 +523,7 @@ pub fn fetch_device_info(_builder: &gtk::Builder) -> Result<()> {
 
     // add mouse devices
     for _device_ids in devices.1 {
-        let device = get_mouse_device(index as u64)?;
+        let device = get_mouse_device(index)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;
@@ -535,7 +535,7 @@ pub fn fetch_device_info(_builder: &gtk::Builder) -> Result<()> {
 
     // add misc devices
     for _device_ids in devices.2 {
-        let device = get_misc_device(index as u64)?;
+        let device = get_misc_device(index)?;
 
         let make = device.get_make_and_model().0;
         let model = device.get_make_and_model().1;

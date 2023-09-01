@@ -487,7 +487,7 @@ fn realize_color_map() -> Result<RunningScriptResult> {
     // signal readiness / notify the main thread that we are done
     let val = *crate::COLOR_MAPS_READY_CONDITION.0.lock();
 
-    let val = val.checked_sub(1).unwrap_or_else(|| {
+    let val = val.checked_sub(1).unwrap_or({
         // this will happen during switching of profiles
         // trace!("Incorrect state in locking code detected");
 

@@ -67,38 +67,31 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
     for blocking::Proxy<'a, C>
 {
     fn get_color_scheme(&self, name: &str) -> Result<Vec<u8>, dbus::Error> {
-        self.method_call("org.eruption.Config", "GetColorScheme", (name,))
-            .and_then(|r: (Vec<u8>,)| Ok(r.0))
+        self.method_call("org.eruption.Config", "GetColorScheme", (name,)).map(|r: (Vec<u8>,)| r.0)
     }
 
     fn get_color_schemes(&self) -> Result<Vec<String>, dbus::Error> {
-        self.method_call("org.eruption.Config", "GetColorSchemes", ())
-            .and_then(|r: (Vec<String>,)| Ok(r.0))
+        self.method_call("org.eruption.Config", "GetColorSchemes", ()).map(|r: (Vec<String>,)| r.0)
     }
 
     fn ping(&self) -> Result<bool, dbus::Error> {
-        self.method_call("org.eruption.Config", "Ping", ())
-            .and_then(|r: (bool,)| Ok(r.0))
+        self.method_call("org.eruption.Config", "Ping", ()).map(|r: (bool,)| r.0)
     }
 
     fn ping_privileged(&self) -> Result<bool, dbus::Error> {
-        self.method_call("org.eruption.Config", "PingPrivileged", ())
-            .and_then(|r: (bool,)| Ok(r.0))
+        self.method_call("org.eruption.Config", "PingPrivileged", ()).map(|r: (bool,)| r.0)
     }
 
     fn remove_color_scheme(&self, name: &str) -> Result<bool, dbus::Error> {
-        self.method_call("org.eruption.Config", "RemoveColorScheme", (name,))
-            .and_then(|r: (bool,)| Ok(r.0))
+        self.method_call("org.eruption.Config", "RemoveColorScheme", (name,)).map(|r: (bool,)| r.0)
     }
 
     fn set_color_scheme(&self, name: &str, data: Vec<u8>) -> Result<bool, dbus::Error> {
-        self.method_call("org.eruption.Config", "SetColorScheme", (name, data))
-            .and_then(|r: (bool,)| Ok(r.0))
+        self.method_call("org.eruption.Config", "SetColorScheme", (name, data)).map(|r: (bool,)| r.0)
     }
 
     fn write_file(&self, filename: &str, data: &str) -> Result<bool, dbus::Error> {
-        self.method_call("org.eruption.Config", "WriteFile", (filename, data))
-            .and_then(|r: (bool,)| Ok(r.0))
+        self.method_call("org.eruption.Config", "WriteFile", (filename, data)).map(|r: (bool,)| r.0)
     }
 
     fn brightness(&self) -> Result<i64, dbus::Error> {
@@ -146,8 +139,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
     OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C>
 {
     fn introspect(&self) -> Result<String, dbus::Error> {
-        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-            .and_then(|r: (String,)| Ok(r.0))
+        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
     }
 }
 
@@ -210,8 +202,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "org.freedesktop.DBus.Properties",
             "Get",
             (interface_name, property_name),
-        )
-        .and_then(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| Ok(r.0))
+        ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
     }
 
     fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -219,8 +210,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "org.freedesktop.DBus.Properties",
             "GetAll",
             (interface_name,),
-        )
-        .and_then(|r: (arg::PropMap,)| Ok(r.0))
+        ).map(|r: (arg::PropMap,)| r.0)
     }
 
     fn set(

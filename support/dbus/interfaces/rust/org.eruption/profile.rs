@@ -80,8 +80,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
     for blocking::Proxy<'a, C>
 {
     fn enum_profiles(&self) -> Result<Vec<(String, String)>, dbus::Error> {
-        self.method_call("org.eruption.Profile", "EnumProfiles", ())
-            .and_then(|r: (Vec<(String, String)>,)| Ok(r.0))
+        self.method_call("org.eruption.Profile", "EnumProfiles", ()).map(|r: (Vec<(String, String)>,)| r.0)
     }
 
     fn set_parameter(
@@ -95,13 +94,11 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
             "org.eruption.Profile",
             "SetParameter",
             (profile_file, script_file, param_name, value),
-        )
-        .and_then(|r: (bool,)| Ok(r.0))
+        ).map(|r: (bool,)| r.0)
     }
 
     fn switch_profile(&self, filename: &str) -> Result<bool, dbus::Error> {
-        self.method_call("org.eruption.Profile", "SwitchProfile", (filename,))
-            .and_then(|r: (bool,)| Ok(r.0))
+        self.method_call("org.eruption.Profile", "SwitchProfile", (filename,)).map(|r: (bool,)| r.0)
     }
 
     fn active_profile(&self) -> Result<String, dbus::Error> {
@@ -123,8 +120,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
     OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C>
 {
     fn introspect(&self) -> Result<String, dbus::Error> {
-        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-            .and_then(|r: (String,)| Ok(r.0))
+        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
     }
 }
 
@@ -187,8 +183,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "org.freedesktop.DBus.Properties",
             "Get",
             (interface_name, property_name),
-        )
-        .and_then(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| Ok(r.0))
+        ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
     }
 
     fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -196,8 +191,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "org.freedesktop.DBus.Properties",
             "GetAll",
             (interface_name,),
-        )
-        .and_then(|r: (arg::PropMap,)| Ok(r.0))
+        ).map(|r: (arg::PropMap,)| r.0)
     }
 
     fn set(

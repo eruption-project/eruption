@@ -1023,10 +1023,10 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                         fn compute_offset(i: usize) -> usize {
                             // TODO: Implement this
 
-                            let index = (i / 12) * 36 + (i % 12);
+                            
                             // *COLS_TOPOLOGY.get(index).unwrap_or(&0) as usize
 
-                            index
+                            (i / 12) * 36 + (i % 12)
                         }
 
                         if self.allocated_zone.enabled {

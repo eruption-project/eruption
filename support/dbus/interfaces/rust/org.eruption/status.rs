@@ -33,15 +33,13 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgErupt
     for blocking::Proxy<'a, C>
 {
     fn get_led_colors(&self) -> Result<Vec<(u8, u8, u8, u8)>, dbus::Error> {
-        self.method_call("org.eruption.Status", "GetLedColors", ())
-            .and_then(|r: (Vec<(u8, u8, u8, u8)>,)| Ok(r.0))
+        self.method_call("org.eruption.Status", "GetLedColors", ()).map(|r: (Vec<(u8, u8, u8, u8)>,)| r.0)
     }
 
     fn get_managed_devices(
         &self,
     ) -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>), dbus::Error> {
-        self.method_call("org.eruption.Status", "GetManagedDevices", ())
-            .and_then(|r: ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),)| Ok(r.0))
+        self.method_call("org.eruption.Status", "GetManagedDevices", ()).map(|r: ((Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>),)| r.0)
     }
 
     fn running(&self) -> Result<bool, dbus::Error> {
@@ -63,8 +61,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
     OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C>
 {
     fn introspect(&self) -> Result<String, dbus::Error> {
-        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
-            .and_then(|r: (String,)| Ok(r.0))
+        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
     }
 }
 
@@ -127,8 +124,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "org.freedesktop.DBus.Properties",
             "Get",
             (interface_name, property_name),
-        )
-        .and_then(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| Ok(r.0))
+        ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
     }
 
     fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -136,8 +132,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "org.freedesktop.DBus.Properties",
             "GetAll",
             (interface_name,),
-        )
-        .and_then(|r: (arg::PropMap,)| Ok(r.0))
+        ).map(|r: (arg::PropMap,)| r.0)
     }
 
     fn set(
