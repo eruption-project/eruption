@@ -974,20 +974,19 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.4.1"
+version = "4.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c8d502cbaec4595d2e7d5f61e318f05417bd2b66fdc3809498f0d3fdf0bea27"
+checksum = "6a13b88d2c62ff462f88e4a121f17a82c1af05693a2f192b5c38d14de73c19f6"
 dependencies = [
  "clap_builder",
  "clap_derive",
- "once_cell",
 ]
 
 [[package]]
 name = "clap_builder"
-version = "4.4.1"
+version = "4.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5891c7bc0edb3e1c2204fc5e94009affabeb1821c9e5fdc3959536c5c0bb984d"
+checksum = "2bb9faaa7c2ef94b2743a21f5a29e6f0010dff4caa69ac8e9d6cf8b6fa74da08"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1001,14 +1000,14 @@ version = "4.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "586a385f7ef2f8b4d86bddaa0c094794e7ccbfe5ffef1f434fe928143fc783a5"
 dependencies = [
- "clap 4.4.1",
+ "clap 4.4.2",
 ]
 
 [[package]]
 name = "clap_derive"
-version = "4.4.0"
+version = "4.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9fd1a5729c4548118d7d70ff234a44868d00489a4b6597b0b020918a0e91a1a"
+checksum = "0862016ff20d69b84ef8247369fabf5c008a7417002411897d40ee1f4532b873"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -1037,7 +1036,7 @@ version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8e5f34d85d9e0bbe2491d100a7a7c1007bb2467b518080bfe311e8947197a9"
 dependencies = [
- "clap 4.4.1",
+ "clap 4.4.2",
  "roff",
 ]
 
@@ -1384,7 +1383,7 @@ dependencies = [
  "anes",
  "cast",
  "ciborium",
- "clap 4.4.1",
+ "clap 4.4.2",
  "criterion-plot",
  "is-terminal",
  "itertools 0.10.5",
@@ -2155,7 +2154,6 @@ name = "eruption"
 version = "0.5.0"
 dependencies = [
  "async-trait",
- "atty",
  "bincode 2.0.0-rc.3",
  "bitfield-struct",
  "bitvec",
@@ -2164,7 +2162,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "color-eyre",
  "colorgrad",
  "config",
@@ -2187,6 +2185,7 @@ dependencies = [
  "i18n-embed",
  "icecream",
  "indexmap 2.0.0",
+ "is-terminal",
  "itertools 0.11.0",
  "lazy_static",
  "libc",
@@ -2240,11 +2239,10 @@ dependencies = [
 name = "eruption-audio-proxy"
 version = "0.0.16"
 dependencies = [
- "atty",
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2255,6 +2253,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
+ "is-terminal",
  "lazy_static",
  "libc",
  "libpulse-binding",
@@ -2284,7 +2283,7 @@ name = "eruption-cmd"
 version = "0.0.7"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2318,7 +2317,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2358,9 +2357,8 @@ dependencies = [
 name = "eruption-fx-proxy"
 version = "0.1.0"
 dependencies = [
- "atty",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2377,6 +2375,7 @@ dependencies = [
  "i18n-embed-fl",
  "icecream",
  "image",
+ "is-terminal",
  "lazy_static",
  "libc",
  "nix 0.27.1",
@@ -2406,7 +2405,6 @@ dependencies = [
 name = "eruption-gui-gtk3"
 version = "0.2.9"
 dependencies = [
- "atty",
  "byteorder",
  "cairo-rs",
  "cfg-if 1.0.0",
@@ -2434,6 +2432,7 @@ dependencies = [
  "i18n-embed-fl",
  "icecream",
  "indexmap 2.0.0",
+ "is-terminal",
  "itertools 0.11.0",
  "lazy_static",
  "libc",
@@ -2471,9 +2470,8 @@ dependencies = [
 name = "eruption-hotplug-helper"
 version = "0.1.5"
 dependencies = [
- "atty",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2482,6 +2480,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
+ "is-terminal",
  "lazy_static",
  "libc",
  "lockfile",
@@ -2505,7 +2504,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2548,7 +2547,7 @@ version = "0.0.9"
 dependencies = [
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2595,7 +2594,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2644,7 +2643,7 @@ name = "eruption-netfx"
 version = "0.2.0"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2686,10 +2685,9 @@ name = "eruption-process-monitor"
 version = "0.1.6"
 dependencies = [
  "async-trait",
- "atty",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "config",
@@ -2706,6 +2704,7 @@ dependencies = [
  "i18n-embed-fl",
  "icecream",
  "indexmap 2.0.0",
+ "is-terminal",
  "lazy_static",
  "libc",
  "nix 0.27.1",
@@ -2758,7 +2757,7 @@ version = "0.0.14"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2793,9 +2792,8 @@ dependencies = [
 name = "eruption-watchdog"
 version = "0.0.5"
 dependencies = [
- "atty",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "console-subscriber",
@@ -2806,6 +2804,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
+ "is-terminal",
  "lazy_static",
  "libc",
  "lockfile",
@@ -2827,7 +2826,7 @@ name = "eruptionctl"
 version = "0.1.9"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "clap_mangen",
  "color-eyre",
@@ -4275,7 +4274,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb0889898416213fab133e1d33a0e5858a48177452750691bde3666d0fdbaf8b"
 dependencies = [
  "hermit-abi 0.3.2",
- "rustix 0.38.10",
+ "rustix 0.38.11",
  "windows-sys 0.48.0",
 ]
 
@@ -5945,10 +5944,9 @@ dependencies = [
 name = "pyroclasm"
 version = "0.0.8"
 dependencies = [
- "atty",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "clap_complete",
  "color-eyre",
  "config",
@@ -5971,6 +5969,7 @@ dependencies = [
  "icecream",
  "image",
  "indexmap 2.0.0",
+ "is-terminal",
  "lazy_static",
  "libc",
  "mimalloc",
@@ -6505,9 +6504,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.10"
+version = "0.38.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed6248e1caa625eb708e266e06159f135e8c26f2bb7ceb72dc4b2766d0340964"
+checksum = "c0c3dde1fc030af041adc40e79c0e7fbcf431dd24870053d187d7c66e4b87453"
 dependencies = [
  "bitflags 2.4.0",
  "errno",
@@ -6890,7 +6889,7 @@ name = "simple-example-01"
 version = "0.0.4"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.1",
+ "clap 4.4.2",
  "color-eyre",
  "eruption-sdk",
  "eyre",
@@ -7253,7 +7252,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "fastrand 2.0.0",
  "redox_syscall 0.3.5",
- "rustix 0.38.10",
+ "rustix 0.38.11",
  "windows-sys 0.48.0",
 ]
 

@@ -33,6 +33,7 @@ use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
 };
+use is_terminal::IsTerminal;
 use lazy_static::lazy_static;
 use parking_lot::{Condvar, Mutex, RwLock};
 use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
@@ -1799,7 +1800,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    if atty::is(atty::Stream::Stdout) {
+    if std::io::stdout().is_terminal() {
         if env::args().count() < 2
             && !env::args().any(|a| a.eq_ignore_ascii_case("daemon"))
             && !env::args().any(|a| a.eq_ignore_ascii_case("completions"))
@@ -2298,7 +2299,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     use tracing_subscriber::prelude::*;
     use tracing_subscriber::util::SubscriberInitExt;
 
-    if atty::is(atty::Stream::Stdout) {
+    if std::io::stdout().is_terminal() {
         // let filter = tracing_subscriber::EnvFilter::from_default_env();
         // let journald_layer = tracing_journald::layer()?.with_filter(filter);
 

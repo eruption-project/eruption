@@ -46,6 +46,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use ui::main_window::set_application_state;
 
+use is_terminal::IsTerminal;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use std::{env, process, thread};
@@ -768,7 +769,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         }
     }
 
-    if atty::is(atty::Stream::Stdout) {
+    if std::io::stdout().is_terminal() {
         // print a license header, except if we are generating shell completions
         if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
             print_header();

@@ -30,6 +30,7 @@ use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
 };
+use is_terminal::IsTerminal;
 
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
@@ -386,7 +387,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     use tracing_subscriber::prelude::*;
     use tracing_subscriber::util::SubscriberInitExt;
 
-    if atty::is(atty::Stream::Stdout) {
+    if std::io::stdout().is_terminal() {
         // let filter = tracing_subscriber::EnvFilter::from_default_env();
         // let journald_layer = tracing_journald::layer()?.with_filter(filter);
 
