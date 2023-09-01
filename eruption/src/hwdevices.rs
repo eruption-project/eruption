@@ -2116,7 +2116,7 @@ pub fn udev_inhibited_workaround(
         .map_or_else(
             || Err(eyre!("Udev device not found.")),
             |mut dev| {
-                info!("Trying to apply Udev 'inhibited' workaround for device {vendor_id:04x}:{product_id:04x} iface:{interface_num:02}");
+                info!("Trying to apply Udev \"inhibited\" workaround for device {vendor_id:04x}:{product_id:04x} iface:{interface_num:02}");
 
                 // Toggling the value on and off is enough to quiet spurious events.
                 dev.set_attribute_value("inhibited", "1")?;
@@ -2131,9 +2131,9 @@ pub fn attempt_udev_inhibited_workaround(vendor_id: u16, product_id: u16, interf
     let workaround_attempt = udev_inhibited_workaround(vendor_id, product_id, interface_num);
     if let Err(err) = workaround_attempt {
         warn!(
-            "Udev 'inhibited' workaround for device {vendor_id:04x}:{product_id:04x} iface:{interface_num:02} failed: {err}");
+            "Udev \"inhibited\" workaround for device {vendor_id:04x}:{product_id:04x} iface:{interface_num:02} failed: {err}");
     } else {
-        info!("Udev 'inhibited' workaround succeeded for device {vendor_id:04x}:{product_id:04x} iface:{interface_num:02}");
+        info!("Udev \"inhibited\" workaround succeeded for device {vendor_id:04x}:{product_id:04x} iface:{interface_num:02}");
     }
 }
 

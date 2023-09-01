@@ -230,22 +230,33 @@ pub fn udev_inhibited_workaround(
     product_id: u16,
     interface_num: i32,
 ) -> Result<()> {
-    let interface_num_str = format!("{interface_num:02}");
-    let interface_num_osstr = OsStr::new(&interface_num_str);
-
     let mut enumerator = udev::Enumerator::new()?;
-    enumerator.match_subsystem("input")?;
-    enumerator.match_property("ID_VENDOR_ID", format!("{vendor_id:04x}"))?;
-    enumerator.match_property("ID_MODEL_ID", format!("{product_id:04x}"))?;
-    enumerator.match_property("ID_USB_INTERFACE_NUM", &interface_num_str)?;
-    enumerator.match_attribute("inhibited", "0")?;
+
+    // the following filters seem to not work reliably, using udev crate version 0.7
+
+    // enumerator.match_subsystem("input")?;
+    // enumerator.match_property("ID_VENDOR_ID", format!("{vendor_id:04x}"))?;
+    // enumerator.match_property("ID_MODEL_ID", format!("{product_id:04x}"))?;
+    // enumerator.match_property("ID_USB_INTERFACE_NUM", &interface_num_str)?;
+    // enumerator.match_attribute("inhibited", "0")?;
+
+    // ... we have to check them manually in find(..) for now
 
     enumerator
         .scan_devices()?
         .find(|dev| {
-            // For some reason, the above match_property() still brings back devices with different interface_nums, so filter again.
-            dev.property_value("ID_USB_INTERFACE_NUM")
-                .map_or(false, |value| value == interface_num_osstr)
+            dev.property_value("ID_VENDOR_ID").map_or(false, |value| {
+                value == OsStr::new(&format!("{vendor_id:04x}"))
+            }) && dev.property_value("ID_MODEL_ID").map_or(false, |value| {
+                value == OsStr::new(&format!("{product_id:04x}"))
+            }) && dev
+                .property_value("ID_USB_INTERFACE_NUM")
+                .map_or(false, |value| {
+                    value == OsStr::new(&format!("{interface_num:02}"))
+                })
+                && dev
+                    .attribute_value("inhibited")
+                    .map_or(false, |value| value == OsStr::new("0"))
         })
         .map_or_else(
             || Err(eyre!("Udev device not found.")),
@@ -253,6 +264,7 @@ pub fn udev_inhibited_workaround(
                 // Toggling the value on and off is enough to quiet spurious events.
                 dev.set_attribute_value("inhibited", "1")?;
                 dev.set_attribute_value("inhibited", "0")?;
+
                 Ok(())
             },
         )
