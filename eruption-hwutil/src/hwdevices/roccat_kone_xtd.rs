@@ -23,7 +23,7 @@ use std::time::Duration;
 use std::{cell::RefCell, thread};
 
 #[allow(unused)]
-use crate::{constants, interact, eprintln_v, println_v};
+use crate::{constants, eprintln_v, interact, println_v};
 
 use super::{DeviceTrait, HwDeviceError, Result, RGBA};
 

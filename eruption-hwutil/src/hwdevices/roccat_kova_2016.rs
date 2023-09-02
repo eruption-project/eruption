@@ -23,7 +23,7 @@ use std::time::Duration;
 use std::{cell::RefCell, thread};
 
 #[allow(unused)]
-use crate::{constants, interact, eprintln_v, println_v};
+use crate::{constants, eprintln_v, interact, println_v};
 
 use super::{DeviceTrait, HwDeviceError, Result, RGBA};
 
@@ -324,7 +324,10 @@ impl DeviceTrait for RoccatKova2016 {
             a: 255,
         }])?;
 
-        interact::prompt_or_wait("Press any key to change colors.", Duration::from_millis(500));
+        interact::prompt_or_wait(
+            "Press any key to change colors.",
+            Duration::from_millis(500),
+        );
 
         self.send_led_map(&[RGBA {
             r: 0,

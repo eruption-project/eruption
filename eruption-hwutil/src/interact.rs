@@ -21,7 +21,11 @@
 
 use console::Term;
 use lazy_static::lazy_static;
-use std::{sync::atomic::{AtomicBool, Ordering}, time::Duration, thread};
+use std::{
+    sync::atomic::{AtomicBool, Ordering},
+    thread,
+    time::Duration,
+};
 
 lazy_static! {
     /// Global flag to toggle user-interactive mode

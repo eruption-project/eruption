@@ -26,7 +26,7 @@ use std::{sync::Arc, thread};
 use tracing::*;
 
 #[allow(unused)]
-use crate::{constants, interact, eprintln_v, println_v};
+use crate::{constants, eprintln_v, interact, println_v};
 
 use super::{DeviceTrait, HwDeviceError, RGBA};
 
@@ -494,7 +494,10 @@ impl DeviceTrait for CorsairStrafe {
             }; NUM_KEYS],
         )?;
 
-        interact::prompt_or_wait("Press any key to change colors.", Duration::from_millis(100));
+        interact::prompt_or_wait(
+            "Press any key to change colors.",
+            Duration::from_millis(100),
+        );
 
         // test each LED
         for i in 0..NUM_KEYS {

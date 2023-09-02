@@ -825,7 +825,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         }
 
         Subcommands::ToggleUdevInhibited {
-            device: device_index
+            device: device_index,
         } => {
             if device_index < 255 - 4 {
                 // create the one and only hidapi instance
@@ -844,15 +844,17 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 device.interface_number()
                             );
 
-                            interact::prompt("Press any key to toggle the \"inhibited\" attribute.");
+                            interact::prompt(
+                                "Press any key to toggle the \"inhibited\" attribute.",
+                            );
                             let workaround_attempt = util::udev_inhibited_workaround(
                                 device.vendor_id(),
                                 device.product_id(),
-                                device.interface_number());
+                                device.interface_number(),
+                            );
                             if let Err(err) = workaround_attempt {
                                 error!("Udev \"inhibited\" workaround failed: {:?}", err)
                             }
-
                         }
                     }
 

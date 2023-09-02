@@ -1901,7 +1901,6 @@ pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
     }
 }
 
-
 /// For some devices, such as the Vulcan 1xx, after sending the report to update the LEDs, the device's evdev LED interface
 /// goes crazy and starts spewing out KEY_UNKNOWN events.  This is ignored by X and Wayland, but is interpreted as real key
 /// stroke inputs on virtual consoles.  As best as I can tell, this behavior is a bug somewhere in udev/evdev/hidraw.  As a
@@ -1909,7 +1908,11 @@ pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
 /// the device is plugged in.  Not all Roccat devices require this workaround, headphones don't, but I don't know which all
 /// do and which don't.  Note that this workaround can also be applied manually by writing to the "inhibited" file found at
 /// path "/sys/class/input/eventX/inhibited", where the X in "eventX" is the udev number associated with the LED interface.
-pub fn udev_inhibited_workaround(vendor_id: u16, product_id: u16, interface_num: i32) -> Result<()> {
+pub fn udev_inhibited_workaround(
+    vendor_id: u16,
+    product_id: u16,
+    interface_num: i32,
+) -> Result<()> {
     let interface_num_str = format!("{interface_num:02}");
     let interface_num_osstr = OsStr::new(&interface_num_str);
 
@@ -1929,17 +1932,17 @@ pub fn udev_inhibited_workaround(vendor_id: u16, product_id: u16, interface_num:
         })
         .map_or_else(
             || Err(eyre!("Udev device not found.")),
-            |mut dev|
-            {
+            |mut dev| {
                 // Toggling the value on and off is enough to quiet spurious events.
                 dev.set_attribute_value("inhibited", "1")?;
                 dev.set_attribute_value("inhibited", "0")?;
                 Ok(())
-            })
+            },
+        )
 }
 
 pub fn attempt_udev_inhibited_workaround(vendor_id: u16, product_id: u16, interface_num: i32) {
-    let workaround_attempt = udev_inhibited_workaround(vendor_id,product_id, interface_num);
+    let workaround_attempt = udev_inhibited_workaround(vendor_id, product_id, interface_num);
     if let Err(err) = workaround_attempt {
         warn!("Udev \"inhibited\" workaround failed: {}", err);
         warn!("Continuing anyway.");
@@ -1947,7 +1950,6 @@ pub fn attempt_udev_inhibited_workaround(vendor_id: u16, product_id: u16, interf
         info!("Udev \"inhibited\" workaround succeeded.");
     }
 }
-
 
 pub fn get_device_make(usb_vid: u16, usb_pid: u16) -> Option<&'static str> {
     Some(get_device_info(usb_vid, usb_pid)?.0)

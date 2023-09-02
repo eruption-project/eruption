@@ -24,7 +24,8 @@ use config::Config;
 use flume::{select::SelectError, unbounded, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
-    Event, EventKind, notify::event::ModifyKind,
+    notify::event::ModifyKind,
+    Event, EventKind,
 };
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
