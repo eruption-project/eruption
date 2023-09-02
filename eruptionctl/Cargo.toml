@@ -47,19 +47,19 @@ flume = "0.11.0"
 clap = { version = "4.3.24", features = ["derive"] }
 clap_complete = "4.3.2"
 clap_mangen = "0.2.12"
-ctrlc = { version = "3.4.0", features = ["termination"] }
+ctrlc = { version = "3.4.1", features = ["termination"] }
 cfg-if = "1.0.0"
 colored = "2.0.4"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 console = "0.15.7"
-libc = "0.2.147"
+libc = "0.2.148"
 nix = "0.27.1"
 parking_lot = { version = "0.12.1", features = [
   "send_guard",
   "hardware-lock-elision",
 ] }
 serde = { version = "1.0.188", features = ["derive"] }
-serde_json = "1.0.105"
+serde_json = "1.0.107"
 indexmap = { version = "2.0.0", features = ["serde"] }
 tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
@@ -74,20 +74,20 @@ tracing-subscriber = { version = "0.3.17", features = [
 console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
 config = "0.13.3"
 uuid = { version = "1.4.1", features = ["serde", "v4"] }
-toml = "0.7.6"
-thiserror = "1.0.47"
+toml = "0.8.0"
+thiserror = "1.0.48"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 comfy-table = "7.0.1"
 paste = "1.0.14"
 dbus = { version = "0.9.7", optional = true }
 dbus-tokio = { version = "0.7.6", optional = true }
-i18n-embed = { version = "0.13.9", features = [
+i18n-embed = { version = "0.14.0", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.7"
-rust-embed = { version = "6.8.1", features = ["compression"] }
+i18n-embed-fl = "0.7.0"
+rust-embed = { version = "8.0.0", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 same-file = "1"

@@ -28,13 +28,13 @@ edition = "2021"
 description = "Turn off the LEDs of supported devices, and wait for the Eruption daemon to take over from userspace"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
 homepage = "https://eruption-project.org"
-keywords = ["eruption", "linux", "led", "driver", "linux", "kernel", "module"]
+keywords = ["eruption", "linux", "led", "driver", "kernel"]
 categories = ["hardware-support"]
 
 [dependencies]
 bitflags = "2.4.0"
 
 [build-dependencies]
-bindgen = "0.66.1"
+bindgen = "0.68.1"
 cc = "1.0.79"
 shlex = "1.1.0"
