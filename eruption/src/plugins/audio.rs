@@ -280,7 +280,7 @@ mod backends {
     use socket2::{Domain, SockAddr, Socket, Type};
     use std::f32::consts::PI;
     use std::mem::MaybeUninit;
-    use std::os::unix::io::AsRawFd;
+    
     use std::time::Duration;
 
     use protocol::response::Payload;

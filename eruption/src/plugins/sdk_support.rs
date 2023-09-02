@@ -36,7 +36,7 @@ use std::any::Any;
 use std::io::Cursor;
 use std::mem::MaybeUninit;
 use std::os::unix::fs::PermissionsExt;
-use std::os::unix::io::AsRawFd;
+
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;

@@ -22,7 +22,7 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::mem::MaybeUninit;
-use std::os::unix::io::AsRawFd;
+
 use std::sync::atomic::AtomicI32;
 use std::sync::{
     atomic::{AtomicBool, Ordering},

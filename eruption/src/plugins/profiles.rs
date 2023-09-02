@@ -30,8 +30,8 @@ use crate::plugins::Plugin;
 
 //#[derive(Debug, Fail)]
 //pub enum ProfilesPluginError {
-////#[error("Unknown error: {}", description)]
-////UnknownError { description: String },
+///#[error("Unknown error: {}", description)]
+///UnknownError { description: String },
 //}
 
 /// A plugin that enables Eruption to switch profiles, based on the current system state

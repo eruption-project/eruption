@@ -158,7 +158,7 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
             c.get::<Vec<String>>("global.script_dirs")
                 .unwrap_or_else(|_| vec![])
         })
-        .unwrap_or_else(std::vec::Vec::new);
+        .unwrap_or_default();
 
     let mut script_dirs = script_dirs
         .iter()

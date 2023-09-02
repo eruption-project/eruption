@@ -238,7 +238,7 @@ async fn get_systems_status() -> Result<SystemsStatus> {
         eruption_process_monitor_status: get_daemon_status(Daemon::ProcessMonitor)?,
         eruption_audio_proxy_status: get_daemon_status(Daemon::AudioProxy)?,
         eruption_fx_proxy_status: get_daemon_status(Daemon::FxProxy)?,
-        eruption_ping: eruption_ping,
+        eruption_ping,
         slot_names,
         slot_profiles,
         profiles,

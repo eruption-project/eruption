@@ -359,8 +359,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             };
 
             if let Some(_description) = description {
-            } else {
-            }
+            } 
         }
 
         Subcommands::List { lua_path } => {
