@@ -46,9 +46,9 @@ parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = "1.0.188"
 bincode = "2.0.0-rc.3"
 bytes = "1.4.0"
-prost = "0.11.9"
-prost-types = "0.11.9"
+prost = "0.12.0"
+prost-types = "0.12.0"
 socket2 = { version = "0.5.3", features = ["all"] }
 
 [build-dependencies]
-prost-build = "0.11.9"
+prost-build = "0.12.0"

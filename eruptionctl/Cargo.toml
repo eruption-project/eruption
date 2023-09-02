@@ -41,7 +41,7 @@ debug-async = []
 
 [dependencies]
 lazy_static = "1.4.0"
-flume = "0.10.14"
+flume = "0.11.0"
 clap = { version = "4.3.24", features = ["derive"] }
 clap_complete = "4.3.2"
 ctrlc = { version = "3.4.0", features = ["termination"] }
@@ -50,11 +50,11 @@ colored = "2.0.4"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 console = "0.15.7"
 libc = "0.2.147"
-nix = "0.26.4"
+nix = { version = "0.27.1", features = ["fs"] }
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.105"
-indexmap = { version = "1.9.3", features = ["serde"] }
+indexmap = { version = "2.0.0", features = ["serde"] }
 tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
@@ -72,7 +72,7 @@ toml = "0.7.6"
 thiserror = "1.0.47"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-comfy-table = "6.2.0"
+comfy-table = "7.0.1"
 paste = "1.0.14"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"

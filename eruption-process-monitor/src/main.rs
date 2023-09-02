@@ -51,6 +51,7 @@ use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
 use dbus_client::{profile, slot};
 use flume::{unbounded, Receiver, Sender};
+use hotwatch::EventKind;
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     Event,
@@ -60,6 +61,7 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use indexmap::IndexMap;
+use is_terminal::IsTerminal;
 use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
 use regex::Regex;
@@ -610,9 +612,9 @@ pub fn register_filesystem_watcher(
                                 return Flow::Exit;
                             }
 
-                            match event {
-                                Event::Write(path) => {
-                                    debug!("Rule file changed: {}", path.display());
+                            match event.kind {
+                                EventKind::Modify(_) => {
+                                    debug!("Rule file changed: {}", event.paths[0].display());
 
                                     fsevents_tx
                                         .send(FileSystemEvent::RulesChanged)
@@ -1378,7 +1380,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     use tracing_subscriber::prelude::*;
     use tracing_subscriber::util::SubscriberInitExt;
 
-    if atty::is(atty::Stream::Stdout) {
+    if std::io::stdout().is_terminal() {
         // let filter = tracing_subscriber::EnvFilter::from_default_env();
         // let journald_layer = tracing_journald::layer()?.with_filter(filter);
 

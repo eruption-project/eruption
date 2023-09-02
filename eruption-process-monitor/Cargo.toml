@@ -75,10 +75,10 @@ dbus = "0.9.7"
 dbus-tree = "0.9.2"
 dyn-clone = "1.0.13"
 dyn-clonable = "0.9.0"
-indexmap = "1.9.3"
+indexmap = "2.0.0"
 libc = "0.2.147"
-nix = "0.26.4"
-atty = "0.2.14"
+nix = { version = "0.27.1", features = ["fs"] }
+is-terminal = "0.4.9"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 regex = "1.9.4"
 serde = { version = "1.0.188", features = ["derive"] }
@@ -94,16 +94,16 @@ tracing-subscriber = { version = "0.3.17", features = [
   "env-filter",
 ] }
 console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
-flume = "0.10.14"
+flume = "0.11.0"
 toml = "0.7.6"
 thiserror = "1.0.47"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
-hotwatch = "0.4.6"
+hotwatch = "0.5.0"
 lazy_static = "1.4.0"
 walkdir = "2.3.3"
 procmon-sys = { version = "0.0.3", path = "src/procmon-sys", optional = true }
-x11rb = { version = "0.11.1", optional = true, features = [
+x11rb = { version = "0.12.0", optional = true, features = [
   "allow-unsafe-code",
 ] }
 wayland-client = { version = "0.30.2", features = ["log"], optional = true }

@@ -45,7 +45,7 @@ clap = { version = "4.3.24", features = ["derive"] }
 clap_complete = "4.3.2"
 lazy_static = "1.4.0"
 libc = "0.2.147"
-atty = "0.2.14"
+is-terminal = "0.4.9"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
