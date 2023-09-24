@@ -131,7 +131,6 @@ install:
 
 	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
 	-@systemctl daemon-reload
-
 	@/usr/bin/systemd-sysusers
 
 	@echo "Commencing installation of Eruption..."
@@ -193,6 +192,7 @@ install:
 	@cp "support/systemd/eruption-hotplug-helper.service" "$(TARGET_DIR)/lib/systemd/system/"
 	@cp "support/systemd/eruption-hotplug-helper.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
 	# @cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
+	# @cp "support/tmpfiles.d/eruption.conf" "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
 	@cp "support/udev/99-eruption.rules" "$(TARGET_DIR)/lib/udev/rules.d/"
 	@cp "support/libinput/eruption.quirks" "$(TARGET_DIR)/share/libinput/60-eruption.quirks"
 	@cp "support/dbus/org.eruption.service" "$(TARGET_DIR)/share/dbus-1/system-services/"
@@ -285,6 +285,10 @@ install:
 	@chmod g+s,o+t $(TARGET_DIR)/share/eruption/scripts/lib/macros
 	@chmod g+s,o+t $(TARGET_DIR)/share/eruption/scripts/lib/keymaps
 
+	@cp "support/tmpfiles.d/eruption.conf" "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
+	-@systemctl daemon-reload
+	@/usr/bin/systemd-tmpfiles --create "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
+
 	@echo ""
 	@echo "Successfully installed Eruption!"
 	@echo "Now please run 'make start' to enable Eruption"
@@ -326,6 +330,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/lib/systemd/system/eruption-hotplug-helper.service
 	-@rm $(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset
 	-@rm $(TARGET_DIR)/lib/sysusers.d/eruption.conf
+	-@rm $(TARGET_DIR)/lib/tmpfiles.d/eruption.conf
 	-@rm $(TARGET_DIR)/lib/udev/rules.d/99-eruption.rules
 	-@rm $(TARGET_DIR)/share/libinput/60-eruption.quirks
 	-@rm $(TARGET_DIR)/share/dbus-1/system-services/org.eruption.service

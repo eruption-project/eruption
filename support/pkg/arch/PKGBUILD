@@ -48,6 +48,8 @@ package() {
 
     mkdir -p "$pkgdir/var/lib/eruption/profiles"
 
+    mkdir -p "$pkgdir/usr/lib/tmpfiles.d"
+
     mkdir -p "$pkgdir/usr/lib/systemd/system"
     mkdir -p "$pkgdir/usr/lib/systemd/system-preset"
 
@@ -101,6 +103,8 @@ package() {
     install -m 644 "support/config/process-monitor.conf" "$pkgdir/etc/eruption/"
 
     install -m 644 "support/profile.d/eruption.sh" "$pkgdir/etc/profile.d/"
+
+    install -m 644 "support/tmpfiles.d/eruption.conf" "$pkgdir/usr/lib/tmpfiles.d/"
 
     install -m 644 "support/modules-load.d/eruption.conf" "$pkgdir/etc/modules-load.d/"
 

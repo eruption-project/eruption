@@ -8,7 +8,7 @@ pkgrel='0'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
 license=('GPL3+')
-depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'luajit' 'lua51-socket' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtksourceview4' 'acl')
+depends=('libevdev' 'libusb' 'hidapi' 'systemd-libs' 'dbus' 'libpulse' 'lua' 'lua-socket' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtksourceview4' 'acl')
 makedepends=('git' 'rust' 'python' 'pkgconf' 'cmake' 'protobuf' 'xorg-server-devel' 'libxrandr' 'vulkan-headers' 'vulkan-tools' 'spirv-tools' 'shaderc' 'gtk3')
 provides=('eruption')
 conflicts=('eruption' 'eruption-roccat-vulcan')
@@ -51,6 +51,8 @@ package() {
     mkdir -p "$pkgdir/usr/share/eruption-gui-gtk3/schemas"
 
     mkdir -p "$pkgdir/var/lib/eruption/profiles"
+
+    mkdir -p "$pkgdir/usr/lib/tmpfiles.d"
 
     mkdir -p "$pkgdir/usr/lib/systemd/system"
     mkdir -p "$pkgdir/usr/lib/systemd/system-preset"
@@ -105,6 +107,8 @@ package() {
     install -m 644 "support/config/process-monitor.conf" "$pkgdir/etc/eruption/"
 
     install -m 644 "support/profile.d/eruption.sh" "$pkgdir/etc/profile.d/"
+
+    install -m 644 "support/tmpfiles.d/eruption.conf" "$pkgdir/usr/lib/tmpfiles.d/"
 
     install -m 644 "support/modules-load.d/eruption.conf" "$pkgdir/etc/modules-load.d/"
 

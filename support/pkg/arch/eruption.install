@@ -25,6 +25,8 @@ post_install() {
        chown -Rv "$owner" /var/lib/eruption/
 	fi
 
+    systemd-tmpfiles --create eruption.conf
+
     systemctl preset eruption
     systemctl preset eruption-fx-proxy
     systemctl preset eruption-audio-proxy

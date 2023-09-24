@@ -70,6 +70,7 @@ cargo build --release --verbose
 %{__mkdir_p} %{buildroot}/usr/lib/udev/rules.d
 %{__mkdir_p} %{buildroot}/%{_datarootdir}/polkit-1/actions/
 %{__mkdir_p} %{buildroot}/usr/lib/systemd/system-sleep
+%{__mkdir_p} %{buildroot}/%{_tmpfilesdir}
 %{__mkdir_p} %{buildroot}/%{_unitdir}
 %{__mkdir_p} %{buildroot}/%{_presetdir}
 %{__mkdir_p} %{buildroot}/%{_userunitdir}
@@ -148,6 +149,7 @@ cp -a %{_builddir}/%{name}-releases-%{gittag}/support/dbus/org.eruption.process_
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/dbus/org.eruption.fx_proxy.conf %{buildroot}/%{_sysconfdir}/dbus-1/session.d/
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/udev/99-eruption.rules %{buildroot}/usr/lib/udev/rules.d/
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/policykit/org.eruption.policy %{buildroot}/%{_datarootdir}/polkit-1/actions/
+cp -a %{_builddir}/%{name}-releases-%{gittag}/support/tmpfiles.d/eruption.conf %{buildroot}/%{_tmpfilesdir}/
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/systemd/eruption.preset %{buildroot}/%{_presetdir}/50-eruption.preset
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/systemd/eruption.service %{buildroot}/%{_unitdir}/
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/systemd/eruption-fx-proxy.preset %{buildroot}/%{_userpresetdir}/50-eruption-fx-proxy.preset
@@ -310,6 +312,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/erupt
 %{_bindir}/eruption-fx-proxy
 %{_bindir}/eruption-audio-proxy
 %caps(cap_net_admin=ep) %{_bindir}/eruption-process-monitor
+%{_tmpfilesdir}/eruption.conf
 %{_unitdir}/eruption.service
 %{_presetdir}/50-eruption.preset
 %{_userunitdir}/eruption-fx-proxy.service
