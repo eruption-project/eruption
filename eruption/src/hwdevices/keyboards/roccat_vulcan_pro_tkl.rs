@@ -22,7 +22,7 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use ndarray::{s, ArrayView2};
+use ndarray::{s, ArrayBase, ArrayView1, ArrayView2, ShapeBuilder};
 use parking_lot::{Mutex, RwLock};
 use resize::Pixel::RGB8;
 use resize::Type;
@@ -828,6 +828,8 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             match *self.led_hiddev.lock() {
+                None => Err(HwDeviceError::DeviceNotOpened {}.into()),
+
                 Some(ref led_dev) => {
                     if led_map.len() < LED_INDICES {
                         error!(
@@ -838,8 +840,17 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
 
                         Err(HwDeviceError::LedMapError {}.into())
                     } else {
+                        #[inline]
+                        fn compute_index(i: usize) -> usize {
+                            // TODO: Implement this
+
+                            *COLS_TOPOLOGY.get(i).unwrap_or(&0) as usize
+
+                            // (i / 12) * 36 + (i % 12)
+                        }
+
                         if self.allocated_zone.enabled {
-                            let canvas = ArrayView2::from_shape(
+                            let mut canvas = ArrayView2::from_shape(
                                 (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
                                 led_map,
                             )?;
@@ -865,15 +876,27 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
 
                             resizer.resize(&canvas, &mut led_map)?;
 
+                            // let mut led_map = ArrayView2::from_shape((h2, w2), &led_map)?;
+                            // led_map.set_f(true);
+
+                            // let led_map = led_map.into_shape(w2 * h2)?;
+
                             // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
                             // values for all 12 keys are first then come the green values etc.
+
+                            // let led_map = led_map
+                            //    .strides(s!([6, 5, 6, 6, 6, 6, 7, 6, 6, 6, 6, 6, 6, 6, 4, 4, 4,]));
 
                             const BUFFER_SIZE: usize = 448;
                             let mut buffer: [u8; BUFFER_SIZE] = [0; BUFFER_SIZE];
                             buffer[0..4].copy_from_slice(&[0xa1, 0x01, 0x01, 0xb4]);
 
                             for i in 0..NUM_LEDS {
-                                let color = led_map.get(i).unwrap_or(&RGB8 { r: 0, g: 0, b: 0 });
+                                let color = led_map.get(compute_index(i)).unwrap_or(&RGB8 {
+                                    r: 0,
+                                    g: 0,
+                                    b: 0,
+                                });
 
                                 let offset = ((i / 12) * 36) + (i % 12);
                                 buffer[offset] = (color.r as f32 * (self.brightness as f32 / 100.0))
@@ -972,8 +995,6 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
                         Ok(())
                     }
                 }
-
-                None => Err(HwDeviceError::DeviceNotOpened {}.into()),
             }
         }
     }
