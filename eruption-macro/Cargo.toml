@@ -73,7 +73,7 @@ chrono = { version = "0.4.31", features = ["serde"] }
 regex = "1.9.5"
 dbus = "0.9.7"
 dbus-tokio = "0.7.6"
-udev = { version = "0.7", optional = true }
+udev = { version = "0.8", optional = true }
 evdev-rs = { version = "0.6.1", optional = true }
 lazy_static = "1.4.0"
 bitvec = "1.0.1"

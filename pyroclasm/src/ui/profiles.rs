@@ -20,6 +20,7 @@
 */
 
 use egui::CentralPanel;
+use egui_dock::DockState;
 
 use crate::highlighting;
 
@@ -38,27 +39,24 @@ impl egui_dock::TabViewer for TabViewer {
 }
 
 pub struct ProfilesPage {
-    tree: egui_dock::Tree<String>,
+    dock_state: egui_dock::DockState<String>,
 }
 
 impl Default for ProfilesPage {
     fn default() -> Self {
-        let mut tree = egui_dock::Tree::new(vec!["tab1".to_owned(), "tab2".to_owned()]);
+        let tabs = ["tab1", "tab2", "tab3"]
+            .map(str::to_string)
+            .into_iter()
+            .collect();
+        let dock_state = DockState::new(tabs);
 
-        // You can modify the tree before constructing the dock
-        let [a, b] = tree.split_left(egui_dock::NodeIndex::root(), 0.3, vec!["tab3".to_owned()]);
-        let [_, _] = tree.split_below(a, 0.7, vec!["tab4".to_owned()]);
-        let [_, _] = tree.split_below(b, 0.5, vec!["tab5".to_owned()]);
-
-        Self { tree }
+        Self { dock_state }
     }
 }
 
 impl ProfilesPage {
     pub fn new() -> Self {
-        Self {
-            tree: Default::default(),
-        }
+        Default::default()
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -73,9 +71,9 @@ impl ProfilesPage {
                     show_code(ui, "lua", &code);
                 });
 
-            egui_dock::DockArea::new(&mut self.tree)
+            egui_dock::DockArea::new(&mut self.dock_state)
                 .style(egui_dock::Style::from_egui(ctx.style().as_ref()))
-                .show(ctx, &mut TabViewer {});
+                .show_inside(ui, &mut TabViewer {});
         });
     }
 }

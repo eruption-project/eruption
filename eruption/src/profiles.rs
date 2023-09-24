@@ -27,8 +27,13 @@ use tracing::*;
 
 use serde::{Deserialize, Serialize};
 use std::default::Default;
+
 #[cfg(not(target_os = "windows"))]
 use std::os::unix::prelude::{MetadataExt, OpenOptionsExt};
+
+#[cfg(not(target_os = "windows"))]
+use std::os::unix::fs::chown;
+
 use std::path::{Path, PathBuf};
 use std::{collections::BTreeMap, ffi::OsStr};
 use std::{fs, io};
@@ -348,7 +353,7 @@ impl Profile {
                             debug!("Could not set permissions on {}", &state_path.display());
                         }
 
-                        let try_chown = nix::unistd::chown(
+                        let try_chown = chown(
                             &state_path,
                             Some(profile_metadata.uid().into()),
                             Some(profile_metadata.gid().into()),
