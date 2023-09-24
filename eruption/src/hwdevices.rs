@@ -1461,7 +1461,7 @@ pub fn probe_devices() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<Mis
 #[cfg(not(target_os = "windows"))]
 pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>, Vec<MiscDevice>)> {
     // wait for devices to settle
-    // thread::sleep(Duration::from_millis(3000));
+    // thread::sleep(Duration::from_millis(250));
 
     let mut keyboard_devices = vec![];
     let mut mouse_devices = vec![];
@@ -1473,6 +1473,7 @@ pub fn probe_devices_hotplug() -> Result<(Vec<KeyboardDevice>, Vec<MouseDevice>,
     let api = hidapi.as_mut().unwrap();
 
     api.refresh_devices()?;
+    // thread::sleep(Duration::from_millis(250));
 
     for device_info in api.device_list() {
         if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {

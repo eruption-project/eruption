@@ -123,6 +123,8 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
 #[cfg(not(target_os = "windows"))]
 pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
+    use tracing::warn;
+
     if crate::QUIT.load(Ordering::SeqCst) {
         info!("Ignoring device hotplug event since Eruption is shutting down");
     } else {
@@ -142,7 +144,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                     // place a request to re-enter the main loop, this will drop all global locks
                     crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
                     let usb_vid = device.read().get_usb_vid();
                     let usb_pid = device.read().get_usb_pid();
@@ -176,6 +178,8 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         .unwrap_or_else(|e| {
                             error!("Could not send a pending dbus API event: {}", e)
                         });
+                } else {
+                    info!("Skipped initialization of a keyboard device");
                 }
             }
 
@@ -199,7 +203,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                         // place a request to re-enter the main loop, this will drop all global locks
                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                        thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
+                        thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
                         let usb_vid = device.read().get_usb_vid();
                         let usb_pid = device.read().get_usb_pid();
@@ -236,6 +240,8 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         } else {
                             error!("Could not send a pending dbus API event: dbus API channel is not available");
                         }
+                    } else {
+                        info!("Skipped initialization of a mouse device");
                     }
                 } else {
                     info!("Found mouse device, but mouse support is DISABLED by configuration");
@@ -254,13 +260,13 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                     // place a request to re-enter the main loop, this will drop all global locks
                     crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
                     if device.read().has_input_device() {
                         let usb_vid = device.read().get_usb_vid();
                         let usb_pid = device.read().get_usb_pid();
 
-                        // spawn a thread to handle keyboard input
+                        // spawn a thread to handle input
                         info!("Spawning misc device input thread...");
 
                         let (misc_tx, misc_rx) = unbounded();
@@ -309,6 +315,8 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                     }
 
                     crate::MISC_DEVICES.write().push(device.clone());
+                } else {
+                    info!("Skipped initialization of a misc device");
                 }
             }
 
@@ -850,6 +858,9 @@ impl SdkSupportPlugin {
                                                             .0;
 
                                                         info!("Hotplug event received, trying to claim newly added devices now...");
+
+                                                        // remove disconnected or failed devices
+                                                        // crate::remove_failed_devices()?;
 
                                                         claim_hotplugged_devices(&hotplug_info)?;
 

@@ -1380,7 +1380,7 @@ fn run_main_loop(
 }
 
 /// Hot-unplug all failed or disconnected devices
-fn remove_failed_devices() -> Result<bool> {
+pub fn remove_failed_devices() -> Result<bool> {
     let mut result = false;
 
     let mut keyboard_devices = crate::KEYBOARD_DEVICES.write();

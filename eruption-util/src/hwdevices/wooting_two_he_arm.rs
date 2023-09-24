@@ -122,7 +122,7 @@ impl WootingTwoHeArm {
     // }
 
     fn v2_send_feature_report(&self, id: u8, params: &[u8; 4]) -> Result<()> {
-        trace!("Sending control device feature report [Wooting v2");
+        trace!("Sending control device feature report [Wooting v2]");
 
         let mut report_buffer = [0x0; SMALL_PACKET_SIZE + 1];
 

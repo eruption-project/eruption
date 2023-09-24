@@ -735,11 +735,14 @@ pub fn process_mouse_event(
             .unwrap()
             .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
             .unwrap_or_else(|e| {
-                error!("Could not send a pending mouse event: {}", e);
+                ratelimited::error!("Could not send a pending mouse event: {}", e);
 
                 mouse_device.write().fail().unwrap_or_else(|e| {
                     error!("Could not mark a device as failed: {}", e);
                 });
+
+                // we need to terminate and then re-enter the main loop to update all global state
+                crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
             });
     }
 
@@ -856,11 +859,14 @@ pub fn process_keyboard_event(
         .unwrap()
         .send(macros::Message::MirrorKey(raw_event.clone()))
         .unwrap_or_else(|e| {
-            error!("Could not send a pending keyboard event: {}", e);
+            ratelimited::error!("Could not send a pending keyboard event: {}", e);
 
             keyboard_device.write().fail().unwrap_or_else(|e| {
                 error!("Could not mark a device as failed: {}", e);
             });
+
+            // we need to terminate and then re-enter the main loop to update all global state
+            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
         });
 
     Ok(())
