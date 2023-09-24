@@ -38,7 +38,7 @@ impl egui_dock::TabViewer for TabViewer {
 }
 
 pub struct ProfilesPage {
-    tree: egui_dock::Tree<String>,
+    _tree: egui_dock::Tree<String>,
 }
 
 impl Default for ProfilesPage {
@@ -50,14 +50,14 @@ impl Default for ProfilesPage {
         let [_, _] = tree.split_below(a, 0.7, vec!["tab4".to_owned()]);
         let [_, _] = tree.split_below(b, 0.5, vec!["tab5".to_owned()]);
 
-        Self { tree }
+        Self { _tree: tree }
     }
 }
 
 impl ProfilesPage {
     pub fn new() -> Self {
         Self {
-            tree: Default::default(),
+            _tree: Default::default(),
         }
     }
 
@@ -73,9 +73,9 @@ impl ProfilesPage {
                     show_code(ui, "lua", &code);
                 });
 
-            egui_dock::DockArea::new(&mut self.tree)
-                .style(egui_dock::Style::from_egui(ctx.style().as_ref()))
-                .show(ctx, &mut TabViewer {});
+            // egui_dock::DockArea::new(&mut self.tree)
+            //     .style(egui_dock::Style::from_egui(ctx.style().as_ref()))
+            //     .show(ctx, &mut TabViewer {});
         });
     }
 }

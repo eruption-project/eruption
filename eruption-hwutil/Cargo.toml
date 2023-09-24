@@ -45,14 +45,14 @@ flume = "0.11.0"
 lazy_static = "1.4.0"
 clap = { version = "4.3.24", features = ["derive"] }
 clap_complete = "4.3.2"
-ctrlc = { version = "3.4.0", features = ["termination"] }
+ctrlc = { version = "3.4.1", features = ["termination"] }
 colored = "2.0.4"
 console = "0.15.7"
-libc = "0.2.147"
+libc = "0.2.148"
 nix = { version = "0.27.1", features = ["fs"] }
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.188", features = ["derive"] }
-serde_json = "1.0.105"
+serde_json = "1.0.107"
 tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
@@ -65,26 +65,26 @@ tracing-subscriber = { version = "0.3.17", features = [
 ] }
 console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
 config = "0.13.3"
-toml = "0.7.6"
-thiserror = "1.0.47"
+toml = "0.8.0"
+thiserror = "1.0.48"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 bitvec = "1.0.1"
 byteorder = "1.4.3"
-hidapi = { git = "https://github.com/X3n0m0rph59/hidapi-rs.git", rev = "a842fd6", default-features = false, features = [
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "78f2738", default-features = false, features = [
   "linux-native",
 ] }
-udev = "0.7"
+udev = "0.8"
 hexdump = "0.1.1"
 serialport = "4.2.2"
 crc8 = "0.1.1"
 crc16 = "0.4.0"
-i18n-embed = { version = "0.13.9", features = [
+i18n-embed = { version = "0.14.0", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.7"
-rust-embed = { version = "6.8.1", features = ["compression"] }
+i18n-embed-fl = "0.7.0"
+rust-embed = { version = "8.0.0", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 

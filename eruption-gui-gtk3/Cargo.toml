@@ -44,12 +44,12 @@ debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
-libc = "0.2.147"
+libc = "0.2.148"
 nix = { version = "0.27.1", features = ["user", "fs"] }
-walkdir = "2.3.3"
+walkdir = "2.4.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.188", features = ["derive"] }
-serde_json = "1.0.105"
+serde_json = "1.0.107"
 indexmap = { version = "2.0.0", features = ["serde"] }
 tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
@@ -64,11 +64,11 @@ tracing-subscriber = { version = "0.3.17", features = [
 console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
 config = "0.13.3"
 uuid = { version = "1.4.1", features = ["serde", "v4"] }
-toml = "0.7.6"
+toml = "0.8.0"
 byteorder = "1.4.3"
 lazy_static = "1.4.0"
 palette = "0.7.3"
-thiserror = "1.0.47"
+thiserror = "1.0.48"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 paste = "1.0.14"
@@ -90,12 +90,12 @@ gtk = { version = "0.17.1", features = ["v3_24"] }
 pangocairo = "0.17.10"
 sourceview4 = { version = "0.4.0", optional = true }
 # sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs", optional = true }
-i18n-embed = { version = "0.13.9", features = [
+i18n-embed = { version = "0.14.0", features = [
   "fluent-system",
   "desktop-requester",
 ] }
-i18n-embed-fl = "0.6.7"
-rust-embed = { version = "6.8.1", features = ["compression"] }
+i18n-embed-fl = "0.7.0"
+rust-embed = { version = "8.0.0", features = ["compression"] }
 unic-langid = "0.9.1"
 icecream = "0.1.0"
 
