@@ -1023,7 +1023,6 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                         fn compute_offset(i: usize) -> usize {
                             // TODO: Implement this
 
-                            
                             // *COLS_TOPOLOGY.get(index).unwrap_or(&0) as usize
 
                             (i / 12) * 36 + (i % 12)

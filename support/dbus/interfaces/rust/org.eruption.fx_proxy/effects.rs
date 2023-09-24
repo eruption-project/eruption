@@ -89,7 +89,8 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>>
     OrgFreedesktopDBusIntrospectable for blocking::Proxy<'a, C>
 {
     fn introspect(&self) -> Result<String, dbus::Error> {
-        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ()).map(|r: (String,)| r.0)
+        self.method_call("org.freedesktop.DBus.Introspectable", "Introspect", ())
+            .map(|r: (String,)| r.0)
     }
 }
 
@@ -152,7 +153,8 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "org.freedesktop.DBus.Properties",
             "Get",
             (interface_name, property_name),
-        ).map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
+        )
+        .map(|r: (arg::Variant<Box<dyn arg::RefArg + 'static>>,)| r.0)
     }
 
     fn get_all(&self, interface_name: &str) -> Result<arg::PropMap, dbus::Error> {
@@ -160,7 +162,8 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target = T>> OrgFreed
             "org.freedesktop.DBus.Properties",
             "GetAll",
             (interface_name,),
-        ).map(|r: (arg::PropMap,)| r.0)
+        )
+        .map(|r: (arg::PropMap,)| r.0)
     }
 
     fn set(
