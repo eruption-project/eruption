@@ -18,7 +18,7 @@
 
 ## Welcome to the Eruption Documentation
 
-Here you find an overview of the documentation available for the Eruption project
+Here you will find an overview of the documentation available for the Eruption project
 
 ### Features Overview (a.k.a The Eruption Handbook)
 
@@ -41,7 +41,7 @@ Usage examples and HOWTOs regarding Eruption
 
 ### Systems Architecture
 
-Overview of the architecture of Eruption
+Overview of the software-architecture of Eruption
 
 [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -81,7 +81,7 @@ How to setup Eruption
 
 [INSTALL.md](INSTALL.md)
 
-Cross-compile on a Linux host for the Microsoft Windows platform
+Cross-compile for the Microsoft Windows platform on a Linux host
 
 [CROSS_COMPILATION.md](CROSS_COMPILATION.md)
 
