@@ -390,7 +390,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
                     .entry(object)
-                    .or_insert_with(WaylandToplevelAttributes::default)
+                    .or_default()
                     .title
                     .replace(title);
             }
@@ -401,7 +401,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
                     .entry(object)
-                    .or_insert_with(WaylandToplevelAttributes::default)
+                    .or_default()
                     .app_id
                     .replace(app_id);
             }
@@ -412,7 +412,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
                     .entry(object)
-                    .or_insert_with(WaylandToplevelAttributes::default)
+                    .or_default()
                     .state
                     .replace(state);
             }
