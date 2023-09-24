@@ -63,3 +63,4 @@ _This is a non-exhaustive listing of planned features:_
 - Device endpoint in capabilities
 - Add shutdown routines to all drivers, to put devices into a known good state on exit of Eruption
 - Provide an easy way/standalone application to disable all LED lighting
+- Implement an API that can query the state of plugins, e.g. Audio Plugin initialized, or is HWACCEL available?
