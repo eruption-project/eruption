@@ -22,7 +22,7 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use ndarray::{s, ArrayBase, ArrayView1, ArrayView2, ShapeBuilder};
+use ndarray::{s, ArrayView2};
 use parking_lot::{Mutex, RwLock};
 use resize::Pixel::RGB8;
 use resize::Type;
@@ -850,7 +850,7 @@ impl KeyboardDeviceTrait for RoccatVulcanProTKL {
                         }
 
                         if self.allocated_zone.enabled {
-                            let mut canvas = ArrayView2::from_shape(
+                            let canvas = ArrayView2::from_shape(
                                 (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
                                 led_map,
                             )?;

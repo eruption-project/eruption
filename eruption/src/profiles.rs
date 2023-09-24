@@ -355,8 +355,8 @@ impl Profile {
 
                         let try_chown = chown(
                             &state_path,
-                            Some(profile_metadata.uid().into()),
-                            Some(profile_metadata.gid().into()),
+                            Some(profile_metadata.uid()),
+                            Some(profile_metadata.gid()),
                         );
                         if try_chown.is_err() {
                             debug!("Could not change ownership of {}", &state_path.display());

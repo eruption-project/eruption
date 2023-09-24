@@ -123,7 +123,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
 #[cfg(not(target_os = "windows"))]
 pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
-    use tracing::warn;
+    
 
     if crate::QUIT.load(Ordering::SeqCst) {
         info!("Ignoring device hotplug event since Eruption is shutting down");
