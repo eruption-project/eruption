@@ -4,6 +4,12 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.5 | __New Release__ |
+| 0.3.5 | Update most dependencies to their latest releases |
+| 0.3.4 | __New Release__ |
+| 0.3.4 | Fix at least one scenario where Eruption failed to fully initialize a device when that device was not yet ready during bootup of the system |
+| 0.3.4 | Improve the stability of the eruption-fx-proxy session daemon |
+| 0.3.4 | Update all dependencies to their latest releases |
 | 0.3.3 | __New Release__ |
 | 0.3.3 | Backported multiple bugfixes from the `develop` branch: |
 | 0.3.3 | Ratelimit log-messages |
