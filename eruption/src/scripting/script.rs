@@ -24,6 +24,7 @@ use lazy_static::lazy_static;
 use log::*;
 use mlua::prelude::*;
 use mlua::Function;
+use mlua::IntoLuaMulti;
 use parking_lot::RwLock;
 use std::cell::RefCell;
 use std::collections::{BTreeMap, HashMap};
@@ -183,7 +184,7 @@ impl<'lua> RunningScriptCallHelper<'lua> {
         }
     }
 
-    fn call<Args: ToLuaMulti<'lua>>(
+    fn call<Args: IntoLuaMulti<'lua>>(
         &mut self,
         function_name: &str,
         args: Args,

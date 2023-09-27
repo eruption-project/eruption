@@ -20,7 +20,7 @@
 
 [package]
 name = "eruption-gui-gtk3"
-version = "0.1.8"
+version = "0.1.9"
 build = "build.rs"
 authors = [
     "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -50,7 +50,7 @@ walkdir = "2.4.0"
 parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
-indexmap = { version = "1.9.3", features = ["serde"] }
+indexmap = { version = "2.0.0", features = ["serde"] }
 tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"

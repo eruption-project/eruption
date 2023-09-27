@@ -20,9 +20,12 @@
 
 [package]
 name = "eruption-fx-proxy"
-version = "0.0.2"
+version = "0.0.3"
 build = "build.rs"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
+authors = [
+    "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+    "The Eruption Development Team",
+]
 edition = "2021"
 description = "Effects proxy daemon for the Eruption Linux user-mode driver"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
@@ -44,15 +47,15 @@ backend-x11 = ["x11", "x11rb"]
 [dependencies]
 cfg-if = "1.0.0"
 nix = "0.26.4"
-memmap2 = "0.5.10"
-clap =  { version = "4.4.4", features = ["derive"] }
+memmap2 = "0.8.0"
+clap = { version = "4.4.4", features = ["derive"] }
 clap_complete = "4.4.1"
 colored = "2.0.4"
 log = "0.4.20"
 syslog = "6.1.0"
 pretty_env_logger = "0.4.0"
 lazy_static = "1.4.0"
-flume = "0.10.14"
+flume = "0.11"
 thread_local = "1.1.7"
 dyn-clonable = "0.9.0"
 libc = "0.2.148"
@@ -71,13 +74,16 @@ color-eyre = "0.6.2"
 num-traits = "0.2.16"
 dbus = "0.9.7"
 dbus-tree = "0.9.2"
-dbus-tokio =  "0.7.6"
+dbus-tokio = "0.7.6"
 image = "0.24.7"
-smithay-client-toolkit = { version = "0.16.1", optional = true }
+smithay-client-toolkit = { version = "0.17.0", optional = true }
 x11 = { version = "2.21.0", features = ["xlib"], optional = true }
-x11rb = { version = "0.11.1", optional = true }
-wayland-client = { version = "0.30.2", optional = true }
-i18n-embed = { version = "0.13.9", features = ["fluent-system", "desktop-requester"] }
+x11rb = { version = "0.12.0", optional = true }
+wayland-client = { version = "0.31.1", optional = true }
+i18n-embed = { version = "0.13.9", features = [
+    "fluent-system",
+    "desktop-requester",
+] }
 i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.8.1", features = ["compression"] }
 unic-langid = "0.9.1"
