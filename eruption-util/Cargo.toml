@@ -20,8 +20,11 @@
 
 [package]
 name = "eruption-util"
-version = "0.0.9"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
+version = "0.0.10"
+authors = [
+    "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+    "The Eruption Development Team",
+]
 edition = "2021"
 description = "A CLI developer support utility for the Eruption Linux user-mode driver"
 repository = "https://github.com/X3n0m0rph59/eruption.git"
@@ -34,7 +37,7 @@ resolver = "2"
 
 [dependencies]
 cfg-if = "1.0.0"
-clap =  { version = "4.4.4", features = ["derive"] }
+clap = { version = "4.4.4", features = ["derive"] }
 clap_complete = "4.4.1"
 ctrlc = { version = "3.4.1", features = ["termination"] }
 colored = "2.0.4"
@@ -47,17 +50,22 @@ tokio = { version = "1.32.0", features = ["full"] }
 # tracing = "0.1.26"
 # tracing-futures = "0.2.5"
 # tracing-subscriber = "0.2.20"
-flume = "0.10.14"
+flume = "0.11"
 thiserror = "1.0.48"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = ["linux-static-libusb"] }
-udev = "0.7"
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = [
+    "linux-static-libusb",
+] }
+udev = "0.8.0"
 evdev-rs = "0.6.1"
 lazy_static = "1.4.0"
 bitvec = "1.0.1"
-i18n-embed = { version = "0.13.9", features = ["fluent-system", "desktop-requester"] }
+i18n-embed = { version = "0.13.9", features = [
+    "fluent-system",
+    "desktop-requester",
+] }
 i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.8.1", features = ["compression"] }
 unic-langid = "0.9.1"

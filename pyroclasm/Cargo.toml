@@ -60,7 +60,7 @@ tracing-subscriber = "0.3.17"
 config = "0.13.3"
 uuid = { version = "1.4.1", features = ["serde", "v4"] }
 toml = "0.8.0"
-indexmap = "1.9.3"
+indexmap = "2.0.0"
 byteorder = "1.4.3"
 lazy_static = "1.4.0"
 palette = "0.6.1"
