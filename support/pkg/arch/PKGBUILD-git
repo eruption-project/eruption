@@ -3,7 +3,7 @@
 pkgname='eruption-git'
 _pkgname='eruption'
 pkgdesc='Realtime RGB LED Driver for Linux'
-pkgver='0.3.3'
+pkgver='0.3.5'
 pkgrel='0'
 arch=('i686' 'x86_64')
 url='https://eruption-project.org/'
