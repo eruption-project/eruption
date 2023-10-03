@@ -25,9 +25,9 @@ dependencies = [
 
 [[package]]
 name = "ab_glyph"
-version = "0.2.21"
+version = "0.2.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5110f1c78cf582855d895ecd0746b653db010cec6d9f5575293f27934d980a39"
+checksum = "b1061f3ff92c2f65800df1f12fc7b4ff44ee14783104187dd04dfee6f11b0fd2"
 dependencies = [
  "ab_glyph_rasterizer",
  "owned_ttf_parser",
@@ -212,23 +212,24 @@ dependencies = [
 
 [[package]]
 name = "anstream"
-version = "0.5.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1f58811cfac344940f1a400b6e6231ce35171f614f26439e80f8c1465c5cc0c"
+checksum = "0ca84f3628370c59db74ee214b3263d58f9aadd9b4fe7e711fd87dc452b7f163"
 dependencies = [
  "anstyle",
  "anstyle-parse",
  "anstyle-query",
  "anstyle-wincon",
  "colorchoice",
+ "is-terminal",
  "utf8parse",
 ]
 
 [[package]]
 name = "anstyle"
-version = "1.0.3"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b84bf0a05bbb2a83e5eb6fa36bb6e87baa08193c35ff52bbf6b38d8af2890e46"
+checksum = "15c4c2c83f81532e5845a733998b6971faca23490340a418e9b72a3ec9de12ea"
 
 [[package]]
 name = "anstyle-parse"
@@ -250,9 +251,9 @@ dependencies = [
 
 [[package]]
 name = "anstyle-wincon"
-version = "2.1.0"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58f54d10c6dfa51283a066ceab3ec1ab78d13fae00aa49243a45e4571fb79dfd"
+checksum = "c677ab05e09154296dd37acecd46420c17b9713e8366facafa8fc0885167cf4c"
 dependencies = [
  "anstyle",
  "windows-sys 0.48.0",
@@ -343,9 +344,9 @@ dependencies = [
 
 [[package]]
 name = "async-executor"
-version = "1.5.3"
+version = "1.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78f2db9467baa66a700abce2a18c5ad793f6f83310aca1284796fc3921d113fd"
+checksum = "2c1da3ae8dabd9c00f453a329dfe1fb28da3c0a72e2478cdcd93171740c20499"
 dependencies = [
  "async-lock",
  "async-task",
@@ -381,7 +382,7 @@ dependencies = [
  "log",
  "parking",
  "polling",
- "rustix 0.37.23",
+ "rustix 0.37.24",
  "slab",
  "socket2 0.4.9",
  "waker-fn",
@@ -426,9 +427,9 @@ dependencies = [
 
 [[package]]
 name = "async-signal"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4af361a844928cb7d36590d406709473a1b574f443094422ef166daa3b493208"
+checksum = "c99f3cb3f9ff89f7d718fbb942c9eb91bedff12e396adf09a622dfe7ffec2bc2"
 dependencies = [
  "async-io",
  "async-lock",
@@ -745,12 +746,11 @@ dependencies = [
 
 [[package]]
 name = "bstr"
-version = "1.6.2"
+version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c2f7349907b712260e64b0afe2f84692af14a454be26187d9df565c7f69266a"
+checksum = "ba3569f383e8f1598449f1a423e72e99569137b47740b1da11ef19af3d5c3223"
 dependencies = [
  "memchr",
- "serde",
 ]
 
 [[package]]
@@ -873,9 +873,9 @@ checksum = "6d43a04d8753f35258c91f8ec639f792891f748a1edbd759cf1dcea3382ad83c"
 
 [[package]]
 name = "cfg-expr"
-version = "0.15.5"
+version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03915af431787e6ffdcc74c645077518c6b6e01f80b761e0fbbfa288536311b3"
+checksum = "b40ccee03b5175c18cde8f37e7d2a33bcef6f8ec8f7cc0d81090d1bb380949c9"
 dependencies = [
  "smallvec",
  "target-lexicon",
@@ -940,40 +940,41 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.4.5"
+version = "4.3.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "824956d0dca8334758a5b7f7e50518d66ea319330cbceedcf76905c2f6ab30e3"
+checksum = "fb690e81c7840c0d7aade59f242ea3b41b9bc27bcd5997890e7702ae4b32e487"
 dependencies = [
  "clap_builder",
  "clap_derive",
+ "once_cell",
 ]
 
 [[package]]
 name = "clap_builder"
-version = "4.4.5"
+version = "4.3.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "122ec64120a49b4563ccaedcbea7818d069ed8e9aa6d829b82d8a4128936b2ab"
+checksum = "5ed2e96bc16d8d740f6f48d663eddf4b8a0983e79210fd55479b7bcd0a69860e"
 dependencies = [
  "anstream",
  "anstyle",
- "clap_lex 0.5.1",
+ "clap_lex 0.5.0",
  "strsim",
 ]
 
 [[package]]
 name = "clap_complete"
-version = "4.4.2"
+version = "4.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8baeccdb91cd69189985f87f3c7e453a3a451ab5746cf3be6acc92120bd16d24"
+checksum = "5fc443334c81a804575546c5a8a79b4913b50e28d69232903604cada1de817ce"
 dependencies = [
- "clap 4.4.5",
+ "clap 4.3.24",
 ]
 
 [[package]]
 name = "clap_derive"
-version = "4.4.2"
+version = "4.3.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0862016ff20d69b84ef8247369fabf5c008a7417002411897d40ee1f4532b873"
+checksum = "54a9bb5758fc5dfe728d1019941681eccaf0cf8a4189b692a0ee2f2ecf90a050"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -992,9 +993,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.5.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd7cc57abe963c6d3b9d8be5b06ba7c8957a930305ca90304f24ef040aa6f961"
+checksum = "2da6da31387c7e4ef160ffab6d5e7f00c42626fe39aea70a7b0f1773f7dd6c1b"
 
 [[package]]
 name = "clipboard-win"
@@ -1420,7 +1421,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "978747c1d849a7d2ee5e8adc0159961c48fb7e5db2f06af6723b80123bb53856"
 dependencies = [
  "cfg-if 1.0.0",
- "hashbrown 0.14.0",
+ "hashbrown 0.14.1",
  "lock_api",
  "once_cell",
  "parking_lot_core",
@@ -2036,7 +2037,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "color-eyre",
  "colorgrad",
  "config",
@@ -2054,7 +2055,7 @@ dependencies = [
  "hotwatch",
  "i18n-embed",
  "icecream",
- "indexmap 2.0.0",
+ "indexmap 2.0.2",
  "itertools 0.11.0",
  "lazy_static",
  "libc",
@@ -2101,7 +2102,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -2138,7 +2139,7 @@ name = "eruption-cmd"
 version = "0.0.6"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2168,7 +2169,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2202,7 +2203,7 @@ name = "eruption-fx-proxy"
 version = "0.0.3"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2268,7 +2269,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
- "indexmap 2.0.0",
+ "indexmap 2.0.2",
  "lazy_static",
  "libc",
  "log",
@@ -2302,7 +2303,7 @@ name = "eruption-hotplug-helper"
 version = "0.1.6"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "eruption-sdk",
@@ -2331,7 +2332,7 @@ dependencies = [
  "bitvec",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2369,7 +2370,7 @@ version = "0.0.7"
 dependencies = [
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2414,7 +2415,7 @@ dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
  "chrono",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2462,7 +2463,7 @@ name = "eruption-netfx"
 version = "0.1.3"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2502,7 +2503,7 @@ dependencies = [
  "async-trait",
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "config",
@@ -2517,7 +2518,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
- "indexmap 2.0.0",
+ "indexmap 2.0.2",
  "lazy_static",
  "libc",
  "log",
@@ -2568,7 +2569,7 @@ version = "0.0.10"
 dependencies = [
  "bitvec",
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2600,7 +2601,7 @@ name = "eruption-watchdog"
 version = "0.0.3"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "ctrlc",
@@ -2629,7 +2630,7 @@ name = "eruptionctl"
 version = "0.1.3"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "colored",
@@ -2645,7 +2646,7 @@ dependencies = [
  "i18n-embed",
  "i18n-embed-fl",
  "icecream",
- "indexmap 2.0.0",
+ "indexmap 2.0.2",
  "lazy_static",
  "libc",
  "log",
@@ -3511,9 +3512,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.14.0"
+version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c6201b9ff9fd90a5a3bac2e56a830d0caa509576f0e503818ee82c181b3437a"
+checksum = "7dfda62a12f55daeae5015f81b0baea145391cb4520f86c248fc615d72640d12"
 
 [[package]]
 name = "hdrhistogram"
@@ -3899,12 +3900,12 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.0.0"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5477fe2230a79769d8dc68e0eabf5437907c0457a5614a9e8dddb67f65eb65d"
+checksum = "8adf3ddd720272c6ea8bf59463c04e0f93d0bbf7c5439b691bca2987e0270897"
 dependencies = [
  "equivalent",
- "hashbrown 0.14.0",
+ "hashbrown 0.14.1",
  "serde",
 ]
 
@@ -4577,26 +4578,16 @@ dependencies = [
 
 [[package]]
 name = "mlua"
-version = "0.9.1"
+version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c3a7a7ff4481ec91b951a733390211a8ace1caba57266ccb5f4d4966704e560"
+checksum = "0bb37b0ba91f017aa7ca2b98ef99496827770cd635b4a932a6047c5b4bbe678e"
 dependencies = [
  "bstr",
- "mlua-sys",
+ "cc",
  "num-traits",
  "once_cell",
- "rustc-hash",
-]
-
-[[package]]
-name = "mlua-sys"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ec8b54eddb76093069cce9eeffb4c7b3a1a0fe66962d7bd44c4867928149ca3"
-dependencies = [
- "cc",
- "cfg-if 1.0.0",
  "pkg-config",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -5257,7 +5248,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1d3afd2628e69da2be385eb6f2fd57c8ac7977ceeff6dc166ff1657b0e386a9"
 dependencies = [
  "fixedbitset",
- "indexmap 2.0.0",
+ "indexmap 2.0.2",
 ]
 
 [[package]]
@@ -5617,7 +5608,7 @@ version = "0.0.3"
 dependencies = [
  "byteorder",
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "clap_complete",
  "color-eyre",
  "config",
@@ -5640,7 +5631,7 @@ dependencies = [
  "i18n-embed-fl",
  "icecream",
  "image",
- "indexmap 2.0.0",
+ "indexmap 2.0.2",
  "lazy_static",
  "libc",
  "log",
@@ -6115,9 +6106,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.37.23"
+version = "0.37.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d69718bf81c6127a49dc64e44a742e8bb9213c0ff8869a22c308f84c1d4ab06"
+checksum = "4279d76516df406a8bd37e7dff53fd37d1a093f997a3c34a5c21658c126db06d"
 dependencies = [
  "bitflags 1.3.2",
  "errno",
@@ -6359,9 +6350,9 @@ dependencies = [
 
 [[package]]
 name = "sharded-slab"
-version = "0.1.4"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "900fba806f70c630b0a382d0d825e17a0f19fcd059a2ade1ff237bcddf446b31"
+checksum = "c1b21f559e07218024e7e9f90f96f601825397de0e25420135f7f952453fed0b"
 dependencies = [
  "lazy_static",
 ]
@@ -6439,7 +6430,7 @@ name = "simple-example-01"
 version = "0.0.2"
 dependencies = [
  "cfg-if 1.0.0",
- "clap 4.4.5",
+ "clap 4.3.24",
  "color-eyre",
  "eruption-sdk",
  "eyre",
@@ -7109,7 +7100,7 @@ version = "0.19.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
 dependencies = [
- "indexmap 2.0.0",
+ "indexmap 2.0.2",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -7122,7 +7113,7 @@ version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca676d9ba1a322c1b64eb8045a5ec5c0cfb0c9d08e15e9ff622589ad5221c8fe"
 dependencies = [
- "indexmap 2.0.0",
+ "indexmap 2.0.2",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -8197,9 +8188,9 @@ checksum = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538"
 
 [[package]]
 name = "winit"
-version = "0.28.6"
+version = "0.28.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "866db3f712fffba75d31bf0cdecf357c8aeafd158c5b7ab51dba2a2b2d47f196"
+checksum = "9596d90b45384f5281384ab204224876e8e8bf7d58366d9b795ad99aa9894b94"
 dependencies = [
  "android-activity",
  "bitflags 1.3.2",

@@ -65,8 +65,8 @@ sensor-gnome-shellext = []
 cfg-if = "1.0.0"
 async-trait = "0.1.73"
 byteorder = "1.4.3"
-clap = { version = "4.4.4", features = ["derive"] }
-clap_complete = "4.4.1"
+clap = { version = "4.3.24", features = ["derive"] }
+clap_complete = "4.3.2"
 ctrlc = { version = "3.4.1", features = ["termination"] }
 config = "0.13.3"
 dbus = "0.9.7"

@@ -48,8 +48,8 @@ backend-x11 = ["x11", "x11rb"]
 cfg-if = "1.0.0"
 nix = "0.26.4"
 memmap2 = "0.8.0"
-clap = { version = "4.4.4", features = ["derive"] }
-clap_complete = "4.4.1"
+clap = { version = "4.3.24", features = ["derive"] }
+clap_complete = "4.3.2"
 colored = "2.0.4"
 log = "0.4.20"
 syslog = "6.1.0"
