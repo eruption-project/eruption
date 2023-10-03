@@ -71,7 +71,7 @@ tracing-subscriber = { version = "0.3.17", features = [
   "registry",
   "env-filter",
 ] }
-console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
+console-subscriber = { version = "0.2.0", features = ["parking_lot"] }
 config = "0.13.3"
 uuid = { version = "1.4.1", features = ["serde", "v4"] }
 toml = "0.8.0"

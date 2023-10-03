@@ -19,8 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use egui::Vec2;
-use egui_extras::RetainedImage;
+use egui::{Image, Pos2, Rect};
 
 use crate::resources;
 
@@ -29,21 +28,21 @@ use super::{Caption, KeyDef};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
-pub struct RoccatVulcanProTKL {
+pub struct RoccatVulcanProTKL<'a> {
     pub device: u64,
-    pub texture: RetainedImage,
+    pub texture: egui::Image<'a>,
 }
 
-impl RoccatVulcanProTKL {
+impl<'a> RoccatVulcanProTKL<'a> {
     pub fn new(device: u64, _ui: &mut egui::Ui, _ctx: &egui::Context) -> Self {
         let bytes = resources::Assets::get("img/roccat-vulcan-pro-tkl.png").unwrap();
-        let texture = RetainedImage::from_image_bytes("keyboard", &bytes.data).unwrap();
+        let texture = Image::from_bytes("bytes://", bytes.data.to_vec());
 
         RoccatVulcanProTKL { device, texture }
     }
 }
 
-impl Keyboard for RoccatVulcanProTKL {
+impl<'a> Keyboard for RoccatVulcanProTKL<'a> {
     fn get_device(&self) -> u64 {
         self.device
     }
@@ -53,7 +52,10 @@ impl Keyboard for RoccatVulcanProTKL {
     }
 
     fn draw_keyboard(&self, ui: &mut egui::Ui, _ctx: &egui::Context) -> super::Result<()> {
-        self.texture.show_size(ui, Vec2::new(1200.0, 500.0));
+        self.texture.paint_at(
+            ui,
+            Rect::from_points(&[Pos2::new(0.0, 0.0), Pos2::new(1200.0, 500.0)]),
+        );
 
         Ok(())
     }

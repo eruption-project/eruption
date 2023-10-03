@@ -96,7 +96,7 @@ tracing-subscriber = { version = "0.3.17", features = [
   "registry",
   "env-filter",
 ] }
-console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
+console-subscriber = { version = "0.2.0", features = ["parking_lot"] }
 flume = "0.11.0"
 toml = "0.8.0"
 thiserror = "1.0.48"

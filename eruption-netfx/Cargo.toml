@@ -70,7 +70,7 @@ tracing-subscriber = { version = "0.3.17", features = [
   "registry",
   "env-filter",
 ] }
-console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
+console-subscriber = { version = "0.2.0", features = ["parking_lot"] }
 thiserror = "1.0.48"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
