@@ -19,23 +19,48 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use egui::CentralPanel;
+pub mod hwdevices;
+pub mod pages;
 
-mod hwdevices;
+#[derive(Debug, Default, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub enum TabPages {
+    /// Startup page
+    #[default]
+    Start,
 
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
+    /// Canvas page
+    Canvas,
 
-#[derive(Default)]
-pub struct MiscPage {}
+    /// Keyboard devices page
+    Keyboards,
 
-impl MiscPage {
-    pub fn new() -> Self {
-        Self {}
-    }
+    /// Mouse devices page
+    Mice,
 
-    pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Misc devices");
-        });
-    }
+    /// Misc devices page
+    Misc,
+
+    /// Profiles page
+    Profiles,
+
+    /// Macros page
+    Macros,
+
+    /// Rules page
+    Rules,
+
+    /// Color-schemes page
+    ColorSchemes,
+
+    /// Settings page
+    Settings,
+
+    /// The about page
+    About,
+
+    /// The logs page
+    Logs,
+
+    /// The debug page
+    Debug,
 }

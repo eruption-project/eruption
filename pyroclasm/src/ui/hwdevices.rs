@@ -19,59 +19,6 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-pub mod about;
-pub mod canvas;
-pub mod color_schemes;
-pub mod debug;
 pub mod keyboards;
-pub mod logs;
-pub mod macros;
 pub mod mice;
 pub mod misc;
-pub mod profiles;
-pub mod rules;
-pub mod settings;
-pub mod start;
-
-#[derive(Debug, Default, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-pub enum TabPages {
-    /// Startup page
-    #[default]
-    Start,
-
-    /// Canvas page
-    Canvas,
-
-    /// Keyboard devices page
-    Keyboards,
-
-    /// Mouse devices page
-    Mice,
-
-    /// Misc devices page
-    Misc,
-
-    /// Profiles page
-    Profiles,
-
-    /// Macros page
-    Macros,
-
-    /// Rules page
-    Rules,
-
-    /// Color-schemes page
-    ColorSchemes,
-
-    /// Settings page
-    Settings,
-
-    /// The about page
-    About,
-
-    /// The logs page
-    Logs,
-
-    /// The debug page
-    Debug,
-}

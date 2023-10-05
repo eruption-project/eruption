@@ -19,32 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use egui::CentralPanel;
-use tracing::error;
-
-use self::hwdevices::get_keyboard_device;
-
-mod hwdevices;
-
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
-
-#[derive(Default)]
-pub struct KeyboardsPage {}
-
-impl KeyboardsPage {
-    pub fn new() -> Self {
-        Self {}
-    }
-
-    pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        CentralPanel::default().show(ctx, |ui| {
-            let device = get_keyboard_device(0, ui, ctx).unwrap();
-
-            ui.heading("Keyboard devices");
-
-            if let Err(e) = device.draw_keyboard(ui, ctx) {
-                error!("Error rendering the keyboard: {}", e);
-            }
-        });
-    }
-}
+pub mod create_color_scheme;
+pub mod create_macro;
+pub mod create_profile;
+pub mod create_rules;
+pub mod create_color_scheme;
