@@ -1808,13 +1808,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             // we require the "daemon" subcommand to be specified, as a safety measure to
             // prevent the accidental execution of another instance of the eruption daemon
             eprintln!(
-                "Did you probably meant to run the `{}` command instead?",
+                "Did you probably mean to run the `{}` command instead?",
                 "eruptionctl".bold()
             );
-            eprintln!("");
             eprintln!(
-                "If you intended to run the Eruption daemon, please use one of the following commands:"
+                "If you intended to run the Eruption daemon, please execute one of the following commands:"
             );
+            eprintln!("");
+            eprintln!("To run the Eruption daemon in the background please use:");
             eprintln!(
                 "{}",
                 "sudo systemctl unmask eruption.service && sudo systemctl restart eruption.service"
