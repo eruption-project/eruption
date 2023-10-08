@@ -441,6 +441,25 @@ impl DeviceTrait for RoccatKonePro {
         }
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // self.send_ctrl_report(0xa1)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+
+            self.is_initialized = false;
+
+            Ok(())
+        }
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(self.is_initialized)
     }
@@ -883,37 +902,63 @@ impl MouseDeviceTrait for RoccatKonePro {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            if self.allocated_zone.enabled {
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 11] = [
-                0x0d,
-                0x0b,
-                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                0x00,
-                0x00,
-                0x00,
-            ];
+                let buf: [u8; 11] = [
+                    0x0d,
+                    0x0b,
+                    (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    0x00,
+                    0x00,
+                    0x00,
+                ];
 
-            match ctrl_dev.send_feature_report(&buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                match ctrl_dev.send_feature_report(&buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                    Ok(())
+                        Ok(())
+                    }
+
+                    Err(_) => {
+                        // the device has failed or has been disconnected
+                        self.is_initialized = false;
+                        self.is_opened = false;
+                        self.has_failed = true;
+
+                        Err(HwDeviceError::InvalidResult {}.into())
+                    }
                 }
+            } else {
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-                Err(_) => {
-                    // the device has failed or has been disconnected
-                    self.is_initialized = false;
-                    self.is_opened = false;
-                    self.has_failed = true;
+                let buf: [u8; 11] = [
+                    0x0d, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                ];
 
-                    Err(HwDeviceError::InvalidResult {}.into())
+                match ctrl_dev.send_feature_report(&buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                        Ok(())
+                    }
+
+                    Err(_) => {
+                        // the device has failed or has been disconnected
+                        self.is_initialized = false;
+                        self.is_opened = false;
+                        self.has_failed = true;
+
+                        Err(HwDeviceError::InvalidResult {}.into())
+                    }
                 }
             }
         }

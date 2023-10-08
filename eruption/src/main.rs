@@ -2209,9 +2209,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     loop {
                         let mut pending = UPCALL_COMPLETED_ON_QUIT.0.lock();
 
-                        let result = UPCALL_COMPLETED_ON_QUIT
-                            .1
-                            .wait_for(&mut pending, Duration::from_millis(2500));
+                        let result = UPCALL_COMPLETED_ON_QUIT.1.wait_for(
+                            &mut pending,
+                            Duration::from_millis(constants::LONG_TIMEOUT_MILLIS),
+                        );
 
                         if result.timed_out() {
                             warn!("Timed out while waiting for a Lua VM to shut down");
@@ -2249,6 +2250,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             error!("Could not finalize LEDs configuration: {}", e)
                         });
 
+                        device.write().send_shutdown_sequence().unwrap_or_else(|e| {
+                            error!("Could not send shutdown sequence to the device: {}", e);
+                        });
+
                         device.write().close_all().unwrap_or_else(|e| {
                             warn!("Could not close the device: {}", e);
                         });
@@ -2260,6 +2265,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                             error!("Could not finalize LEDs configuration: {}", e)
                         });
 
+                        device.write().send_shutdown_sequence().unwrap_or_else(|e| {
+                            error!("Could not send shutdown sequence to the device: {}", e);
+                        });
+
                         device.write().close_all().unwrap_or_else(|e| {
                             warn!("Could not close the device: {}", e);
                         });
@@ -2269,6 +2278,10 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     for device in crate::MISC_DEVICES.read().iter() {
                         device.write().set_led_off_pattern().unwrap_or_else(|e| {
                             error!("Could not finalize LEDs configuration: {}", e)
+                        });
+
+                        device.write().send_shutdown_sequence().unwrap_or_else(|e| {
+                            error!("Could not send shutdown sequence to the device: {}", e);
                         });
 
                         device.write().close_all().unwrap_or_else(|e| {

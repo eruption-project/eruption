@@ -42,8 +42,6 @@ use crate::hwdevices::{
 pub const LED_INTERFACE: i32 = 0; // LED USB sub device
 
 // canvas to LED index mapping
-pub const LED_0: usize = constants::CANVAS_SIZE - 36;
-pub const LED_1: usize = constants::CANVAS_SIZE - 1;
 pub const NUM_LEDS: usize = 2;
 
 /// Binds the driver to a device
@@ -470,6 +468,25 @@ impl DeviceTrait for RoccatAimoPad {
         }
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // self.send_ctrl_report(0xa1)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+
+            self.is_initialized = false;
+
+            Ok(())
+        }
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(self.is_initialized)
     }
@@ -608,37 +625,72 @@ impl MiscDeviceTrait for RoccatAimoPad {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            if self.allocated_zone.enabled {
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 9] = [
-                0x03,
-                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-            ];
-
-            match ctrl_dev.send_feature_report(&buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                #[inline]
+                fn offset_of(x: i32, y: i32) -> usize {
+                    (constants::CANVAS_HEIGHT as i32 * y + x) as usize
                 }
 
-                Err(_) => {
-                    // the device has failed or has been disconnected
-                    self.is_initialized = false;
-                    self.is_opened = false;
-                    self.has_failed = true;
+                let (x, y) = (self.allocated_zone.x, self.allocated_zone.y);
+                let (x2, y2) = (self.allocated_zone.x2(), self.allocated_zone.y2());
 
-                    return Err(HwDeviceError::InvalidResult {}.into());
-                }
-            };
+                let led0 = offset_of(x, y);
+                let led1 = offset_of(x2, y2);
 
-            Ok(())
+                let buf: [u8; 9] = [
+                    0x03,
+                    (led_map[led0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                ];
+
+                match ctrl_dev.send_feature_report(&buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    }
+
+                    Err(_) => {
+                        // the device has failed or has been disconnected
+                        self.is_initialized = false;
+                        self.is_opened = false;
+                        self.has_failed = true;
+
+                        return Err(HwDeviceError::InvalidResult {}.into());
+                    }
+                };
+
+                Ok(())
+            } else {
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = ctrl_dev.as_ref().unwrap();
+
+                let buf: [u8; 9] = [0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+
+                match ctrl_dev.send_feature_report(&buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    }
+
+                    Err(_) => {
+                        // the device has failed or has been disconnected
+                        self.is_initialized = false;
+                        self.is_opened = false;
+                        self.has_failed = true;
+
+                        return Err(HwDeviceError::InvalidResult {}.into());
+                    }
+                };
+
+                Ok(())
+            }
         }
     }
 

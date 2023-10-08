@@ -149,6 +149,12 @@ impl DeviceTrait for GenericMouse {
         Ok(())
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        Ok(())
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(true)
     }

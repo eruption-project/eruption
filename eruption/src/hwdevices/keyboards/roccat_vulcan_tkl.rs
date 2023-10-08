@@ -651,6 +651,25 @@ impl DeviceTrait for RoccatVulcanTKL {
         }
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // self.send_ctrl_report(0xa1)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+
+            self.is_initialized = false;
+
+            Ok(())
+        }
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(self.is_initialized)
     }

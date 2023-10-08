@@ -868,6 +868,10 @@ pub trait DeviceTrait: DeviceInfoTrait + DeviceZoneAllocationTrait {
     /// to a known good state. Should be called after `open()`ing the device
     fn send_init_sequence(&mut self) -> Result<()>;
 
+    /// Send a device specific shutdown sequence to set the device
+    /// to a known good state. Should be called before `close_all()`
+    fn send_shutdown_sequence(&mut self) -> Result<()>;
+
     /// Returns `true` if the device has been initialized
     fn is_initialized(&self) -> Result<bool>;
 

@@ -41,10 +41,6 @@ use crate::hwdevices::{
 };
 
 // pub const NUM_BUTTONS: usize = 9;
-
-// canvas to LED index mapping
-pub const LED_0: usize = constants::CANVAS_SIZE - 36;
-pub const LED_1: usize = constants::CANVAS_SIZE - 1;
 pub const NUM_LEDS: usize = 2;
 
 /// Binds the driver to a device
@@ -664,6 +660,25 @@ impl DeviceTrait for RoccatKoneProAir {
         }
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // self.send_ctrl_report(0xa1)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+
+            self.is_initialized = false;
+
+            Ok(())
+        }
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(self.is_initialized)
     }
@@ -1106,9 +1121,20 @@ impl MouseDeviceTrait for RoccatKoneProAir {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            {
+            if self.allocated_zone.enabled {
                 let led_dev = self.led_hiddev.as_ref().lock();
                 let led_dev = led_dev.as_ref().unwrap();
+
+                #[inline]
+                fn offset_of(x: i32, y: i32) -> usize {
+                    (constants::CANVAS_HEIGHT as i32 * y + x) as usize
+                }
+
+                let (x, y) = (self.allocated_zone.x, self.allocated_zone.y);
+                let (x2, y2) = (self.allocated_zone.x2(), self.allocated_zone.y2());
+
+                let led0 = offset_of(x, y);
+                let led1 = offset_of(x2, y2);
 
                 let buf: [u8; 65] = [
                     0x00,
@@ -1121,12 +1147,12 @@ impl MouseDeviceTrait for RoccatKoneProAir {
                     0x64,
                     0x64,
                     0x06,
-                    (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[led1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
                     0x00,
                     0x00,
                     0x00,
@@ -1176,6 +1202,59 @@ impl MouseDeviceTrait for RoccatKoneProAir {
                     0x00,
                     0x00,
                     0x00,
+                ];
+
+                match led_dev.write(&buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                        let mut poll_cntr = 0;
+                        'POLL_LOOP: loop {
+                            let mut buf: [u8; 32] = [0x00; 32];
+                            match led_dev.read_timeout(&mut buf, 10) {
+                                Ok(_result) => {
+                                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                                    match buf[1] {
+                                        0x10 => break 'POLL_LOOP,
+                                        0x00 => break 'POLL_LOOP,
+
+                                        _ => { /* do nothing */ }
+                                    }
+                                }
+
+                                Err(e) => error!("Error in poll loop: {}", e),
+                            }
+
+                            if poll_cntr >= 5 {
+                                break 'POLL_LOOP;
+                            }
+
+                            poll_cntr += 1;
+
+                            thread::sleep(Duration::from_millis(constants::DEVICE_SHORT_DELAY));
+                        }
+                    }
+
+                    Err(_) => {
+                        // the device has failed; maybe it has been disconnected?
+                        // self.is_opened = false;
+                        // self.is_initialized = false;
+                        self.has_failed = true;
+
+                        return Err(HwDeviceError::InvalidResult {}.into());
+                    }
+                }
+            } else {
+                let led_dev = self.led_hiddev.as_ref().lock();
+                let led_dev = led_dev.as_ref().unwrap();
+
+                let buf: [u8; 65] = [
+                    0x00, 0x10, 0x10, 0x0b, 0x00, 0x09, 0x64, 0x64, 0x64, 0x06, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                 ];
 
                 match led_dev.write(&buf) {

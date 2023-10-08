@@ -433,6 +433,25 @@ impl DeviceTrait for RoccatKoneAimoRemastered {
         }
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // self.send_ctrl_report(0xa1)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+
+            self.is_initialized = false;
+
+            Ok(())
+        }
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(self.is_initialized)
     }
@@ -819,72 +838,101 @@ impl MouseDeviceTrait for RoccatKoneAimoRemastered {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-            let ctrl_dev = ctrl_dev.as_ref().unwrap();
+            if self.allocated_zone.enabled {
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-            let buf: [u8; 46] = [
-                0x0d,
-                0x2e,
-                (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_2].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_2].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_2].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_2].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_3].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_3].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_3].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_3].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_4].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_4].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_4].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_4].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_5].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_5].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_5].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_5].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_6].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_6].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_6].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_6].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_7].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_7].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_7].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_7].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_8].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_8].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_8].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_8].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_9].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_9].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_9].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_9].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_10].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_10].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_10].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                (led_map[LED_10].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-            ];
+                let buf: [u8; 46] = [
+                    0x0d,
+                    0x2e,
+                    (led_map[LED_0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_2].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_2].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_2].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_2].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_3].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_3].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_3].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_3].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_4].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_4].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_4].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_4].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_5].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_5].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_5].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_5].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_6].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_6].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_6].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_6].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_7].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_7].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_7].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_7].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_8].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_8].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_8].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_8].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_9].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_9].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_9].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_9].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_10].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_10].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_10].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                    (led_map[LED_10].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                ];
 
-            match ctrl_dev.send_feature_report(&buf) {
-                Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                match ctrl_dev.send_feature_report(&buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
-                    Ok(())
+                        Ok(())
+                    }
+
+                    Err(_) => {
+                        // the device has failed or has been disconnected
+                        self.is_initialized = false;
+                        self.is_opened = false;
+                        self.has_failed = true;
+
+                        Err(HwDeviceError::InvalidResult {}.into())
+                    }
                 }
+            } else {
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-                Err(_) => {
-                    // the device has failed or has been disconnected
-                    self.is_initialized = false;
-                    self.is_opened = false;
-                    self.has_failed = true;
+                let buf: [u8; 46] = [
+                    0x0d, 0x2e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                ];
 
-                    Err(HwDeviceError::InvalidResult {}.into())
+                match ctrl_dev.send_feature_report(&buf) {
+                    Ok(_result) => {
+                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+
+                        Ok(())
+                    }
+
+                    Err(_) => {
+                        // the device has failed or has been disconnected
+                        self.is_initialized = false;
+                        self.is_opened = false;
+                        self.has_failed = true;
+
+                        Err(HwDeviceError::InvalidResult {}.into())
+                    }
                 }
             }
         }

@@ -509,6 +509,25 @@ impl DeviceTrait for CorsairStrafe {
         }
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // self.send_ctrl_report(0xa1)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+
+            self.is_initialized = false;
+
+            Ok(())
+        }
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(self.is_initialized)
     }
@@ -856,47 +875,71 @@ impl KeyboardDeviceTrait for CorsairStrafe {
                             result.clamp(0, constants::CANVAS_SIZE - 1)
                         }
 
-                        // build and send data buffer chunks
-                        let mut buffer: [u8; NUM_KEYS * 3] = [0x00; NUM_KEYS * 3];
+                        if self.allocated_zone.enabled {
+                            // build and send data buffer chunks
+                            let mut buffer: [u8; NUM_KEYS * 3] = [0x00; NUM_KEYS * 3];
 
-                        // convert RGB color to monochromatic value
-                        // let color = 255
-                        //     - (((led_map[i].r as f32 * 0.29)
-                        //         + (led_map[i].g as f32 * 0.59)
-                        //         + (led_map[i].b as f32 * 0.114))
-                        //         .round() as u8)
-                        //         .clamp(0, 255);
+                            // convert RGB color to monochromatic value
+                            // let color = 255
+                            //     - (((led_map[i].r as f32 * 0.29)
+                            //         + (led_map[i].g as f32 * 0.59)
+                            //         + (led_map[i].b as f32 * 0.114))
+                            //         .round() as u8)
+                            //         .clamp(0, 255);
 
-                        let bitvec = buffer.view_bits_mut::<Lsb0>();
+                            let bitvec = buffer.view_bits_mut::<Lsb0>();
 
-                        for i in 0..NUM_KEYS {
-                            let offset = i * 3;
-                            let color = led_map[index_to_canvas(i)];
-                            bitvec[offset..(offset + 3)].store(255_u8 - color.r);
-                        }
-
-                        for i in 0..NUM_KEYS {
-                            let offset = i * 3 + (NUM_KEYS * 3);
-                            let color = led_map[index_to_canvas(i)];
-                            bitvec[offset..(offset + 3)].store(255_u8 - color.g);
-                        }
-
-                        for i in 0..NUM_KEYS {
-                            let offset = i * 3 + (NUM_KEYS * 6);
-                            let color = led_map[index_to_canvas(i)];
-                            bitvec[offset..(offset + 3)].store(255_u8 - color.b);
-                        }
-
-                        for (cntr, bytes) in buffer.chunks(60).take(4).enumerate() {
-                            let mut tmp: [u8; 64] = [0; 64];
-
-                            if cntr < 3 {
-                                tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x3c, 00]);
-                            } else {
-                                tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x30, 00]);
+                            for i in 0..NUM_KEYS {
+                                let offset = i * 3;
+                                let color = led_map[index_to_canvas(i)];
+                                bitvec[offset..(offset + 3)].store(255_u8 - color.r);
                             }
 
-                            tmp[4..64].copy_from_slice(bytes);
+                            for i in 0..NUM_KEYS {
+                                let offset = i * 3 + (NUM_KEYS * 3);
+                                let color = led_map[index_to_canvas(i)];
+                                bitvec[offset..(offset + 3)].store(255_u8 - color.g);
+                            }
+
+                            for i in 0..NUM_KEYS {
+                                let offset = i * 3 + (NUM_KEYS * 6);
+                                let color = led_map[index_to_canvas(i)];
+                                bitvec[offset..(offset + 3)].store(255_u8 - color.b);
+                            }
+
+                            for (cntr, bytes) in buffer.chunks(60).take(4).enumerate() {
+                                let mut tmp: [u8; 64] = [0; 64];
+
+                                if cntr < 3 {
+                                    tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x3c, 00]);
+                                } else {
+                                    tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x30, 00]);
+                                }
+
+                                tmp[4..64].copy_from_slice(bytes);
+
+                                hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
+
+                                match led_dev.write(&tmp) {
+                                    Ok(len) => {
+                                        if len < 64 {
+                                            return Err(HwDeviceError::WriteError {}.into());
+                                        }
+                                    }
+
+                                    Err(_) => return Err(HwDeviceError::WriteError {}.into()),
+                                }
+                            }
+
+                            // commit the LED map to the keyboard
+                            let tmp: [u8; 64] = [
+                                0x07, 0x27, 0x00, 0x00, 0xd8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            ];
 
                             hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
@@ -907,36 +950,106 @@ impl KeyboardDeviceTrait for CorsairStrafe {
                                     }
                                 }
 
-                                Err(_) => return Err(HwDeviceError::WriteError {}.into()),
+                                Err(_) => {
+                                    // the device has failed or has been disconnected
+                                    self.is_initialized = false;
+                                    self.is_opened = false;
+                                    self.has_failed = true;
+
+                                    return Err(HwDeviceError::InvalidResult {}.into());
+                                }
                             }
-                        }
+                        } else {
+                            // zone is disabled, so black-out the device
+                            // build and send data buffer chunks
+                            let mut buffer: [u8; NUM_KEYS * 3] = [0x00; NUM_KEYS * 3];
 
-                        // commit the LED map to the keyboard
-                        let tmp: [u8; 64] = [
-                            0x07, 0x27, 0x00, 0x00, 0xd8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00,
-                        ];
+                            // convert RGB color to monochromatic value
+                            // let color = 255
+                            //     - (((led_map[i].r as f32 * 0.29)
+                            //         + (led_map[i].g as f32 * 0.59)
+                            //         + (led_map[i].b as f32 * 0.114))
+                            //         .round() as u8)
+                            //         .clamp(0, 255);
 
-                        hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
+                            let bitvec = buffer.view_bits_mut::<Lsb0>();
 
-                        match led_dev.write(&tmp) {
-                            Ok(len) => {
-                                if len < 64 {
-                                    return Err(HwDeviceError::WriteError {}.into());
+                            for i in 0..NUM_KEYS {
+                                let offset = i * 3;
+                                let color = RGBA {
+                                    ..Default::default()
+                                };
+                                bitvec[offset..(offset + 3)].store(255_u8 - color.r);
+                            }
+
+                            for i in 0..NUM_KEYS {
+                                let offset = i * 3 + (NUM_KEYS * 3);
+                                let color = RGBA {
+                                    ..Default::default()
+                                };
+                                bitvec[offset..(offset + 3)].store(255_u8 - color.g);
+                            }
+
+                            for i in 0..NUM_KEYS {
+                                let offset = i * 3 + (NUM_KEYS * 6);
+                                let color = RGBA {
+                                    ..Default::default()
+                                };
+                                bitvec[offset..(offset + 3)].store(255_u8 - color.g);
+                                bitvec[offset..(offset + 3)].store(255_u8 - color.b);
+                            }
+
+                            for (cntr, bytes) in buffer.chunks(60).take(4).enumerate() {
+                                let mut tmp: [u8; 64] = [0; 64];
+
+                                if cntr < 3 {
+                                    tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x3c, 00]);
+                                } else {
+                                    tmp[0..4].copy_from_slice(&[0x7f, cntr as u8 + 1, 0x30, 00]);
+                                }
+
+                                tmp[4..64].copy_from_slice(bytes);
+
+                                hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
+
+                                match led_dev.write(&tmp) {
+                                    Ok(len) => {
+                                        if len < 64 {
+                                            return Err(HwDeviceError::WriteError {}.into());
+                                        }
+                                    }
+
+                                    Err(_) => return Err(HwDeviceError::WriteError {}.into()),
                                 }
                             }
 
-                            Err(_) => {
-                                // the device has failed or has been disconnected
-                                self.is_initialized = false;
-                                self.is_opened = false;
-                                self.has_failed = true;
+                            // commit the LED map to the keyboard
+                            let tmp: [u8; 64] = [
+                                0x07, 0x27, 0x00, 0x00, 0xd8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            ];
 
-                                return Err(HwDeviceError::InvalidResult {}.into());
+                            hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
+
+                            match led_dev.write(&tmp) {
+                                Ok(len) => {
+                                    if len < 64 {
+                                        return Err(HwDeviceError::WriteError {}.into());
+                                    }
+                                }
+
+                                Err(_) => {
+                                    // the device has failed or has been disconnected
+                                    self.is_initialized = false;
+                                    self.is_opened = false;
+                                    self.has_failed = true;
+
+                                    return Err(HwDeviceError::InvalidResult {}.into());
+                                }
                             }
                         }
 

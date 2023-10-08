@@ -605,6 +605,25 @@ impl DeviceTrait for RoccatMagma {
         }
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else {
+            // self.send_ctrl_report(0xa1)
+            //     .unwrap_or_else(|e| error!("Step 1: {}", e));
+            // self.wait_for_ctrl_dev()
+            //     .unwrap_or_else(|e| error!("Wait 1: {}", e));
+
+            self.is_initialized = false;
+
+            Ok(())
+        }
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(self.is_initialized)
     }
@@ -950,96 +969,126 @@ impl KeyboardDeviceTrait for RoccatMagma {
                             }
                         }
 
-                        let zone1 = interpolate_colors(&led_map[0..25]);
-                        let zone2 = interpolate_colors(&led_map[25..50]);
-                        let zone3 = interpolate_colors(&led_map[50..75]);
-                        let zone4 = interpolate_colors(&led_map[75..100]);
-                        let zone5 = interpolate_colors(&led_map[100..125]);
+                        if self.allocated_zone.enabled {
+                            let zone1 = interpolate_colors(&led_map[0..25]);
+                            let zone2 = interpolate_colors(&led_map[25..50]);
+                            let zone3 = interpolate_colors(&led_map[50..75]);
+                            let zone4 = interpolate_colors(&led_map[75..100]);
+                            let zone5 = interpolate_colors(&led_map[100..125]);
 
-                        let tmp = [
-                            0xa1,
-                            0x01,
-                            0x40,
-                            // red
-                            (zone1.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone2.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone3.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone4.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone5.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            // green
-                            (zone1.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone2.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone3.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone4.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone5.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            // blue
-                            (zone1.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone2.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone3.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone4.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            (zone5.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                            0x00,
-                        ];
+                            let tmp = [
+                                0xa1,
+                                0x01,
+                                0x40,
+                                // red
+                                (zone1.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone2.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone3.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone4.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone5.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                // green
+                                (zone1.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone2.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone3.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone4.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone5.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                // blue
+                                (zone1.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone2.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone3.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone4.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone5.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                            ];
 
-                        match led_dev.write(&tmp) {
-                            Ok(len) => {
-                                if len < 64 {
-                                    return Err(HwDeviceError::WriteError {}.into());
+                            match led_dev.write(&tmp) {
+                                Ok(len) => {
+                                    if len < 64 {
+                                        return Err(HwDeviceError::WriteError {}.into());
+                                    }
+                                }
+
+                                Err(_) => {
+                                    // the device has failed or has been disconnected
+                                    self.is_initialized = false;
+                                    self.is_opened = false;
+                                    self.has_failed = true;
+
+                                    return Err(HwDeviceError::InvalidResult {}.into());
                                 }
                             }
+                        } else {
+                            // zone is disabled, so black-out the device
 
-                            Err(_) => {
-                                // the device has failed or has been disconnected
-                                self.is_initialized = false;
-                                self.is_opened = false;
-                                self.has_failed = true;
+                            let tmp = [
+                                0xa1, 0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            ];
 
-                                return Err(HwDeviceError::InvalidResult {}.into());
+                            match led_dev.write(&tmp) {
+                                Ok(len) => {
+                                    if len < 64 {
+                                        return Err(HwDeviceError::WriteError {}.into());
+                                    }
+                                }
+
+                                Err(_) => {
+                                    // the device has failed or has been disconnected
+                                    self.is_initialized = false;
+                                    self.is_opened = false;
+                                    self.has_failed = true;
+
+                                    return Err(HwDeviceError::InvalidResult {}.into());
+                                }
                             }
                         }
 

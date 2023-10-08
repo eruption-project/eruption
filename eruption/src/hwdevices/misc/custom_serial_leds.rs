@@ -157,6 +157,12 @@ impl DeviceTrait for CustomSerialLeds {
         Ok(())
     }
 
+    fn send_shutdown_sequence(&mut self) -> Result<()> {
+        trace!("Sending device shutdown sequence...");
+
+        Ok(())
+    }
+
     fn is_initialized(&self) -> Result<bool> {
         Ok(true)
     }
@@ -243,35 +249,55 @@ impl MiscDeviceTrait for CustomSerialLeds {
 
         match *self.port.lock() {
             Some(ref mut port) => {
-                const HEADER_OFFSET: usize = 6;
+                if self.allocated_zone.enabled {
+                    const HEADER_OFFSET: usize = 6;
 
-                let mut buffer: [u8; HEADER_OFFSET + (NUM_LEDS * 3)] =
-                    [0x00; HEADER_OFFSET + (NUM_LEDS * 3)];
+                    let mut buffer: [u8; HEADER_OFFSET + (NUM_LEDS * 3)] =
+                        [0x00; HEADER_OFFSET + (NUM_LEDS * 3)];
 
-                buffer[0..HEADER_OFFSET].clone_from_slice(&[
-                    b'A',
-                    b'd',
-                    b'a',
-                    0x00,
-                    NUM_LEDS as u8,
-                    NUM_LEDS as u8 ^ 0x55,
-                ]);
+                    buffer[0..HEADER_OFFSET].clone_from_slice(&[
+                        b'A',
+                        b'd',
+                        b'a',
+                        0x00,
+                        NUM_LEDS as u8,
+                        NUM_LEDS as u8 ^ 0x55,
+                    ]);
 
-                let mut cntr = 0;
-                for e in led_map[0..NUM_LEDS].iter() {
-                    buffer[HEADER_OFFSET + cntr] =
-                        (e.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
-                    buffer[HEADER_OFFSET + cntr + 1] =
-                        (e.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
-                    buffer[HEADER_OFFSET + cntr + 2] =
-                        (e.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
+                    let mut cntr = 0;
+                    for e in led_map[0..NUM_LEDS].iter() {
+                        buffer[HEADER_OFFSET + cntr] =
+                            (e.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
+                        buffer[HEADER_OFFSET + cntr + 1] =
+                            (e.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
+                        buffer[HEADER_OFFSET + cntr + 2] =
+                            (e.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8;
 
-                    cntr += 3;
+                        cntr += 3;
+                    }
+
+                    port.write_all(&buffer)?;
+
+                    Ok(())
+                } else {
+                    const HEADER_OFFSET: usize = 6;
+
+                    let mut buffer: [u8; HEADER_OFFSET + (NUM_LEDS * 3)] =
+                        [0x00; HEADER_OFFSET + (NUM_LEDS * 3)];
+
+                    buffer[0..HEADER_OFFSET].clone_from_slice(&[
+                        b'A',
+                        b'd',
+                        b'a',
+                        0x00,
+                        NUM_LEDS as u8,
+                        NUM_LEDS as u8 ^ 0x55,
+                    ]);
+
+                    port.write_all(&buffer)?;
+
+                    Ok(())
                 }
-
-                port.write_all(&buffer)?;
-
-                Ok(())
             }
 
             None => Err(HwDeviceError::DeviceNotOpened {}.into()),
