@@ -1,5 +1,4 @@
 <div align="center">
-  <a href="#"><img src="docs/assets/eruption-logo.png" alt="Eruption Logo" /></a>&nbsp;&nbsp;
   <a href="#"><img src="docs/assets/eruption.jpg" alt="Eruption on a ROCCAT Vulcan 12x" /></a>&nbsp;&nbsp;
 </div>
 
