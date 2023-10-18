@@ -104,8 +104,7 @@ gio-sys = "0.18"
 gdk-sys = "0.18"
 gtk = { version = "0.18", features = ["v3_24_30"] }
 pangocairo = "0.18"
-sourceview4-sys = { path = "../../../sourceview4-rs/sourceview4-sys", optional = true }
-sourceview4 = { path = "../../../sourceview4-rs/sourceview4", optional = true }
+sourceview4 = { git = "https://github.com/X3n0m0rph59/sourceview4-rs.git", optional = true }
 # sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs", optional = true }
 i18n-embed = { version = "0.14.0", features = [
   "fluent-system",
