@@ -33,20 +33,20 @@ jobs:
     steps:
       - name: Setup Base System
         run: "sudo apt-get update -y -qq; sudo apt-get install --assume-yes nsis"
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           override: true
       - name: Install cross Build Tool
-        run: 'cargo install cross'
+        run: "cargo install cross"
       - name: Run make windows-installer
-        run: 'make windows-installer'
+        run: "make windows-installer"
       - name: Publish Installer Binary
         uses: softprops/action-gh-release@v1
         with:
           draft: true
           prerelease: true
-          files: 'target/Eruption.exe'
+          files: "target/Eruption.exe"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
