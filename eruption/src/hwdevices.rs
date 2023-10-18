@@ -2085,6 +2085,7 @@ pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
 /// the device is plugged in.  Not all Roccat devices require this workaround, headphones don't, but I don't know which all
 /// do and which don't.  Note that this workaround can also be applied manually by writing to the "inhibited" file found at
 /// path "/sys/class/input/eventX/inhibited", where the X in "eventX" is the udev number associated with the LED interface.
+#[cfg(not(target_os = "windows"))]
 pub fn udev_inhibited_workaround(
     vendor_id: u16,
     product_id: u16,
@@ -2132,6 +2133,7 @@ pub fn udev_inhibited_workaround(
         )
 }
 
+#[cfg(not(target_os = "windows"))]
 pub fn attempt_udev_inhibited_workaround(vendor_id: u16, product_id: u16, interface_num: i32) {
     let workaround_attempt = udev_inhibited_workaround(vendor_id, product_id, interface_num);
     if let Err(err) = workaround_attempt {

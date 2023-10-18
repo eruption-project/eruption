@@ -34,10 +34,10 @@ VIAddVersionKey OriginalFilename "Eruption.exe"
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER $(^Name)
 #!define MUI_FINISHPAGE_SHOWREADME $INSTDIR\README.txt
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
-#!define MUI_ICON "eruption.ico"
+!define MUI_ICON "../assets/eruption.ico"
 #!define MUI_UNICON "uninstall-eruption.ico"
 !define MUI_HEADERIMAGE
-#!define MUI_HEADERIMAGE_BITMAP "../assets/eruption.bmp"
+!define MUI_HEADERIMAGE_BITMAP "../assets/eruption.bmp"
 #!define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
 #!define MUI_WELCOMEFINISHPAGE_BITMAP "../assets/eruption.bmp"
 !define MUI_WELCOMEFINISHPAGE_BITMAP_NOSTRETCH

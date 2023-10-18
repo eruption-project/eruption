@@ -232,6 +232,7 @@ pub enum Subcommands {
     },
 
     /// Toggle the "inhibited" attribute of the udev device if it's sending bad inputs events.
+    #[cfg(not(target_os = "windows"))]
     ToggleUdevInhibited {
         /// The index of the device, can be found with the list sub-command
         device: usize,
@@ -834,6 +835,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
+        #[cfg(not(target_os = "windows"))]
         Subcommands::ToggleUdevInhibited {
             device: device_index,
         } => {

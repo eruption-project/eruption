@@ -1212,7 +1212,7 @@ fn run_main_loop(
             }
         }
 
-        // #[cfg(not(target_os = "windows"))]
+        #[cfg(not(target_os = "windows"))]
         for idx in failed_mouse_rxs.read().iter() {
             warn!("Removing failed mouse device with index {idx}");
             // mouse_rxs.remove(*idx);
