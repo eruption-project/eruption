@@ -820,11 +820,9 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                                 led_map,
                             )?;
 
-                            let canvas = canvas.reversed_axes();
-
                             let canvas = canvas.slice(s![
-                                self.allocated_zone.x..self.allocated_zone.x2(),
                                 self.allocated_zone.y..self.allocated_zone.y2(),
+                                self.allocated_zone.x..self.allocated_zone.x2(),
                             ]);
 
                             // resize
@@ -834,12 +832,11 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             );
                             let (w2, h2) = (NUM_COLS, NUM_ROWS);
 
-                            let canvas = canvas.map(|v| RGB8::new(v.r, v.g, v.b)).into_raw_vec();
+                            let canvas = canvas.map(|v| RGB8::new(v.r, v.g, v.b));
                             let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
                             let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
-
-                            resizer.resize(&canvas, &mut led_map)?;
+                            resizer.resize(&canvas.as_slice().unwrap(), &mut led_map)?;
 
                             const BUFFER_SIZE: usize =
                                 4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1));

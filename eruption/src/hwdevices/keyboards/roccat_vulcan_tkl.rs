@@ -22,7 +22,7 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use ndarray::{s, ArrayView2};
+use ndarray::{ArrayView2, s};
 use parking_lot::{Mutex, RwLock};
 use resize::Pixel::RGB8;
 use resize::Type;
@@ -996,11 +996,9 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                                 led_map,
                             )?;
 
-                            let canvas = canvas.reversed_axes();
-
                             let canvas = canvas.slice(s![
-                                self.allocated_zone.x..self.allocated_zone.x2(),
                                 self.allocated_zone.y..self.allocated_zone.y2(),
+                                self.allocated_zone.x..self.allocated_zone.x2(),
                             ]);
 
                             // resize
@@ -1014,7 +1012,6 @@ impl KeyboardDeviceTrait for RoccatVulcanTKL {
                             let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
                             let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
-
                             resizer.resize(&canvas, &mut led_map)?;
 
                             // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red

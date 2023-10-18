@@ -1049,13 +1049,13 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
 
                         if self.allocated_zone.enabled {
                             let canvas = ArrayView2::from_shape(
-                                (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT),
+                                (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
                                 led_map,
                             )?;
 
                             let canvas = canvas.slice(s![
-                                self.allocated_zone.x..self.allocated_zone.x2(),
                                 self.allocated_zone.y..self.allocated_zone.y2(),
+                                self.allocated_zone.x..self.allocated_zone.x2(),
                             ]);
 
                             // resize
@@ -1069,7 +1069,6 @@ impl KeyboardDeviceTrait for RoccatVulcan1xx {
                             let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
                             let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
-
                             resizer.resize(&canvas, &mut led_map)?;
 
                             // Colors are in blocks of 12 keys (2 columns). Color parts are sorted by color e.g. the red
