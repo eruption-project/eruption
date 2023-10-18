@@ -168,6 +168,12 @@ The Eruption Development Team
     <property name="use-fallback">True</property>
     <property name="icon_size">2</property>
   </object>
+  <object class="GtkImage" id="image_redo">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">edit-redo-symbolic</property>
+    <property name="icon_size">2</property>
+  </object>
   <object class="GtkImage" id="image_reload">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -241,6 +247,12 @@ The Eruption Development Team
     <property name="use-fallback">True</property>
     <property name="icon_size">2</property>
   </object>
+  <object class="GtkImage" id="image_undo">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">edit-undo-symbolic</property>
+    <property name="icon_size">2</property>
+  </object>
   <object class="GtkMenu" id="main_menu">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -302,7 +314,7 @@ The Eruption Development Team
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
     <property name="window-position">center</property>
-    <property name="icon-name">keyboard-brightness-symbolic</property>
+    <property name="icon">../img/eruption-logo.png</property>
     <property name="gravity">center</property>
     <property name="show-menubar">False</property>
     <child>
@@ -605,8 +617,8 @@ The Eruption Development Team
                                         <property name="hexpand">True</property>
                                         <property name="has-frame">False</property>
                                         <property name="text" translatable="yes">Profile Slot 1</property>
-                                        <property name="placeholder-text" translatable="yes">Enter the
-                                      name of the profile slot</property>
+                                        <property name="truncate-multiline">True</property>
+                                        <property name="placeholder-text" translatable="yes">Enter the name of the slot</property>
                                         <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
                                         <style>
                                           <class name="slot_entry"/>
@@ -731,8 +743,8 @@ The Eruption Development Team
                                         <property name="hexpand">True</property>
                                         <property name="has-frame">False</property>
                                         <property name="text" translatable="yes">Profile Slot 2</property>
-                                        <property name="placeholder-text" translatable="yes">Enter the
-                                      name of the profile slot</property>
+                                        <property name="truncate-multiline">True</property>
+                                        <property name="placeholder-text" translatable="yes">Enter the name of the slot</property>
                                         <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
                                         <style>
                                           <class name="slot_entry"/>
@@ -858,8 +870,8 @@ The Eruption Development Team
                                         <property name="hexpand">True</property>
                                         <property name="has-frame">False</property>
                                         <property name="text" translatable="yes">Profile Slot 3</property>
-                                        <property name="placeholder-text" translatable="yes">Enter the
-                                      name of the profile slot</property>
+                                        <property name="truncate-multiline">True</property>
+                                        <property name="placeholder-text" translatable="yes">Enter the name of the slot</property>
                                         <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
                                         <style>
                                           <class name="slot_entry"/>
@@ -985,10 +997,8 @@ The Eruption Development Team
                                         <property name="hexpand">True</property>
                                         <property name="has-frame">False</property>
                                         <property name="text" translatable="yes">Profile Slot 4</property>
-                                        <property name="primary-icon-activatable">False</property>
-                                        <property name="primary-icon-sensitive">False</property>
-                                        <property name="placeholder-text" translatable="yes">Enter the
-                                      name of the profile slot</property>
+                                        <property name="truncate-multiline">True</property>
+                                        <property name="placeholder-text" translatable="yes">Enter the name of the slot</property>
                                         <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
                                         <style>
                                           <class name="slot_entry"/>
@@ -1300,7 +1310,6 @@ The Eruption Development Team
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">end</property>
-                            <property name="margin-end">16</property>
                             <property name="label" translatable="yes">Image post-processing</property>
                             <attributes>
                               <attribute name="weight" value="bold"/>
@@ -1428,7 +1437,7 @@ The Eruption Development Team
                           <object class="GtkScrolledWindow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="margin-top">16</property>
+                            <property name="margin-top">8</property>
                             <property name="shadow-type">in</property>
                             <child>
                               <object class="GtkTreeView" id="devices_tree_view">
@@ -3360,6 +3369,9 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
+          <placeholder/>
+        </child>
+        <child>
           <object class="GtkScale" id="brightness_scale">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -3408,16 +3420,6 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
-          <object class="GtkSeparator">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="pack-type">end</property>
-            <property name="position">6</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkButton" id="about_button">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -3433,7 +3435,54 @@ The Eruption Development Team
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+            <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="redo_button">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="image">image_redo</property>
+            <property name="relief">none</property>
+            <property name="always-show-image">True</property>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+            <property name="position">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="undo_button">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="image">image_undo</property>
+            <property name="relief">none</property>
+            <property name="always-show-image">True</property>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+            <property name="position">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+            <property name="position">10</property>
+          </packing>
         </child>
       </object>
     </child>

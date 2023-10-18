@@ -763,10 +763,10 @@ impl Zone {
 
         match device_class {
             DeviceClass::Keyboard => Self {
-                x: 0,
-                y: 0,
-                width: constants::CANVAS_WIDTH as i32,
-                height: constants::CANVAS_HEIGHT as i32,
+                x: 10,
+                y: constants::CANVAS_HEIGHT as i32 / 2,
+                width: constants::CANVAS_WIDTH as i32 / 2,
+                height: constants::CANVAS_HEIGHT as i32 / 2,
                 enabled: true,
             },
 

@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-gui-gtk3"
-version = "0.2.9"
+version = "0.2.10"
 build = "build.rs"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
@@ -81,6 +81,8 @@ rayon = "1.7.0"
 nalgebra = "0.32.3"
 ndarray = { version = "0.15.6", features = ["rayon"] }
 transpose = "0.2.2"
+resize = "0.8.0"
+rgb = { version = "0.8.36", features = ["argb", "serde"] }
 thiserror = "1.0.48"
 eyre = "0.6.8"
 color-eyre = "0.6.2"

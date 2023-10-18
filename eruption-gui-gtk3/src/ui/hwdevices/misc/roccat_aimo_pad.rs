@@ -25,7 +25,7 @@ use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Lighten, LinSrgba};
 
-const BORDER: (f64, f64) = (16.0, 16.0);
+const BORDER: (f64, f64) = (0.0, 0.0);
 
 // canvas to LED index mapping
 const LED_0: usize = constants::CANVAS_SIZE - 36;

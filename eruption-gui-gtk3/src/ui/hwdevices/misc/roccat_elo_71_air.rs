@@ -26,7 +26,7 @@ use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 use palette::{FromColor, Hsva, Lighten, LinSrgba};
 
-const BORDER: (f64, f64) = (16.0, 16.0);
+const BORDER: (f64, f64) = (0.0, 0.0);
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 

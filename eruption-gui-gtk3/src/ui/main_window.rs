@@ -949,7 +949,9 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     main_window.set_application(Some(application));
     main_window.set_position(gtk::WindowPosition::Center);
     main_window.set_title("Eruption GUI");
-    main_window.set_icon_name(Some("/org/eruption/eruption-gui-gtk3/img/eruption-gui.png"));
+    main_window.set_icon_name(Some(
+        "/org/eruption/eruption-gui-gtk3/img/eruption-logo.png",
+    ));
 
     main_window.connect_delete_event(
         clone!(@weak application => @default-return glib::Propagation::Proceed, move |_, _| {

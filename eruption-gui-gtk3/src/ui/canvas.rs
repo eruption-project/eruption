@@ -30,6 +30,7 @@ use gtk::{
     prelude::*, Builder, ButtonsType, MessageDialog, MessageType, ResponseType, ScrolledWindow,
     ShadowType, Stack, StackSwitcher, TreeViewColumnSizing,
 };
+use ndarray::ArrayView2;
 use palette::{FromColor, Lighten, LinSrgba};
 use parking_lot::RwLock;
 
@@ -45,7 +46,7 @@ use super::hwdevices::misc::get_misc_device;
 use super::main_window::CURSOR_TYPE;
 use super::Pages;
 
-const BORDER: (f64, f64) = (8.0, 8.0);
+const BORDER: (f64, f64) = (0.0, 0.0);
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -54,13 +55,16 @@ lazy_static! {
     pub static ref DEVICE_INFO: Arc<RwLock<HashMap<u64, (String, String)>>> = Arc::new(RwLock::new(HashMap::new()));
 
     /// Per-device allocated zones on the unified canvas
-    pub static ref ZONES: Arc<RwLock<Vec<(u64, Zone)>>> = Arc::new(RwLock::new(vec![]));
+    pub static ref ZONES: Arc<RwLock<Vec<Zone>>> = Arc::new(RwLock::new(vec![]));
 
     /// The zone that the cursor is hovering over
     pub static ref HOVER_ZONE: Arc<RwLock<Option<Zone>>> = Arc::new(RwLock::new(None));
 
     /// The zone that is currently selected
     pub static ref SELECTED_ZONE: Arc<RwLock<Option<Zone>>> = Arc::new(RwLock::new(None));
+
+    /// Offset ccordinates of the current selection
+    pub static ref OFFSET_COORDINATES: Arc<RwLock<Option<(i32, i32)>>> = Arc::new(RwLock::new(None));
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -167,8 +171,8 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
             if let Some((model, selection)) = sel.selected() {
                 if let Ok(device) = model.value(&selection, 1).get::<u64>() {
-                    if let Some(e) = ZONES.read().iter().find(|(index, _zone)| index == &device) {
-                        *SELECTED_ZONE.write() = Some(e.1);
+                    if let Some(e) = ZONES.read().iter().find(|zone| zone.device == Some(device)) {
+                        *SELECTED_ZONE.write() = Some(*e);
                     } else {
                         *SELECTED_ZONE.write() = None;
                     }
@@ -202,8 +206,8 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let enabled = zones
             .iter()
-            .find(|&v| v.0 == index as u64)
-            .map(|v| v.1.enabled)
+            .find(|&v| v.device == Some(index as u64))
+            .map(|v| v.enabled)
             .unwrap_or(false);
 
         devices_treestore.insert_with_values(
@@ -234,8 +238,8 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let enabled = zones
             .iter()
-            .find(|&v| v.0 == index as u64)
-            .map(|v| v.1.enabled)
+            .find(|&v| v.device == Some(index as u64))
+            .map(|v| v.enabled)
             .unwrap_or(false);
 
         devices_treestore.insert_with_values(
@@ -266,8 +270,8 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let enabled = zones
             .iter()
-            .find(|&v| v.0 == index as u64)
-            .map(|v| v.1.enabled)
+            .find(|&v| v.device == Some(index as u64))
+            .map(|v| v.enabled)
             .unwrap_or(false);
 
         devices_treestore.insert_with_values(
@@ -318,11 +322,10 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
         );
 
         let mut zones = ZONES.write();
-        let zone = zones.iter_mut().find(|v| v.0 == device_index);
+        let zone = zones.iter_mut().find(|v| v.device == Some(device_index));
 
         match zone {
             Some(zone) => {
-                let mut zone = zone.1;
                 zone.enabled = !value;
 
                 dbus_client::set_device_zone_allocation(device_index, &zone).unwrap_or_else(|e| {
@@ -458,6 +461,8 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     drawing_area_zones.connect_motion_notify_event(drawing_area_motion_notify);
 
+    drawing_area_zones.connect_leave_notify_event(drawing_area_leave_notify);
+
     // update the global LED color map vector
     timers::register_timer(
         timers::CANVAS_RENDER_TIMER_ID,
@@ -582,6 +587,8 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
         String::static_type(),
     ]);
 
+    // canvas_stack.set_visible_child_name("page0");
+
     let devices = dbus_client::get_managed_devices()?;
     let zones = dbus_client::get_devices_zone_allocations()?;
 
@@ -598,8 +605,8 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let enabled = zones
             .iter()
-            .find(|&v| v.0 == index as u64)
-            .map(|v| v.1.enabled)
+            .find(|&v| v.device == Some(index as u64))
+            .map(|v| v.enabled)
             .unwrap_or(false);
 
         devices_treestore.insert_with_values(
@@ -630,8 +637,8 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let enabled = zones
             .iter()
-            .find(|&v| v.0 == index as u64)
-            .map(|v| v.1.enabled)
+            .find(|&v| v.device == Some(index as u64))
+            .map(|v| v.enabled)
             .unwrap_or(false);
 
         devices_treestore.insert_with_values(
@@ -662,8 +669,8 @@ pub fn update_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
         let enabled = zones
             .iter()
-            .find(|&v| v.0 == index as u64)
-            .map(|v| v.1.enabled)
+            .find(|&v| v.device == Some(index as u64))
+            .map(|v| v.enabled)
             .unwrap_or(false);
 
         devices_treestore.insert_with_values(
@@ -727,7 +734,7 @@ fn drawing_area_button_press(
                 Some((x, y)) => {
                     let mut hovering_over_a_zone = false;
 
-                    for (device, zone) in ZONES.read().iter() {
+                    for zone in ZONES.write().iter_mut() {
                         let pixel_width: f64 =
                             (da.allocated_width() as f64 - 400.0) / constants::CANVAS_WIDTH as f64;
                         let pixel_height: f64 =
@@ -752,6 +759,12 @@ fn drawing_area_button_press(
                             && cell_y >= zone.y
                             && cell_y <= zone.y2()
                         {
+                            // compute and store offsets from the top left corner of the zone
+                            let offset_x = cell_x - zone.x;
+                            let offset_y = cell_y - zone.y;
+
+                            *OFFSET_COORDINATES.write() = Some((offset_x, offset_y));
+
                             // we are hovering over this zone
                             *HOVER_ZONE.write() = Some(*zone);
                             hovering_over_a_zone = true;
@@ -761,9 +774,26 @@ fn drawing_area_button_press(
 
                             let devices_treeview: gtk::TreeView =
                                 builder.object("devices_tree_view").unwrap();
-                            select_row_by_device(&devices_treeview, *device);
+                            select_row_by_device(&devices_treeview, zone.device.unwrap());
 
-                            break;
+                            if event.click_count().unwrap_or(1) >= 2 {
+                                zone.x = 0;
+                                zone.y = 0;
+                                zone.width = constants::CANVAS_WIDTH as i32;
+                                zone.height = constants::CANVAS_HEIGHT as i32;
+
+                                let _ = dbus_client::set_device_zone_allocation(
+                                    zone.device.unwrap(),
+                                    &zone,
+                                )
+                                .map_err(|e| {
+                                    notifications::error(&format!("Could not update zone: {e}"));
+                                    tracing::error!("Could not update zone: {e}");
+                                });
+                            }
+
+                            // grab pointer to receive all motion events
+                            da.grab_add();
                         }
                     }
 
@@ -777,13 +807,12 @@ fn drawing_area_button_press(
                         }
                     }
 
-                    glib::Propagation::Proceed
+                    glib::Propagation::Stop
                 }
 
                 _ => glib::Propagation::Stop,
             }
         }
-
         _ => glib::Propagation::Stop,
     }
 }
@@ -795,10 +824,23 @@ fn drawing_area_button_release(
     da.queue_draw();
 
     match event.button() {
-        gdk::BUTTON_PRIMARY => glib::Propagation::Proceed,
+        gdk::BUTTON_PRIMARY => {
+            da.grab_remove();
 
-        _ => false.into(),
+            glib::Propagation::Stop
+        }
+
+        _ => glib::Propagation::Stop,
     }
+}
+
+fn drawing_area_leave_notify(
+    _da: &gtk::DrawingArea,
+    _event: &gdk::EventCrossing,
+) -> glib::Propagation {
+    *CURSOR_TYPE.write() = None;
+
+    glib::Propagation::Stop
 }
 
 fn drawing_area_motion_notify(
@@ -813,7 +855,7 @@ fn drawing_area_motion_notify(
         Some((x, y)) => {
             let mut hovering_over_a_zone = false;
 
-            for (device, ref mut zone) in ZONES.write().iter_mut() {
+            for zone in ZONES.write().iter_mut() {
                 let pixel_width: f64 =
                     (da.allocated_width() as f64 - 400.0) / constants::CANVAS_WIDTH as f64;
                 let pixel_height: f64 =
@@ -856,20 +898,20 @@ fn drawing_area_motion_notify(
                             set_cursor(Some(gdk::CursorType::TopLeftCorner));
                         } else if cell_y == zone.y {
                             set_cursor(Some(gdk::CursorType::TopSide));
-                        } else if (zone.x2() - 2..=zone.x2() + 2).contains(&cell_x)
-                            && (zone.y - 2..=zone.y + 2).contains(&cell_y)
+                        } else if (zone.x2() - 1..=zone.x2() + 1).contains(&cell_x)
+                            && (zone.y - 1..=zone.y + 1).contains(&cell_y)
                         {
                             set_cursor(Some(gdk::CursorType::TopRightCorner));
                         } else if cell_x == zone.x2() {
                             set_cursor(Some(gdk::CursorType::RightSide));
-                        } else if (zone.x2() - 2..=zone.x2() + 2).contains(&cell_x)
-                            && (zone.y2() - 2..=zone.y2() + 2).contains(&cell_y)
+                        } else if (zone.x2() - 1..=zone.x2() + 1).contains(&cell_x)
+                            && (zone.y2() - 1..=zone.y2() + 1).contains(&cell_y)
                         {
                             set_cursor(Some(gdk::CursorType::BottomRightCorner));
                         } else if cell_y == zone.y2() {
                             set_cursor(Some(gdk::CursorType::BottomSide));
-                        } else if (zone.x - 2..=zone.x + 2).contains(&cell_x)
-                            && (zone.y2() - 2..=zone.y2() + 2).contains(&cell_y)
+                        } else if (zone.x - 1..=zone.x + 1).contains(&cell_x)
+                            && (zone.y2() - 1..=zone.y2() + 1).contains(&cell_y)
                         {
                             set_cursor(Some(gdk::CursorType::BottomLeftCorner));
                         } else if cell_x == zone.x {
@@ -881,45 +923,54 @@ fn drawing_area_motion_notify(
                             set_cursor(None);
                         }
                     } else {
-                        // we are not hovering over a sensitive border, but inside the zone
-                        set_cursor(Some(gdk::CursorType::Fleur));
-
                         if event.state() & ModifierType::BUTTON1_MASK == ModifierType::BUTTON1_MASK
                         {
                             // primary button is down, move the zone around or resize
 
-                            // let offset_x = cell_x - zone.x;
-                            // let offset_y = cell_y - zone.y;
+                            // we are not hovering over a sensitive border, but inside the zone
+                            set_cursor(Some(gdk::CursorType::Fleur));
 
-                            zone.x = cell_x - zone.width / 2;
-                            zone.y = cell_y - zone.height / 2;
+                            let offset_x = OFFSET_COORDINATES.read().unwrap_or((0, 0)).0;
+                            let offset_y = OFFSET_COORDINATES.read().unwrap_or((0, 0)).1;
+
+                            zone.x = cell_x - offset_x;
+                            zone.y = cell_y - offset_y;
 
                             if zone.x < 0 {
                                 zone.x = 0;
-                            } else if zone.x > constants::CANVAS_WIDTH as i32 {
-                                zone.x = constants::CANVAS_WIDTH as i32;
-                            } else if zone.y < 0 {
-                                zone.y = 0;
-                            }
-                            if zone.y > constants::CANVAS_HEIGHT as i32 {
-                                zone.y = constants::CANVAS_HEIGHT as i32;
-                            }
-                            if zone.width < 1 {
-                                zone.width = 1;
-                            } else if zone.height < 1 {
-                                zone.height = 1;
-                            } else if zone.x2() > constants::CANVAS_WIDTH as i32 {
-                                zone.x -= zone.x2() - (constants::CANVAS_WIDTH as i32 + 1);
-                            } else if zone.y2() > constants::CANVAS_HEIGHT as i32 {
-                                zone.y -= zone.y2() - (constants::CANVAS_HEIGHT as i32 + 1);
                             }
 
-                            let _ = dbus_client::set_device_zone_allocation(*device, zone).map_err(
-                                |e| {
-                                    notifications::error(&format!("Could not update zone: {e}"));
-                                    tracing::error!("Could not update zone: {e}");
-                                },
-                            );
+                            if zone.y < 0 {
+                                zone.y = 0;
+                            }
+
+                            if zone.x2() > constants::CANVAS_WIDTH as i32 {
+                                zone.x = constants::CANVAS_WIDTH as i32 - zone.width;
+                            }
+
+                            if zone.y2() > constants::CANVAS_HEIGHT as i32 {
+                                zone.y = constants::CANVAS_HEIGHT as i32 - zone.height;
+                            }
+
+                            if zone.width < 1 {
+                                zone.width = 1;
+                            }
+
+                            if zone.height < 1 {
+                                zone.height = 1;
+                            }
+
+                            let _ =
+                                dbus_client::set_device_zone_allocation(zone.device.unwrap(), zone)
+                                    .map_err(|e| {
+                                        notifications::error(&format!(
+                                            "Could not update zone: {e}"
+                                        ));
+                                        tracing::error!("Could not update zone: {e}");
+                                    });
+                        } else {
+                            // we are not hovering over a sensitive border, but inside the zone
+                            set_cursor(Some(gdk::CursorType::Arrow));
                         }
                     }
 
@@ -937,16 +988,26 @@ fn drawing_area_motion_notify(
                 *HOVER_ZONE.write() = None;
                 set_cursor(None);
 
-                if event.state() & ModifierType::BUTTON1_MASK == ModifierType::BUTTON1_MASK {
-                    // primary button is down, move the zone around or resize
-                    *SELECTED_ZONE.write() = None;
-                }
+                // if event.state() & modifiertype::button1_mask == modifiertype::button1_mask {
+                //     // primary button is down, move the zone around or resize
+                //     *selected_zone.write() = none;
+                // }
             }
 
-            glib::Propagation::Proceed
+            glib::Propagation::Stop
         }
 
-        _ => glib::Propagation::Stop,
+        _ => {
+            // *HOVER_ZONE.write() = None;
+            // set_cursor(None);
+
+            // if event.state() & ModifierType::BUTTON1_MASK == ModifierType::BUTTON1_MASK {
+            //     // primary button is down, move the zone around or resize
+            //     *SELECTED_ZONE.write() = None;
+            // }
+
+            glib::Propagation::Stop
+        }
     }
 }
 
@@ -956,20 +1017,25 @@ fn render_canvas(
     mut hsl: (f64, f64, f64),
     context: &cairo::Context,
 ) -> Result<()> {
-    let width = da.allocated_width() as f64 - 400.0;
-    let height = da.allocated_height() as f64 - 15.0;
+    let width = da.allocated_width() as f64 - 390.0;
+    let height = da.allocated_height() as f64;
 
     let scale_factor = 1.0; // width / (constants::CANVAS_WIDTH as f64 * 15.0);
 
-    let led_colors = crate::COLOR_MAP.lock();
+    let led_map = crate::COLOR_MAP.lock();
+
+    let canvas = ArrayView2::from_shape(
+        (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
+        &*led_map,
+    )?;
 
     if mode == RenderMode::Zones {
         // dim lightness in zone allocation mode
-        hsl.2 = -0.45;
+        hsl.2 = -0.55;
     }
 
-    // paint all cells of the canvasr
-    for (i, color) in led_colors.iter().enumerate() {
+    // paint all cells of the canvas
+    for (i, color) in canvas.iter().enumerate() {
         paint_cell(i, color, hsl, context, width, height, scale_factor)?;
     }
 
@@ -983,16 +1049,16 @@ fn render_canvas(
             layout.set_font_description(Some(&desc));
 
             // draw allocated zones
-            for (device, zone) in ZONES.read().iter() {
+            for zone in ZONES.read().iter() {
                 let state;
 
-                if selected_zone.is_some() && *zone == selected_zone.unwrap() {
-                    if hover_zone.is_some() && *zone == hover_zone.unwrap() {
+                if selected_zone.is_some() && zone.device == selected_zone.unwrap().device {
+                    if hover_zone.is_some() && zone.device == hover_zone.unwrap().device {
                         state = ZoneDrawState::SelectedHover;
                     } else {
                         state = ZoneDrawState::Selected;
                     }
-                } else if hover_zone.is_some() && *zone == hover_zone.unwrap() {
+                } else if hover_zone.is_some() && zone.device == hover_zone.unwrap().device {
                     state = ZoneDrawState::Hover;
                 } else {
                     state = ZoneDrawState::Normal;
@@ -1004,7 +1070,7 @@ fn render_canvas(
                         width,
                         height,
                         &layout,
-                        *device,
+                        zone.device.unwrap_or_default(),
                         zone,
                         state,
                         scale_factor,
@@ -1099,71 +1165,103 @@ fn paint_zone(
     let pixel_width: f64 = width / constants::CANVAS_WIDTH as f64;
     let pixel_height: f64 = height / constants::CANVAS_HEIGHT as f64;
 
-    match state {
-        ZoneDrawState::Normal => {
-            let x = BORDER.0 + zone.x as f64 * pixel_width;
-            let y = BORDER.1 + zone.y as f64 * pixel_height;
-            let width = zone.width as f64 * pixel_width;
-            let height = zone.height as f64 * pixel_height;
+    let zones = ZONES.read();
+    let Zone { enabled, .. } = zones.get(device as usize).map(|v| *v).unwrap_or_default();
 
-            let color = (0.8, 0.8, 0.8, 0.3);
-            let color2 = (0.8, 0.8, 0.8, 0.3);
-            rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
-        }
+    if enabled {
+        let device_info = DEVICE_INFO.read();
+        let make_and_model = device_info.get(&device);
 
-        ZoneDrawState::Hover => {
-            let x = BORDER.0 + zone.x as f64 * pixel_width;
-            let y = BORDER.1 + zone.y as f64 * pixel_height;
-            let width = zone.width as f64 * pixel_width;
-            let height = zone.height as f64 * pixel_height;
+        let make = make_and_model
+            .map(|v| v.0.clone())
+            .unwrap_or_else(|| "<unknown>".to_string());
 
-            let color = (0.8, 0.8, 0.8, 0.5);
-            let color2 = (0.8, 0.8, 0.8, 0.5);
-            rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
-        }
+        let model = make_and_model
+            .map(|v| v.1.clone())
+            .unwrap_or_else(|| "<unknown>".to_string());
 
-        ZoneDrawState::Selected => {
-            let x = BORDER.0 + zone.x as f64 * pixel_width;
-            let y = BORDER.1 + zone.y as f64 * pixel_height;
-            let width = zone.width as f64 * pixel_width;
-            let height = zone.height as f64 * pixel_height;
+        match state {
+            ZoneDrawState::Normal => {
+                let x = BORDER.0 + zone.x as f64 * pixel_width;
+                let y = BORDER.1 + zone.y as f64 * pixel_height;
+                let width = zone.width as f64 * pixel_width;
+                let height = zone.height as f64 * pixel_height;
 
-            let color = (0.4, 0.4, 0.85, 0.75);
-            let color2 = (0.4, 0.4, 0.85, 0.75);
-            rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
-        }
+                let color = (0.8, 0.8, 0.8, 0.2);
+                let color2 = (0.8, 0.8, 0.8, 0.2);
+                rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
 
-        ZoneDrawState::SelectedHover => {
-            let x = BORDER.0 + zone.x as f64 * pixel_width;
-            let y = BORDER.1 + zone.y as f64 * pixel_height;
-            let width = zone.width as f64 * pixel_width;
-            let height = zone.height as f64 * pixel_height;
+                // draw caption
+                cr.set_source_rgba(1.0, 1.0, 1.0, 0.2);
+                cr.move_to(
+                    BORDER.0 + (zone.x as f64 * pixel_width * scale_factor) + 14.5,
+                    BORDER.1 + (zone.y as f64 * pixel_height * scale_factor) + 12.0,
+                );
+                layout.set_text(&format!("{}: {} {}", device, make, model));
+                pangocairo::show_layout(cr, layout);
+            }
 
-            let color = (0.4, 0.4, 0.85, 0.8);
-            let color2 = (0.4, 0.4, 0.85, 0.8);
-            rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
+            ZoneDrawState::Hover => {
+                let x = BORDER.0 + zone.x as f64 * pixel_width;
+                let y = BORDER.1 + zone.y as f64 * pixel_height;
+                let width = zone.width as f64 * pixel_width;
+                let height = zone.height as f64 * pixel_height;
+
+                let color = (0.8, 0.8, 0.8, 0.5);
+                let color2 = (0.8, 0.8, 0.8, 0.5);
+                rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
+
+                // draw caption
+                cr.set_source_rgba(1.0, 1.0, 1.0, 0.8);
+                cr.move_to(
+                    BORDER.0 + (zone.x as f64 * pixel_width * scale_factor) + 14.5,
+                    BORDER.1 + (zone.y as f64 * pixel_height * scale_factor) + 12.0,
+                );
+                layout.set_text(&format!("{}: {} {}", device, make, model));
+                pangocairo::show_layout(cr, layout);
+            }
+
+            ZoneDrawState::Selected => {
+                let x = BORDER.0 + zone.x as f64 * pixel_width;
+                let y = BORDER.1 + zone.y as f64 * pixel_height;
+                let width = zone.width as f64 * pixel_width;
+                let height = zone.height as f64 * pixel_height;
+
+                let color = (0.4, 0.4, 0.85, 0.8);
+                let color2 = (0.4, 0.4, 0.85, 0.8);
+                rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
+
+                // draw caption
+                cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+                cr.move_to(
+                    BORDER.0 + (zone.x as f64 * pixel_width * scale_factor) + 14.5,
+                    BORDER.1 + (zone.y as f64 * pixel_height * scale_factor) + 12.0,
+                );
+                layout.set_text(&format!("{}: {} {}", device, make, model));
+                pangocairo::show_layout(cr, layout);
+            }
+
+            ZoneDrawState::SelectedHover => {
+                let x = BORDER.0 + zone.x as f64 * pixel_width;
+                let y = BORDER.1 + zone.y as f64 * pixel_height;
+                let width = zone.width as f64 * pixel_width;
+                let height = zone.height as f64 * pixel_height;
+
+                let color = (0.4, 0.4, 0.85, 0.8);
+                let color2 = (0.4, 0.4, 0.85, 0.8);
+                rounded_rectangle(cr, x, y, width, height, 90.0, &color, &color2)?;
+
+                // draw caption
+                cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+                cr.move_to(
+                    BORDER.0 + (zone.x as f64 * pixel_width * scale_factor) + 14.5,
+                    BORDER.1 + (zone.y as f64 * pixel_height * scale_factor) + 12.0,
+                );
+                layout.set_text(&format!("{}: {} {}", device, make, model));
+                pangocairo::show_layout(cr, layout);
+            }
         }
     }
-
-    // draw caption
-    let device_info = DEVICE_INFO.read();
-    let make_and_model = device_info.get(&device);
-
-    let make = make_and_model
-        .map(|v| v.0.clone())
-        .unwrap_or_else(|| "<unknown>".to_string());
-
-    let model = make_and_model
-        .map(|v| v.1.clone())
-        .unwrap_or_else(|| "<unknown>".to_string());
-
-    cr.set_source_rgba(1.0, 1.0, 1.0, 1.0);
-    cr.move_to(
-        BORDER.0 + (zone.x as f64 * pixel_width * scale_factor) + 14.5,
-        BORDER.1 + (zone.y as f64 * pixel_height * scale_factor) + 12.0,
-    );
-    layout.set_text(&format!("{}: {} {}", device, make, model));
-    pangocairo::show_layout(cr, layout);
 
     Ok(())
 }
@@ -1178,6 +1276,10 @@ fn paint_cell(
     height: f64,
     scale_factor: f64,
 ) -> Result<()> {
+    // spacing of pixels on the grid, negative values cause overlap
+    const GRID_SPACING_X: f64 = -0.8;
+    const GRID_SPACING_Y: f64 = -0.8;
+
     let pixel_width: f64 = width / constants::CANVAS_WIDTH as f64;
     let pixel_height: f64 = height / constants::CANVAS_HEIGHT as f64;
 
@@ -1192,7 +1294,7 @@ fn paint_cell(
     };
 
     // post-process color
-    let color = LinSrgba::new(
+    let source_color = LinSrgba::new(
         color.r as f64 / 255.0,
         color.g as f64 / 255.0,
         color.b as f64 / 255.0,
@@ -1204,17 +1306,22 @@ fn paint_cell(
     let lighten_value = hsl.2;
 
     // image post processing
-    let color = LinSrgba::from_color(color.lighten(lighten_value)).into_components();
+    let fill_color = LinSrgba::from_color(source_color.lighten(lighten_value)).into_components();
+    // let outline_color = fill_color;
 
-    cr.set_source_rgba(color.0, color.1, color.2, 1.0);
+    // cr.set_line_width(6.0);
 
-    cr.set_source_rgba(color.0, color.1, color.2, 1.0);
     cr.rectangle(
         cell_def.x,
         cell_def.y,
-        cell_def.width + 1.0,
-        cell_def.height + 1.0,
+        cell_def.width - GRID_SPACING_X,
+        cell_def.height - GRID_SPACING_Y,
     );
+
+    // cr.set_source_rgba(outline_color.0, outline_color.1, outline_color.2, 0.8);
+    // cr.stroke_preserve()?;
+
+    cr.set_source_rgba(fill_color.0, fill_color.1, fill_color.2, 1.0);
     cr.fill()?;
 
     Ok(())

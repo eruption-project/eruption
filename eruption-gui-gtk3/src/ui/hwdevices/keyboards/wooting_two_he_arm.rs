@@ -22,16 +22,21 @@
 use super::Keyboard;
 use super::{Caption, KeyDef};
 
+use crate::constants;
 use crate::ui::canvas::ZONES;
 use crate::util::RGBA;
 use gdk::prelude::GdkContextExt;
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::WidgetExt;
 
+use ndarray::{s, ArrayView2};
 use palette::{FromColor, Hsva, Lighten, LinSrgba};
+use resize::Pixel::RGB8;
+use resize::Type;
+use rgb::RGB8;
 use std::cell::RefCell;
 
-const BORDER: (f64, f64) = (16.0, 16.0);
+const BORDER: (f64, f64) = (0.0, 0.0);
 
 #[allow(dead_code)]
 pub const NUM_ROWS: usize = 6;
@@ -87,37 +92,29 @@ impl Keyboard for WootingTwoHeArm {
 
         let led_colors = crate::COLOR_MAP.lock();
 
-        if let Some(_allocated_zone) = ZONES
-            .read()
-            .iter()
-            .find(|&z| z.0 == self.device)
-            .map(|z| z.1)
-        {
-            // this devices uses a row major addressing scheme
-            // let shape = (constants::CANVAS_WIDTH, constants::CANVAS_HEIGHT);
-            // let led_colors = Array2::from_shape_vec(shape, led_colors.clone()).map_err(|e| {
-            //     tracing::error!("Error creating LED colors array: {}", e);
-            //     e
-            // })?;
+        if let Some(allocated_zone) = ZONES.read().iter().find(|&z| z.device == Some(self.device)) {
+            let canvas = ArrayView2::from_shape(
+                (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
+                &*led_colors,
+            )?;
 
-            // let led_colors = led_colors.slice(s![
-            //     allocated_zone.x..(allocated_zone.x + NUM_COLS as i32),
-            //     allocated_zone.y..(allocated_zone.y + NUM_ROWS as i32),
-            // ]);
+            let canvas = canvas.slice(s![
+                allocated_zone.y..allocated_zone.y2(),
+                allocated_zone.x..allocated_zone.x2(),
+            ]);
 
-            // let shape = ((NUM_ROWS, NUM_COLS), Order::ColumnMajor);
-            // let led_colors = led_colors.to_shape(shape).map_err(|e| {
-            //     tracing::error!("Error re-shaping LED colors array: {}", e);
-            //     e
-            // })?;
+            // resize
+            let (w1, h1) = (
+                allocated_zone.width as usize,
+                allocated_zone.height as usize,
+            );
+            let (w2, h2) = (NUM_COLS, NUM_ROWS);
 
-            // let shape = (led_colors.len(),);
-            // let led_colors = led_colors.to_shape(shape).map_err(|e| {
-            //     tracing::error!("Error flattening LED colors array: {}", e);
-            //     e
-            // })?;
+            let canvas = canvas.map(|v| RGB8::new(v.r, v.g, v.b));
+            let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
-            // let led_colors = util::rotate_vector_by_90_degrees(&led_colors.to_owned());
+            let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
+            resizer.resize(&canvas.as_slice().unwrap(), &mut led_map)?;
 
             let layout = pangocairo::create_layout(context);
             FONT_DESC.with(|f| -> Result<()> {
@@ -128,12 +125,20 @@ impl Keyboard for WootingTwoHeArm {
                 for i in 0..NUM_LEDS {
                     self.paint_key(
                         i + 1,
-                        led_colors.get(i).unwrap_or(&RGBA {
-                            r: 0,
-                            g: 0,
-                            b: 0,
-                            a: 0,
-                        }),
+                        &led_map
+                            .get(i)
+                            .map(|c| RGBA {
+                                r: c.r,
+                                g: c.g,
+                                b: c.b,
+                                a: 255,
+                            })
+                            .unwrap_or(RGBA {
+                                r: 0,
+                                g: 0,
+                                b: 0,
+                                a: 0,
+                            }),
                         context,
                         &layout,
                     )?;
@@ -288,15 +293,50 @@ impl Keyboard for WootingTwoHeArm {
 const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::dummy(0), // filler
 
-    // column 1
+    // Row 1
     KeyDef::new(24.0, 23.0, 32.0, 32.0, Caption::simple("ESC"), 1), // ESC
+    KeyDef::new(87.0, 23.0, 32.0, 32.0, Caption::simple("F1"), 12), // F1
+    KeyDef::new(121.0, 23.0, 32.0, 32.0, Caption::simple("F2"), 18), // F2
+    KeyDef::new(155.0, 23.0, 32.0, 32.0, Caption::simple("F3"), 24), // F3
+    KeyDef::new(189.0, 23.0, 32.0, 32.0, Caption::simple("F4"), 29), // F4
+    KeyDef::new(233.0, 23.0, 32.0, 32.0, Caption::simple("F5"), 49), // F5
+    KeyDef::new(267.0, 23.0, 32.0, 32.0, Caption::simple("F6"), 54), // F6
+    KeyDef::new(301.0, 23.0, 32.0, 32.0, Caption::simple("F7"), 60), // F7
+    KeyDef::new(335.0, 23.0, 32.0, 32.0, Caption::simple("F8"), 66), // F8
+    KeyDef::new(379.0, 23.0, 32.0, 32.0, Caption::simple("F9"), 79), // F9
+    KeyDef::new(413.0, 23.0, 32.0, 32.0, Caption::simple("F10"), 85), // F10
+    KeyDef::new(447.0, 23.0, 32.0, 32.0, Caption::simple("F11"), 86), // F11
+    KeyDef::new(481.0, 23.0, 32.0, 32.0, Caption::simple("F12"), 87), // F12
+    KeyDef::new(525.0, 23.0, 32.0, 32.0, Caption::simple("PRT"), 100), // PRINT SCREEN
+    KeyDef::new(
+        593.0,
+        23.0,
+        32.0,
+        32.0,
+        Caption::new("PAUSE", -4.0, 0.0),
+        109,
+    ), // PAUSE
+    KeyDef::new(559.0, 23.0, 32.0, 32.0, Caption::simple("SCRL"), 104), // SCROLL LOCK
+    KeyDef::new(635.0, 23.0, 32.0, 32.0, Caption::simple("A1"), 114), // A1
+    KeyDef::new(669.0, 23.0, 32.0, 32.0, Caption::simple("A2"), 120), // A2
+    KeyDef::new(703.0, 23.0, 32.0, 32.0, Caption::simple("A3"), 125), // A3
+    KeyDef::new(
+        737.0,
+        23.0,
+        32.0,
+        32.0,
+        Caption::new("MODE", -4.5, 0.0),
+        131,
+    ), // MODE
+
+
+    // Row 2
     KeyDef::new(24.0, 76.0, 32.0, 32.0, Caption::simple("^"), 2),   // GRAVE_ACCENT
     KeyDef::new(24.0, 110.0, 48.0, 32.0, Caption::simple("TAB"), 3), // TAB
     KeyDef::new(24.0, 145.0, 56.0, 32.0, Caption::simple("CAPS LCK"), 4), // CAPS_LOCK
     KeyDef::new(24.0, 180.0, 66.0, 32.0, Caption::simple("SHIFT"), 5), // SHIFT
     KeyDef::new(24.0, 215.0, 50.0, 32.0, Caption::simple("CTRL"), 6), // CTRL
 
-    // column 2
     KeyDef::new(58.0, 76.0, 32.0, 32.0, Caption::simple("1"), 7), // 1
     KeyDef::new(74.0, 110.0, 32.0, 32.0, Caption::simple("Q"), 8), // Q
     KeyDef::new(82.0, 145.0, 32.0, 32.0, Caption::simple("A"), 9), // A
@@ -304,7 +344,6 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(76.0, 215.0, 38.0, 32.0, Caption::simple("WIN"), 11), // SUPER
 
     // column 3
-    KeyDef::new(87.0, 23.0, 32.0, 32.0, Caption::simple("F1"), 12), // F1
     KeyDef::new(92.0, 76.0, 32.0, 32.0, Caption::simple("2"), 13),  // 2
     KeyDef::new(108.0, 110.0, 32.0, 32.0, Caption::simple("W"), 14), // W
     KeyDef::new(116.0, 145.0, 32.0, 32.0, Caption::simple("S"), 15), // S
@@ -312,7 +351,6 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(116.0, 215.0, 32.0, 32.0, Caption::simple("ALT"), 17), // ALT
 
     // column 4
-    KeyDef::new(121.0, 23.0, 32.0, 32.0, Caption::simple("F2"), 18), // F2
     KeyDef::new(126.0, 76.0, 32.0, 32.0, Caption::simple("3"), 19),  // 3
     KeyDef::new(142.0, 110.0, 32.0, 32.0, Caption::simple("E"), 20), // E
     KeyDef::new(150.0, 145.0, 32.0, 32.0, Caption::simple("D"), 21), // D
@@ -320,14 +358,12 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::dummy(23),                                               // filler
 
     // column 5
-    KeyDef::new(155.0, 23.0, 32.0, 32.0, Caption::simple("F3"), 24), // F3
     KeyDef::new(160.0, 76.0, 32.0, 32.0, Caption::simple("4"), 25),  // 4
     KeyDef::new(176.0, 110.0, 32.0, 32.0, Caption::simple("R"), 26), // R
     KeyDef::new(184.0, 145.0, 32.0, 32.0, Caption::simple("F"), 27), // F
     KeyDef::new(194.0, 180.0, 32.0, 32.0, Caption::simple("C"), 28), // C
 
     // column 6
-    KeyDef::new(189.0, 23.0, 32.0, 32.0, Caption::simple("F4"), 29), // F4
     KeyDef::new(194.0, 76.0, 32.0, 32.0, Caption::simple("5"), 30),  // 5
     KeyDef::new(210.0, 110.0, 32.0, 32.0, Caption::simple("T"), 31), // T
     KeyDef::new(218.0, 145.0, 32.0, 32.0, Caption::simple("G"), 32), // G
@@ -352,14 +388,12 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::dummy(47), // filler
     KeyDef::dummy(48), // filler
     //
-    KeyDef::new(233.0, 23.0, 32.0, 32.0, Caption::simple("F5"), 49), // F5
 
     // column 8
     KeyDef::new(262.0, 76.0, 32.0, 32.0, Caption::simple("7"), 50), // 7
     KeyDef::new(278.0, 110.0, 32.0, 32.0, Caption::simple("U"), 51), // U
     KeyDef::new(286.0, 145.0, 32.0, 32.0, Caption::simple("J"), 52), // J
     KeyDef::new(296.0, 180.0, 32.0, 32.0, Caption::simple("N"), 53), // N
-    KeyDef::new(267.0, 23.0, 32.0, 32.0, Caption::simple("F6"), 54), // F6
 
     // column 9
     KeyDef::new(296.0, 76.0, 32.0, 32.0, Caption::simple("8"), 55), // 8
@@ -367,7 +401,6 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(320.0, 145.0, 32.0, 32.0, Caption::simple("K"), 57), // K
     KeyDef::new(330.0, 180.0, 32.0, 32.0, Caption::simple("M"), 58), // M
     KeyDef::dummy(59),                                              // filler
-    KeyDef::new(301.0, 23.0, 32.0, 32.0, Caption::simple("F7"), 60), // F7
 
     // column 10
     KeyDef::new(330.0, 76.0, 32.0, 32.0, Caption::simple("9"), 61), // 9
@@ -375,7 +408,6 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(354.0, 145.0, 32.0, 32.0, Caption::simple("L"), 63), // L
     KeyDef::new(364.0, 180.0, 32.0, 32.0, Caption::simple(","), 64), // ,
     KeyDef::dummy(65),                                              // filler
-    KeyDef::new(335.0, 23.0, 32.0, 32.0, Caption::simple("F8"), 66), // F8
 
     // column 11
     KeyDef::new(364.0, 76.0, 32.0, 32.0, Caption::simple("0"), 67), // 0
@@ -396,7 +428,6 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
 
     //
     KeyDef::dummy(78),                                               // filler
-    KeyDef::new(379.0, 23.0, 32.0, 32.0, Caption::simple("F9"), 79), // F9
 
     // column 13
     KeyDef::new(432.0, 76.0, 32.0, 32.0, Caption::simple("´"), 80), // ´
@@ -404,11 +435,8 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::dummy(82),                                               // filler
     KeyDef::new(466.0, 180.0, 48.0, 32.0, Caption::simple("SHIFT"), 83), // SHIFT
     KeyDef::new(412.0, 215.0, 50.0, 32.0, Caption::simple("MENU"), 84), // MENU
-    KeyDef::new(413.0, 23.0, 32.0, 32.0, Caption::simple("F10"), 85), // F10
-    KeyDef::new(447.0, 23.0, 32.0, 32.0, Caption::simple("F11"), 86), // F11
 
     // column 14
-    KeyDef::new(481.0, 23.0, 32.0, 32.0, Caption::simple("F12"), 87), // F12
     KeyDef::new(466.0, 76.0, 48.0, 32.0, Caption::simple("BKSPC"), 88), // BACKSPACE
     KeyDef::new(
         482.0,
@@ -432,13 +460,11 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::dummy(99),                                               // filler
 
     // column 15
-    KeyDef::new(525.0, 23.0, 32.0, 32.0, Caption::simple("PRT"), 100), // PRINT SCREEN
     KeyDef::new(525.0, 76.0, 32.0, 32.0, Caption::simple("INS"), 101), // INSERT
     KeyDef::new(525.0, 110.0, 32.0, 32.0, Caption::simple("DEL"), 102), // DELETE
     KeyDef::new(525.0, 215.0, 32.0, 32.0, Caption::simple("←"), 103), // LEFT
 
     // column 15
-    KeyDef::new(559.0, 23.0, 32.0, 32.0, Caption::simple("SCRL"), 104), // SCROLL LOCK
     KeyDef::new(
         559.0,
         76.0,
@@ -452,14 +478,7 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(559.0, 215.0, 32.0, 32.0, Caption::simple("↓"), 108), // DOWN
 
     // column 16
-    KeyDef::new(
-        593.0,
-        23.0,
-        32.0,
-        32.0,
-        Caption::new("PAUSE", -4.0, 0.0),
-        109,
-    ), // PAUSE
+
     KeyDef::new(593.0, 76.0, 32.0, 32.0, Caption::simple("PGUP"), 110), // PAGE UP
     KeyDef::new(
         593.0,
@@ -473,7 +492,6 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::dummy(113),                                                 // filler
 
     // column 17
-    KeyDef::new(635.0, 23.0, 32.0, 32.0, Caption::simple("A1"), 114), // A1
     KeyDef::new(635.0, 76.0, 32.0, 32.0, Caption::simple("NUM"), 114), // NUM LOCK
     KeyDef::new(635.0, 110.0, 32.0, 32.0, Caption::simple("7"), 115),  // 7
     KeyDef::new(635.0, 145.0, 32.0, 32.0, Caption::simple("4"), 116),  // 4
@@ -481,14 +499,12 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(635.0, 215.0, 66.0, 32.0, Caption::simple("0"), 118),  // 0
 
     // column 18
-    KeyDef::new(669.0, 23.0, 32.0, 32.0, Caption::simple("A2"), 120), // A2
     KeyDef::new(669.0, 76.0, 32.0, 32.0, Caption::simple("/"), 120), // /
     KeyDef::new(669.0, 110.0, 32.0, 32.0, Caption::simple("8"), 121), // 8
     KeyDef::new(669.0, 145.0, 32.0, 32.0, Caption::simple("5"), 122), // 5
     KeyDef::new(669.0, 180.0, 32.0, 32.0, Caption::simple("2"), 123), // 2
 
     // column 19
-    KeyDef::new(703.0, 23.0, 32.0, 32.0, Caption::simple("A3"), 125), // A3
     KeyDef::new(703.0, 76.0, 32.0, 32.0, Caption::simple("*"), 125), // *
     KeyDef::new(703.0, 110.0, 32.0, 32.0, Caption::simple("9"), 126), // 9
     KeyDef::new(703.0, 145.0, 32.0, 32.0, Caption::simple("6"), 127), // 6
@@ -496,14 +512,7 @@ const KEY_DEFS_GENERIC_QWERTZ: &[KeyDef] = &[
     KeyDef::new(703.0, 215.0, 32.0, 32.0, Caption::simple(","), 129), // ,
 
     // column 20
-    KeyDef::new(
-        737.0,
-        23.0,
-        32.0,
-        32.0,
-        Caption::new("MODE", -4.5, 0.0),
-        131,
-    ), // MODE
+
     KeyDef::new(737.0, 76.0, 32.0, 32.0, Caption::simple("-"), 132), // -
     KeyDef::new(737.0, 110.0, 32.0, 67.0, Caption::new("+", 0.0, 24.0), 131), // +
     KeyDef::new(

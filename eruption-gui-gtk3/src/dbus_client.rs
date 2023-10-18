@@ -609,7 +609,7 @@ pub fn get_managed_devices() -> Result<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u
 }
 
 /// Fetches all allocated zones from the eruption daemon
-pub fn get_devices_zone_allocations() -> Result<Vec<(u64, Zone)>> {
+pub fn get_devices_zone_allocations() -> Result<Vec<Zone>> {
     use canvas::OrgEruptionCanvas;
 
     let conn = Connection::new_system()?;
@@ -623,19 +623,15 @@ pub fn get_devices_zone_allocations() -> Result<Vec<(u64, Zone)>> {
 
     let result = result
         .iter()
-        .map(|v| {
-            (
-                v.0,
-                Zone {
-                    x: v.1 .0,
-                    y: v.1 .1,
-                    width: v.1 .2,
-                    height: v.1 .3,
-                    enabled: v.1 .4,
-                },
-            )
+        .map(|v| Zone {
+            x: v.1 .0,
+            y: v.1 .1,
+            width: v.1 .2,
+            height: v.1 .3,
+            enabled: v.1 .4,
+            device: Some(v.0),
         })
-        .collect::<Vec<(u64, Zone)>>();
+        .collect::<Vec<Zone>>();
 
     Ok(result)
 }

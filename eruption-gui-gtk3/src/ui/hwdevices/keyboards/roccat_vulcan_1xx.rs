@@ -30,7 +30,7 @@ use ndarray::Array2;
 use palette::{FromColor, Hsva, Lighten, LinSrgba};
 use std::cell::RefCell;
 
-const BORDER: (f64, f64) = (16.0, 16.0);
+const BORDER: (f64, f64) = (0.0, 0.0);
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 

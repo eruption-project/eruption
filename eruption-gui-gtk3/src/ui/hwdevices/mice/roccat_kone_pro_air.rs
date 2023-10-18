@@ -28,7 +28,7 @@ use crate::constants;
 
 use super::{Mouse, Rectangle};
 
-const BORDER: (f64, f64) = (8.0, 32.0);
+const BORDER: (f64, f64) = (32.0, 32.0);
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 

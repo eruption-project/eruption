@@ -28,18 +28,20 @@ pub struct Zone {
     pub width: i32,
     pub height: i32,
     pub enabled: bool,
+    pub device: Option<u64>,
 }
 
 #[allow(unused)]
 impl Zone {
     #[inline]
-    pub fn new(x: i32, y: i32, width: i32, height: i32, enabled: bool) -> Self {
+    pub fn new(x: i32, y: i32, width: i32, height: i32, enabled: bool, device: u64) -> Self {
         Self {
             x,
             y,
             width,
             height,
             enabled,
+            device: Some(device),
         }
     }
 
@@ -51,6 +53,7 @@ impl Zone {
             width: 0,
             height: 0,
             enabled: false,
+            device: None,
         }
     }
 
@@ -78,6 +81,10 @@ impl Default for Zone {
 
 impl Display for Zone {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}x{}:{}x{}", self.x, self.y, self.width, self.height)
+        write!(
+            f,
+            "{}x{}:{}x{} dev:{:?} enabled:{}",
+            self.x, self.y, self.width, self.height, self.device, self.enabled,
+        )
     }
 }
