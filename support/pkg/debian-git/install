@@ -18,7 +18,7 @@ target/release/eruption-gui-gtk3 usr/bin
 support/systemd/eruption-suspend.sh => usr/lib/systemd/system-sleep/eruption
 
 support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop usr/share/applications
-support/assets/eruption-gui-gtk3/eruption-gui.png usr/share/icons/hicolor/64x64/apps
+support/assets/eruption.png usr/share/icons
 eruption-gui-gtk3/schemas/gschemas.compiled usr/share/eruption-gui-gtk3/schemas
 
 support/config/eruption.conf etc/eruption

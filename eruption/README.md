@@ -1,5 +1,7 @@
 ## eruption
 
+![Eruption logo](../docs/assets/eruption-logo.png)
+
 Realtime RGB LED Driver for Linux
 
 ### eruption

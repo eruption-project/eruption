@@ -1,4 +1,7 @@
-![Eruption logo](docs/assets/eruption.webp)
+<div align="center">
+  <a href="#"><img src="docs/assets/eruption-logo.png" alt="Eruption Logo" /></a>&nbsp;&nbsp;
+  <a href="#"><img src="docs/assets/eruption.jpg" alt="Eruption on a ROCCAT Vulcan 12x" /></a>&nbsp;&nbsp;
+</div>
 
 ![License](https://img.shields.io/github/license/X3n0m0rph59/eruption?style=flat-square)
 ![Stars](https://img.shields.io/github/stars/X3n0m0rph59/eruption?style=flat-square)

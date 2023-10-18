@@ -172,7 +172,7 @@ install:
 
 	@cp "support/assets/pyroclasm/pyroclasm.desktop" "$(TARGET_DIR)/share/applications/"
 	@cp "support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop" "$(TARGET_DIR)/share/applications/"
-	@cp "support/assets/eruption-gui-gtk3/eruption-gui.png" "$(TARGET_DIR)/share/icons/hicolor/64x64/apps/"
+	@cp "support/assets/eruption.png" "$(TARGET_DIR)/share/icons/"
 	@cp "eruption-gui-gtk3/schemas/gschemas.compiled" "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas/"
 	@cp "support/systemd/eruption-suspend.sh" "$(TARGET_DIR)/lib/systemd/system-sleep/eruption"
 	@cp "support/config/eruption.conf" "/etc/eruption/"
@@ -316,7 +316,7 @@ uninstall:
 
 	-@rm $(TARGET_DIR)/share/applications/pyroclasm.desktop
 	-@rm $(TARGET_DIR)/share/applications/eruption-gui-gtk3.desktop
-	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui.png
+	-@rm $(TARGET_DIR)/share/icons/eruption.png
 	-@rm $(TARGET_DIR)/share/eruption-gui-gtk3/schemas/gschemas.compiled
 	-@rm $(TARGET_DIR)/lib/systemd/system-sleep/eruption
 	-@rm $(TARGET_DIR)/lib/systemd/system/eruption.service

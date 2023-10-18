@@ -38,10 +38,10 @@ The Eruption Development Team
     <property name="version">0.0.0</property>
     <property name="copyright" translatable="yes">Copyright (c) 2019-2023, The Eruption Development Team</property>
     <property name="comments" translatable="yes">This is a technology preview version of the software</property>
-    <property name="website">https://github.com/X3n0m0rph59/eruption</property>
+    <property name="website">https://github.com/eruption-project</property>
     <property name="authors">X3n0m0rph59
 The Eruption Development Team</property>
-    <property name="logo-icon-name">keyboard-brightness-symbolic</property>
+    <property name="logo-icon-name">eruption</property>
     <property name="license-type">gpl-3-0</property>
     <child internal-child="vbox">
       <object class="GtkBox">

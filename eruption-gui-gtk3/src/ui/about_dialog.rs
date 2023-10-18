@@ -40,7 +40,7 @@ pub fn show_about_dialog<W: IsA<gtk::Window>>(parent: &W) {
 
     // // place logo
     // let logo_pixbuf = Pixbuf::from_resource_at_scale(
-    //     "/org/eruption/eruption-gui-gtk3/img/eruption-gui.png",
+    //     "/org/eruption/eruption-gui-gtk3/img/eruption-logo.png",
     //     100,
     //     100,
     //     true,

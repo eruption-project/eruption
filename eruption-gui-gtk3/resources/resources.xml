@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/eruption/eruption-gui-gtk3">
-    <!-- <file>img/eruption-gui.png</file> -->
+    <!-- <file>img/eruption-logo.png</file> -->
     <file>img/generic-keyboard.png</file>
     <file>img/generic-mouse.png</file>
     <file>img/generic-headset.png</file>
