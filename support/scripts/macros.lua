@@ -656,7 +656,7 @@ function simple_mouse_remapping(button_index, down)
 end
 
 function do_switch_slot(index)
-    debug("Macros: Switching to slot #" .. index + 1)
+    info("Macros: Switching to slot #" .. index + 1)
 
     -- consume the keystroke
     consume_key()
