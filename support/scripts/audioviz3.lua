@@ -42,7 +42,7 @@ function on_tick(delta)
     end
 
     local spectrum = get_audio_spectrum()
-    local num_buckets = canvas_width / 2
+    local num_buckets = canvas_width
 
     for col = 0, canvas_width do
         local bucket = trunc(num_buckets / canvas_width * col)
