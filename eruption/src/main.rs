@@ -2099,7 +2099,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     // not be technically required it just prevents fast devices
                     // from showing LED lighting long before the slower ones do,
                     // which can lead to an uneven experience on startup
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
+
+                    // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
 
                     let _ = keyboard_init_thread.join().map_err(|_| {
                         error!("Error during initialization of at least one device occurred")
@@ -2211,7 +2212,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                         let result = UPCALL_COMPLETED_ON_QUIT.1.wait_for(
                             &mut pending,
-                            Duration::from_millis(constants::LONG_TIMEOUT_MILLIS),
+                            Duration::from_millis(constants::SHORT_TIMEOUT_MILLIS),
                         );
 
                         if result.timed_out() {
