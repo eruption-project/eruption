@@ -23,7 +23,7 @@ BuildRequires: hidapi-devel
 BuildRequires: libevdev-devel
 BuildRequires: libusbx-devel
 BuildRequires: pulseaudio-libs-devel
-BuildRequires: luajit-devel
+BuildRequires: lua-devel
 BuildRequires: libX11-devel
 BuildRequires: libXrandr-devel
 BuildRequires: gtk3-devel
@@ -38,7 +38,7 @@ Requires: hidapi
 Requires: libevdev
 Requires: spirv-tools
 Requires: shaderc
-Requires: luajit
+Requires: lua
 Requires: gtksourceview4
 Requires: acl
 
@@ -238,7 +238,7 @@ cp -ra %{_builddir}/%{name}-releases-%{gittag}/support/scripts %{buildroot}/%{_d
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
 cp -a %{_builddir}/%{name}-releases-%{gittag}/support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop %{buildroot}/usr/share/applications/eruption-gui-gtk3.desktop
-cp -a %{_builddir}/%{name}-releases-%{gittag}/support/assets/eruption-gui-gtk3/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
+cp -a %{_builddir}/%{name}-releases-%{gittag}/support/assets/eruption.png %{buildroot}/usr/share/icons/eruption.png
 cp -a %{_builddir}/%{name}-releases-%{gittag}/eruption-gui-gtk3/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui-gtk3/schemas/
 
 install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/eruption %{buildroot}/%{_bindir}/eruption
@@ -325,7 +325,7 @@ install -Dp -m 0755 %{_builddir}/%{name}-releases-%{gittag}/target/release/erupt
 %{_presetdir}/50-eruption-hotplug-helper.preset
 %{_bindir}/eruption-gui-gtk3
 %{_datarootdir}/applications/eruption-gui-gtk3.desktop
-%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
+%{_datarootdir}/icons/eruption.png
 %{_datarootdir}/eruption-gui-gtk3/schemas/gschemas.compiled
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-cmd

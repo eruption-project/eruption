@@ -241,7 +241,7 @@ cp -ra %{_builddir}/%{OrigName}-%{commit}/support/scripts %{buildroot}/%{_dataro
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/systemd/eruption-suspend.sh %{buildroot}/usr/lib/systemd/system-sleep/eruption
 
 cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop %{buildroot}/usr/share/applications/eruption-gui-gtk3.desktop
-cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption-gui-gtk3/eruption-gui.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/eruption-gui.png
+cp -a %{_builddir}/%{OrigName}-%{commit}/support/assets/eruption.png %{buildroot}/usr/share/icons/eruption.png
 cp -a %{_builddir}/%{OrigName}-%{commit}/eruption-gui-gtk3/schemas/gschemas.compiled %{buildroot}/usr/share/eruption-gui-gtk3/schemas/
 
 install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption %{buildroot}/%{_bindir}/eruption
@@ -328,7 +328,7 @@ install -Dp -m 0755 %{_builddir}/%{OrigName}-%{commit}/target/release/eruption-g
 %{_presetdir}/50-eruption-hotplug-helper.preset
 %{_bindir}/eruption-gui-gtk3
 %{_datarootdir}/applications/eruption-gui-gtk3.desktop
-%{_datarootdir}/icons/hicolor/64x64/apps/eruption-gui.png
+%{_datarootdir}/icons/eruption.png
 %{_datarootdir}/eruption-gui-gtk3/schemas/gschemas.compiled
 %{_datarootdir}/bash-completion/completions/eruption-debug-tool
 %{_datarootdir}/bash-completion/completions/eruption-cmd
