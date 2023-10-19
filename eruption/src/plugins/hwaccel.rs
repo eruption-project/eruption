@@ -82,11 +82,13 @@ impl<'fw> ShaderState<'fw> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn set_uniform(&mut self, name: String, value: UniformVariant) -> Option<UniformVariant> {
         self.uniforms.insert(name, value)
     }
 }
 
+#[allow(dead_code)]
 pub enum UniformVariant {
     F32(f32),
 }
@@ -153,11 +155,13 @@ impl HwAccelPlugin {
         }
     }
 
+    #[allow(dead_code)]
     pub fn set_uniform(_shader: usize, _name: &str) -> Result<()> {
         Ok(())
     }
 
     /// Load a shader program from a SPIR-V binary file
+    #[allow(dead_code)]
     pub fn load_shader<P: AsRef<Path>>(shader_path: P) -> Result<usize> {
         let fw = &FRAMEWORK;
 
@@ -171,6 +175,7 @@ impl HwAccelPlugin {
     }
 
     /// Compiles GLSL or WGSL shader code to SPIR-V, and load the binary shader program
+    #[allow(dead_code)]
     fn compile_shader<P: AsRef<Path>>(shader_path: P) -> Result<Shader> {
         let compiler = shaderc::Compiler::new().unwrap();
         let mut options = shaderc::CompileOptions::new().unwrap();
