@@ -93,7 +93,16 @@ impl SensorConfiguration {
                     #[cfg(feature = "sensor-gnome-shellext")]
                     SensorConfiguration::EnableGnomeShellExt,
                 ])
-            } else if #[cfg(feature = "sensor-mutter")] {
+            } /* else if #[cfg(feature = "sensor-wayland")] {
+                // Use this as soon as mutter implements the required wayland protocols
+                HashSet::from_iter([
+                    #[cfg(feature = "sensor-procmon")]
+                    SensorConfiguration::EnableProcmon,
+
+                    #[cfg(feature = "sensor-wayland")]
+                    SensorConfiguration::EnableWayland,
+                ])
+            } */ else if #[cfg(feature = "sensor-mutter")] {
                 // Use this for legacy GNOME 3 desktops
                 HashSet::from_iter([
                     #[cfg(feature = "sensor-procmon")]

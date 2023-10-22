@@ -77,3 +77,7 @@ pub fn create_rules_file_if_not_exists<P: AsRef<Path>>(path: &P) -> io::Result<(
 
     Ok(())
 }
+
+// pub fn file_exists<P: AsRef<Path>>(p: P) -> bool {
+//     p.as_ref().exists()
+// }

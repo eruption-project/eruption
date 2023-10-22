@@ -30,6 +30,9 @@ pub const STATE_DIR: &str = "~/.local/share/eruption-process-monitor/";
 /// Main loop delay
 pub const MAIN_LOOP_SLEEP_MILLIS: u64 = 250;
 
+/// The timeout for the poll(2) loop
+pub const POLL_TIMEOUT: u64 = 250;
+
 /// Timeout of D-Bus operations
 pub const DBUS_TIMEOUT_MILLIS: u64 = 5000;
 

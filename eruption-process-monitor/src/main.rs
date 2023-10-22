@@ -808,6 +808,7 @@ mod thread_util {
 pub fn run_main_loop(
     #[cfg(feature = "sensor-procmon")] sysevents_rx: &Receiver<SystemEvent>,
     #[cfg(feature = "sensor-wayland")] wayland_rx: &Receiver<WaylandSensorData>,
+    #[cfg(feature = "sensor-gnome-shellext")] gnome_shellext_rx: &Receiver<GnomeShellExtSensorData>,
     fsevents_rx: &Receiver<FileSystemEvent>,
     dbusevents_rx: &Receiver<dbus_client::Message>,
     ctrl_c_rx: &Receiver<bool>,
@@ -884,6 +885,29 @@ pub fn run_main_loop(
             }
         }
 
+        #[cfg(feature = "sensor-gnome-shellext")]
+        {
+            if SENSORS_CONFIGURATION
+                .read()
+                .contains(&SensorConfiguration::EnableGnomeShellExt)
+            {
+                sel = sel.recv(gnome_shellext_rx, |event| {
+                    tracing::trace!("Sensor data: {:?}", event);
+
+                    if let Ok(event) = event {
+                        process_window_event(&event as &dyn WindowSensorData).unwrap_or_else(|e| {
+                            error!(
+                                "Could not process a GNOME Shell Extension sensor event: {}",
+                                e
+                            )
+                        });
+                    } else {
+                        error!("{}", event.as_ref().unwrap_err());
+                    }
+                });
+            }
+        }
+
         let _result = sel.wait_timeout(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
 
         // poll all pollable sensors that do not notify us via messages
@@ -895,15 +919,15 @@ pub fn run_main_loop(
                         #[allow(unused_mut)]
                         let mut handled = false;
 
-                        #[cfg(feature = "sensor-gnome-shellext")]
-                        if let Some(data) = data.as_any().downcast_ref::<GnomeShellExtSensorData>()
-                        {
-                            tracing::trace!("Processing GNOME shell extension sensor data");
+                        // #[cfg(feature = "sensor-gnome-shellext")]
+                        // if let Some(data) = data.as_any().downcast_ref::<GnomeShellExtSensorData>()
+                        // {
+                        //     tracing::trace!("Processing GNOME shell extension sensor data");
 
-                            process_window_event(data)?;
+                        //     process_window_event(data)?;
 
-                            handled = true;
-                        }
+                        //     handled = true;
+                        // }
 
                         #[cfg(feature = "sensor-mutter")]
                         if let Some(data) = data.as_any().downcast_ref::<MutterSensorData>() {
@@ -988,7 +1012,7 @@ fn autodetect_sensor_configuration() -> Result<()> {
         SensorConfiguration::profile_all_sensors_enabled()
     };
 
-    // if Wayland is present, we remove any detected X11 sensors so that we don't get
+    // if Wayland is present, we remove any detected X11 sensors so that we don't receive
     // spurious events from any running XWayland server
 
     cfg_if::cfg_if! {
@@ -1194,6 +1218,19 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 wayland_sensor.spawn_wayland_events_thread(wayland_tx)?;
             }
 
+            #[cfg(feature = "sensor-gnome-shellext")]
+            let (gnome_shellext_tx, gnome_shellext_rx) = unbounded();
+
+            #[cfg(feature = "sensor-gnome-shellext")]
+            if let Some(mut s) = sensors::find_sensor_by_id("gnome-shellext") {
+                let gnome_shellext_sensor = s
+                    .as_any_mut()
+                    .downcast_mut::<sensors::GnomeShellExtensionSensor>()
+                    .unwrap();
+
+                gnome_shellext_sensor.spawn_events_thread(gnome_shellext_tx)?;
+            }
+
             info!("Loading global state from Eruption daemon");
 
             let active_slot = dbus_client::get_active_slot()?;
@@ -1213,6 +1250,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 &sysevents_rx,
                 #[cfg(feature = "sensor-wayland")]
                 &wayland_rx,
+                #[cfg(feature = "sensor-gnome-shellext")]
+                &gnome_shellext_rx,
                 &fsevents_rx,
                 &dbusevents_rx,
                 &ctrl_c_rx,

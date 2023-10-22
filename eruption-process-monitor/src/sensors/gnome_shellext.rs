@@ -19,96 +19,63 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-// use crate::constants;
-// use byteorder::{ByteOrder, LittleEndian};
-// use dbus::arg::RefArg;
-// use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
-// use std::time::Duration;
-// use dbus::nonblock::stdintf::org_freedesktop_dbus::Properties;
 use async_trait::async_trait;
-// use dbus::blocking::Connection;
+use core::sync::atomic::Ordering;
+use flume::Sender;
+use lazy_static::lazy_static;
+use nix::{
+    errno::Errno,
+    fcntl::{self, OFlag},
+    poll::{self, PollFd, PollFlags},
+    sys::stat::Mode,
+    unistd::{self},
+};
+use parking_lot::Mutex;
 use serde::Deserialize;
+use std::os::fd::AsRawFd;
 use std::{env, path::PathBuf};
+use std::{
+    io,
+    os::fd::{FromRawFd, OwnedFd},
+};
+use std::{sync::Arc, thread};
+
+use crate::constants;
+use crate::QUIT;
 
 use super::{Sensor, SensorConfiguration, SENSORS_CONFIGURATION};
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Metadata of the GNOME 4x shell extension
-const GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION_META: &str = r#"
-    {
-        "name": "Eruption Sensor (eruption-process-monitor)",
-        "description": "Sensor Extension for the Eruption Realtime RGB LED Driver for Linux",
-        "uuid": "eruption-sensor@x3n0m0rph59.org",
-        "version": "1",
-        "shell-version": [ "41", "42", "43" ]
-    }
-"#;
+// const GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION_META: &str = r#"
+//     {
+//         "name": "Eruption Sensor (eruption-process-monitor)",
+//         "description": "Sensor Extension for the Eruption Realtime RGB LED Driver for Linux",
+//         "uuid": "eruption-sensor@x3n0m0rph59.org",
+//         "version": "1",
+//         "shell-version": [ "45" ]
+//     }
+// "#;
 
 /// JavaScript code that fetches the properties of the top-level window from GNOME 4x
-const GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION: &str = r#"
-        const Shell = imports.gi.Shell;
-        const GLib = imports.gi.GLib;
-
-        let file = imports.gi.Gio.File.new_for_path('{fifo_name}');
-        let pipe = file.append_to_async(0, 0, null, on_pipe_open);
-
-        function send(msg) {
-            if (!pipe)
-                return;
-            try {
-                pipe.write(msg, null);
-            } catch {
-                log('Pipe closed, reopening...');
-
-                pipe = null;
-                file.append_to_async(0, 0, null, on_pipe_open);
-            }
-        }
-
-        function on_pipe_open(file, res) {
-            log('Pipe opened');
-
-            pipe = file.append_to_finish(res);
-        }
-
-        function init() {
-                Shell.WindowTracker.get_default().connect('notify::focus-app', () => {
-                    const instance = global.display.focus_window;
-                    const title = win ? win.get_title() : '';
-                    const cls = win ? win.get_wm_class() : '';
-
-                    send(`{
-                        window_title: ${title},
-                        window_instance: ${instance},
-                        window_class: ${cls},
-                    }`);
-                });
-
-                return {
-                    enable: () => {
-                        log('Eruption sensor extension enabled');
-                    },
-
-                    disable: () => {
-                        log('Eruption sensor extension disabled');
-                    },
-                };
-        }
-"#;
+// const GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION: &str = r#"
+// "#;
 
 #[derive(Debug, thiserror::Error)]
 pub enum GnomeShellExtensionSensorError {
+    // #[error("Sensor error: {description}")]
+    // SensorError { description: String },
     #[error("Operation not supported")]
     NotSupported,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct GnomeShellExtSensorData {
     pub window_title: String,
-    pub window_instance: String,
+    // pub window_instance: String,
     pub window_class: String,
-    pub pid: i32,
+    // pub pid: i32,
 }
 
 impl super::SensorData for GnomeShellExtSensorData {
@@ -123,12 +90,19 @@ impl super::WindowSensorData for GnomeShellExtSensorData {
     }
 
     fn window_instance(&self) -> Option<&str> {
-        Some(&self.window_instance)
+        // Some(&self.window_instance)
+
+        None
     }
 
     fn window_class(&self) -> Option<&str> {
         Some(&self.window_class)
     }
+}
+
+lazy_static! {
+    /// Events tx to the main thread
+    static ref THREAD_TX: Arc<Mutex<Option<Sender<GnomeShellExtSensorData>>>> = Arc::new(Mutex::new(None));
 }
 
 #[derive(Debug, Clone)]
@@ -141,18 +115,123 @@ impl GnomeShellExtensionSensor {
         Self { is_failed: false }
     }
 
-    pub fn install_extension(&self) -> Result<()> {
-        let _meta = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION_META;
+    // pub fn setup_pipe(&self) -> Result<()> {
+    //     let fifo_path = PathBuf::from(
+    //         env::var("XDG_RUNTIME_DIR")
+    //             .map(|v| v.to_owned().to_string())
+    //             .unwrap_or_else(|_e| "/run/user/1000/".to_string()),
+    //     )
+    //     .join("eruption-sensor");
 
-        let fifo_name = PathBuf::from(
+    //     if !util::file_exists(&fifo_path) {
+    //         mkfifo(&fifo_path, Mode::S_IRUSR | Mode::S_IWUSR)?;
+    //     }
+
+    //     Ok(())
+    // }
+
+    pub fn spawn_events_thread(&mut self, tx: Sender<GnomeShellExtSensorData>) -> Result<()> {
+        *THREAD_TX.lock() = Some(tx);
+
+        let fifo_path = PathBuf::from(
             env::var("XDG_RUNTIME_DIR")
                 .map(|v| v.to_owned().to_string())
                 .unwrap_or_else(|_e| "/run/user/1000/".to_string()),
         )
         .join("eruption-sensor");
 
-        let _source = GNOME4X_TOPLEVEL_WINDOW_PROPS_EXTENSION
-            .replace("{fifo_name}", &fifo_name.to_string_lossy());
+        thread::Builder::new()
+            .name("shell-events".to_owned())
+            .spawn(move || -> Result<()> {
+                // Open the FIFO for reading (you can use other flags based on your requirements)
+                let fifo_fd = unsafe {
+                    OwnedFd::from_raw_fd(fcntl::open(&fifo_path, OFlag::O_RDONLY, Mode::empty())?)
+                };
+
+                // Set up the pollfd structure for monitoring the FIFO
+                let poll_fd = PollFd::new(&fifo_fd, PollFlags::POLLIN);
+
+                'EVENTS_LOOP: loop {
+                    // check if we shall terminate the thread
+                    if QUIT.load(Ordering::SeqCst) {
+                        break 'EVENTS_LOOP Ok(());
+                    }
+
+                    // Create a vector of pollfd structures
+                    let mut poll_fds = vec![poll_fd];
+
+                    // Perform the poll operation
+                    match poll::poll(&mut poll_fds, constants::POLL_TIMEOUT as i32) {
+                        Ok(num_fds) => {
+                            if num_fds == 0 {
+                                tracing::trace!("No events received within the specified timeout");
+                            } else {
+                                if poll_fd.revents().is_some() {
+                                    // The named pipe is ready for reading
+                                    let mut buffer = [0; 4096 * 4];
+
+                                    match unistd::read(fifo_fd.as_raw_fd(), &mut buffer) {
+                                        Ok(bytes_read) => {
+                                            if bytes_read > 0 {
+                                                let data = &buffer[..bytes_read];
+                                                let data_str = String::from_utf8_lossy(data);
+                                                tracing::debug!(
+                                                    "Received data from the FIFO: {}",
+                                                    data_str
+                                                );
+
+                                                if !data_str.trim().is_empty() {
+                                                    match serde_json::from_str::<
+                                                        GnomeShellExtSensorData,
+                                                    >(
+                                                        &data_str
+                                                    ) {
+                                                        Ok(result) => {
+                                                            tracing::debug!(
+                                                                "Sensor data: {result:#?}"
+                                                            );
+
+                                                THREAD_TX
+                                                            .lock()
+                                                            .as_ref()
+                                                            .unwrap()
+                                                            .send(result)
+                                                            .unwrap_or_else(|e| {
+                                                                tracing::error!("Could not send on a channel: {}", e)
+                                                            });
+                                                        }
+
+                                                        Err(e) => {
+                                                            tracing::error!(
+                                                                "Error parsing sensor data: {e}"
+                                                            );
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        Err(_e) => {
+                                            tracing::error!("Error reading from the FIFO");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Err(e) => {
+                            if e == Errno::EINTR {
+                                // The poll system call was interrupted, possibly by a signal
+                                tracing::debug!("Interrupted system call");
+
+                                continue;
+                            } else {
+                                break 'EVENTS_LOOP Err(io::Error::last_os_error().into());
+                            }
+                        }
+                    }
+                }
+            })?;
 
         Ok(())
     }
@@ -165,11 +244,11 @@ impl Sensor for GnomeShellExtensionSensor {
     }
 
     fn get_name(&self) -> String {
-        "GNOME 4x Shell Extension".to_string()
+        "Eruption Sensor GNOME 4x Shell Extension".to_string()
     }
 
     fn get_description(&self) -> String {
-        "Watches the state of windows on a GNOME 4x desktop using the Eruption GNOME shell extension"
+        "Watches the state of windows on a GNOME desktop using the Eruption Sensor GNOME shell extension"
             .to_string()
     }
 
@@ -185,7 +264,7 @@ rules add window-instance gnome-calculator 2
     }
 
     fn initialize(&mut self) -> Result<()> {
-        self.install_extension()?;
+        // self.setup_pipe()?;
 
         Ok(())
     }
@@ -197,7 +276,7 @@ rules add window-instance gnome-calculator 2
     }
 
     fn is_pollable(&self) -> bool {
-        true
+        false
     }
 
     fn is_failed(&self) -> bool {
@@ -209,15 +288,7 @@ rules add window-instance gnome-calculator 2
     }
 
     fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
-        match get_top_level_window_attrs() {
-            Ok(result) => Ok(Box::from(result)),
-
-            Err(e) => {
-                self.is_failed = true;
-
-                Err(e)
-            }
-        }
+        Err(GnomeShellExtensionSensorError::NotSupported.into())
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
@@ -229,26 +300,7 @@ rules add window-instance gnome-calculator 2
     }
 }
 
-/// Get the current top level window attributes from Mutter
-pub fn get_top_level_window_attrs() -> Result<GnomeShellExtSensorData> {
-    /* let script = MUTTER_TOPLEVEL_WINDOW_PROPS_SCRIPT.to_owned();
-
-    let conn = Connection::new_session()?;
-    let proxy = conn.with_proxy(
-        "org.gnome.Shell",
-        "/org/gnome/Shell",
-        Duration::from_millis(4000),
-    );
-
-    let (attributes,): (String,) = proxy.method_call("org.gnome.Shell", "Eval", (script,))?;
-    let v: GnomeShellExtSensorData = serde_json::from_str(&attributes)?;
-
-    Ok(v) */
-
-    Err(GnomeShellExtensionSensorError::NotSupported {}.into())
-}
-
-mod gnome {
+/* mod gnome {
     // This code was autogenerated with `dbus-codegen-rust -d org.gnome.Shell -p /org/gnome/Shell -m None`, see https://github.com/diwic/dbus-rs
 
     #[allow(unused_imports)]
@@ -775,3 +827,4 @@ mod gnome {
         const INTERFACE: &'static str = "org.gnome.Shell.Extensions";
     }
 }
+*/

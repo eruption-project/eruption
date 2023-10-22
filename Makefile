@@ -92,6 +92,9 @@ start:
 	-@$(SUDO) modprobe uinput
 	-@$(SUDO) udevadm trigger
 
+	-@systemctl --user daemon-reload
+	-@/usr/bin/systemd-tmpfiles --user --create --remove "$(TARGET_DIR)/share/user-tmpfiles.d/eruption-process-monitor.conf"
+
 	@echo "Starting up Eruption daemons..."
 
 	-@systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DISPLAY XAUTHORITY > /dev/null 2>&1
@@ -155,6 +158,7 @@ install:
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system-sleep"
 	@mkdir -p "$(TARGET_DIR)/lib/sysusers.d/"
 	@mkdir -p "$(TARGET_DIR)/lib/udev/rules.d/"
+	@mkdir -p "$(TARGET_DIR)/share/user-tmpfiles.d"
 	@mkdir -p "$(TARGET_DIR)/share/libinput/"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system.d"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system-services"
@@ -286,8 +290,10 @@ install:
 	@chmod g+s,o+t $(TARGET_DIR)/share/eruption/scripts/lib/keymaps
 
 	@cp "support/tmpfiles.d/eruption.conf" "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
+	@cp "support/tmpfiles.d/eruption-process-monitor.conf" "$(TARGET_DIR)/share/user-tmpfiles.d/eruption-process-monitor.conf"
 	-@systemctl daemon-reload
 	@/usr/bin/systemd-tmpfiles --create "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
+	# @/usr/bin/systemd-tmpfiles --user --create --remove "$(TARGET_DIR)/share/user-tmpfiles.d/eruption-process-monitor.conf"
 
 	@echo ""
 	@echo "Successfully installed Eruption!"
@@ -332,6 +338,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/lib/sysusers.d/eruption.conf
 	-@rm $(TARGET_DIR)/lib/tmpfiles.d/eruption.conf
 	-@rm $(TARGET_DIR)/lib/udev/rules.d/99-eruption.rules
+	-@rm $(TARGET_DIR)/share/user-tmpfiles.d/eruption-process-monitor.conf
 	-@rm $(TARGET_DIR)/share/libinput/60-eruption.quirks
 	-@rm $(TARGET_DIR)/share/dbus-1/system-services/org.eruption.service
 	-@rm $(TARGET_DIR)/share/dbus-1/system.d/org.eruption.conf
