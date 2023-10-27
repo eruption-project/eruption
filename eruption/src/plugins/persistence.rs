@@ -223,7 +223,6 @@ impl PersistencePlugin {
     load_transient_operation!(string_hash, HashMap<String, String>, StoreValue::Hash);
 }
 
-#[async_trait::async_trait]
 impl Plugin for PersistencePlugin {
     fn get_name(&self) -> String {
         "Persistence".to_string()
@@ -469,8 +468,6 @@ impl Plugin for PersistencePlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

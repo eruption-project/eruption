@@ -39,8 +39,9 @@ use std::sync::Arc;
 use std::vec::Vec;
 use tracing::*;
 
+use crate::hwdevices::DeviceClass;
 use crate::{
-    constants, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA,
+    constants, hwdevices, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA,
     scripting::callbacks, scripting::constants::*,
 };
 
@@ -534,17 +535,24 @@ fn on_keyboard_hid_event(
         // (Don't read the keyboard state if the script doesn't use it.)
         Ok(RunningScriptCallHelperResult::NoHandler)
     } else {
+        // TODO: Fix this hack, add support for multiple keyboards
+        let device = hwdevices::get_device_by_index(DeviceClass::Keyboard, 0).unwrap();
+
         let call_args: (u8, u32) = match param {
             KeyboardHidEvent::KeyUp { code } => (
                 1,
-                crate::KEYBOARD_DEVICES.read()[0]
+                device
                     .read()
+                    .as_keyboard_device()
+                    .unwrap()
                     .hid_event_code_to_report(&code) as u32,
             ),
             KeyboardHidEvent::KeyDown { code } => (
                 2,
-                crate::KEYBOARD_DEVICES.read()[0]
+                device
                     .read()
+                    .as_keyboard_device()
+                    .unwrap()
                     .hid_event_code_to_report(&code) as u32,
             ),
             KeyboardHidEvent::MuteDown => (3, 1),

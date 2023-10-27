@@ -93,36 +93,47 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
         return Err(MethodErr::failed("Eruption is shutting down"));
     }
 
-    let mut keyboards: Vec<(u16, u16)> = Vec::new();
-    let mut mice: Vec<(u16, u16)> = Vec::new();
-    let mut misc: Vec<(u16, u16)> = Vec::new();
+    let keyboards = crate::DEVICES
+        .read()
+        .iter()
+        .filter_map(|(_handle, device)| {
+            let device = device.read();
 
-    {
-        keyboards.extend(
-            crate::KEYBOARD_DEVICES
-                .read()
-                .iter()
-                .map(|device| (device.read().get_usb_vid(), device.read().get_usb_pid())),
-        );
-    }
+            if device.get_device_class() == crate::hwdevices::DeviceClass::Keyboard {
+                Some((device.get_usb_vid(), device.get_usb_pid()))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
 
-    {
-        mice.extend(
-            crate::MOUSE_DEVICES
-                .read()
-                .iter()
-                .map(|device| (device.read().get_usb_vid(), device.read().get_usb_pid())),
-        );
-    }
+    let mice = crate::DEVICES
+        .read()
+        .iter()
+        .filter_map(|(_handle, device)| {
+            let device = device.read();
 
-    {
-        misc.extend(
-            crate::MISC_DEVICES
-                .read()
-                .iter()
-                .map(|device| (device.read().get_usb_vid(), device.read().get_usb_pid())),
-        );
-    }
+            if device.get_device_class() == crate::hwdevices::DeviceClass::Mouse {
+                Some((device.get_usb_vid(), device.get_usb_pid()))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let misc = crate::DEVICES
+        .read()
+        .iter()
+        .filter_map(|(_handle, device)| {
+            let device = device.read();
+
+            if device.get_device_class() == crate::hwdevices::DeviceClass::Misc {
+                Some((device.get_usb_vid(), device.get_usb_pid()))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
 
     Ok(vec![m.msg.method_return().append1((keyboards, mice, misc))])
 }

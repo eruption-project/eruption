@@ -210,7 +210,6 @@ impl HwAccelPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for HwAccelPlugin {
     fn get_name(&self) -> String {
         "Hwaccel".to_string()
@@ -255,8 +254,6 @@ impl Plugin for HwAccelPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

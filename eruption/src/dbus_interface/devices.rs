@@ -25,7 +25,10 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use tracing::*;
 
-use crate::script;
+use crate::{
+    hwdevices::{DeviceClass, DeviceHandle},
+    scripting::script,
+};
 
 use super::{
     convenience::FactoryWithPermission, convenience::InterfaceAddend,
@@ -130,35 +133,12 @@ impl InterfaceAddend for DevicesInterface {
     }
 }
 
-pub fn get_device_specific_ids(device: u64) -> Result<(u16, u16)> {
-    if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
-        let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
+pub fn get_device_specific_ids(handle: u64) -> Result<(u16, u16)> {
+    if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
+        let device = device.read();
 
-        let usb_vid = device.read().get_usb_vid();
-        let usb_pid = device.read().get_usb_pid();
-
-        Ok((usb_vid, usb_pid))
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
-    {
-        let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
-        let device = &crate::MOUSE_DEVICES.read()[index];
-
-        let usb_vid = device.read().get_usb_vid();
-        let usb_pid = device.read().get_usb_pid();
-
-        Ok((usb_vid, usb_pid))
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.read().len()
-            + crate::MOUSE_DEVICES.read().len()
-            + crate::MISC_DEVICES.read().len())
-    {
-        let index = device as usize
-            - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
-        let device = &crate::MISC_DEVICES.read()[index];
-
-        let usb_vid = device.read().get_usb_vid();
-        let usb_pid = device.read().get_usb_pid();
+        let usb_vid = device.get_usb_vid();
+        let usb_pid = device.get_usb_pid();
 
         Ok((usb_vid, usb_pid))
     } else {
@@ -245,38 +225,47 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
         return Err(MethodErr::failed("Eruption is shutting down"));
     }
 
-    let keyboards = {
-        let keyboards = crate::KEYBOARD_DEVICES.read();
+    let keyboards = crate::DEVICES
+        .read()
+        .iter()
+        .filter_map(|(_handle, device)| {
+            let device = device.read();
 
-        let keyboards: Vec<(u16, u16)> = keyboards
-            .iter()
-            .map(|device| (device.read().get_usb_vid(), device.read().get_usb_pid()))
-            .collect();
+            if device.get_device_class() == crate::hwdevices::DeviceClass::Keyboard {
+                Some((device.get_usb_vid(), device.get_usb_pid()))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
 
-        keyboards
-    };
+    let mice = crate::DEVICES
+        .read()
+        .iter()
+        .filter_map(|(_handle, device)| {
+            let device = device.read();
 
-    let mice = {
-        let mice = crate::MOUSE_DEVICES.read();
+            if device.get_device_class() == crate::hwdevices::DeviceClass::Mouse {
+                Some((device.get_usb_vid(), device.get_usb_pid()))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
 
-        let mice: Vec<(u16, u16)> = mice
-            .iter()
-            .map(|device| (device.read().get_usb_vid(), device.read().get_usb_pid()))
-            .collect();
+    let misc = crate::DEVICES
+        .read()
+        .iter()
+        .filter_map(|(_handle, device)| {
+            let device = device.read();
 
-        mice
-    };
-
-    let misc = {
-        let misc = crate::MISC_DEVICES.read();
-
-        let misc: Vec<(u16, u16)> = misc
-            .iter()
-            .map(|device| (device.read().get_usb_vid(), device.read().get_usb_pid()))
-            .collect();
-
-        misc
-    };
+            if device.get_device_class() == crate::hwdevices::DeviceClass::Misc {
+                Some((device.get_usb_vid(), device.get_usb_pid()))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
 
     Ok(vec![m.msg.method_return().append1((keyboards, mice, misc))])
 }
@@ -299,255 +288,261 @@ fn is_device_enabled(m: &MethodInfo) -> MethodResult {
     Ok(vec![m.msg.method_return().append1(result)])
 }
 
-fn apply_device_specific_configuration(device: u64, param: &str, value: &str) -> Result<()> {
-    if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
-        let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
+fn apply_device_specific_configuration(handle: u64, param: &str, value: &str) -> Result<()> {
+    if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
+        let mut device = device.write();
 
-        match param {
-            "brightness" => {
-                let brightness = value.parse::<i32>()?;
-                device.write().set_local_brightness(brightness)?;
+        match device.get_device_class() {
+            DeviceClass::Keyboard => {
+                let device = device.as_keyboard_device_mut().unwrap();
 
-                script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+                match param {
+                    "brightness" => {
+                        let brightness = value.parse::<i32>()?;
+                        device.set_brightness(brightness)?;
 
-                Ok(())
+                        script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
+                        Ok(())
+                    }
+
+                    _ => Err(DbusApiError::InvalidParameter {}.into()),
+                }
             }
 
-            _ => Err(DbusApiError::InvalidParameter {}.into()),
-        }
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
-    {
-        let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
-        let device = &crate::MOUSE_DEVICES.read()[index];
+            DeviceClass::Mouse => {
+                let device = device.as_mouse_device_mut().unwrap();
 
-        match param {
-            "profile" => {
-                let profile = value.parse::<i32>()?;
-                device.write().set_profile(profile)?;
+                match param {
+                    "brightness" => {
+                        let brightness = value.parse::<i32>()?;
+                        device.set_brightness(brightness)?;
 
-                Ok(())
+                        script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
+                        Ok(())
+                    }
+
+                    "profile" => {
+                        let profile = value.parse::<i32>()?;
+                        device.set_profile(profile)?;
+
+                        Ok(())
+                    }
+
+                    "dpi" => {
+                        let dpi = value.parse::<i32>()?;
+                        device.set_dpi(dpi)?;
+
+                        Ok(())
+                    }
+
+                    "rate" => {
+                        let rate = value.parse::<i32>()?;
+                        device.set_rate(rate)?;
+
+                        Ok(())
+                    }
+
+                    "dcu" => {
+                        let dcu_config = value.parse::<i32>()?;
+                        device.set_dcu_config(dcu_config)?;
+
+                        Ok(())
+                    }
+
+                    "angle-snapping" => {
+                        let angle_snapping = value.parse::<bool>()?;
+                        device.set_angle_snapping(angle_snapping)?;
+
+                        Ok(())
+                    }
+
+                    "debounce" => {
+                        let debounce = value.parse::<bool>()?;
+                        device.set_debounce(debounce)?;
+
+                        Ok(())
+                    }
+
+                    _ => Err(DbusApiError::InvalidParameter {}.into()),
+                }
             }
 
-            "dpi" => {
-                let dpi = value.parse::<i32>()?;
-                device.write().set_dpi(dpi)?;
+            DeviceClass::Misc => {
+                let device = device.as_misc_device_mut().unwrap();
 
-                Ok(())
+                match param {
+                    "brightness" => {
+                        let brightness = value.parse::<i32>()?;
+                        device.set_brightness(brightness)?;
+
+                        script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+
+                        Ok(())
+                    }
+
+                    _ => Err(DbusApiError::InvalidParameter {}.into()),
+                }
             }
 
-            "rate" => {
-                let rate = value.parse::<i32>()?;
-                device.write().set_rate(rate)?;
-
-                Ok(())
-            }
-
-            "dcu" => {
-                let dcu_config = value.parse::<i32>()?;
-                device.write().set_dcu_config(dcu_config)?;
-
-                Ok(())
-            }
-
-            "angle-snapping" => {
-                let angle_snapping = value.parse::<bool>()?;
-                device.write().set_angle_snapping(angle_snapping)?;
-
-                Ok(())
-            }
-
-            "debounce" => {
-                let debounce = value.parse::<bool>()?;
-                device.write().set_debounce(debounce)?;
-
-                Ok(())
-            }
-
-            "brightness" => {
-                let brightness = value.parse::<i32>()?;
-                device.write().set_local_brightness(brightness)?;
-
-                script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
-
-                Ok(())
-            }
-
-            _ => Err(DbusApiError::InvalidParameter {}.into()),
-        }
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.read().len()
-            + crate::MOUSE_DEVICES.read().len()
-            + crate::MISC_DEVICES.read().len())
-    {
-        let index = device as usize
-            - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
-        let device = &crate::MISC_DEVICES.read()[index];
-
-        match param {
-            "brightness" => {
-                let brightness = value.parse::<i32>()?;
-                device.write().set_local_brightness(brightness)?;
-
-                script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
-
-                Ok(())
-            }
-
-            _ => Err(DbusApiError::InvalidParameter {}.into()),
+            _ => Err(DbusApiError::InvalidDeviceClass {}.into()),
         }
     } else {
         Err(DbusApiError::InvalidDevice {}.into())
     }
 }
 
-fn query_device_specific_configuration(device: u64, param: &str) -> Result<String> {
-    if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
-        let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
+fn query_device_specific_configuration(handle: u64, param: &str) -> Result<String> {
+    if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
+        let device = device.read();
 
-        match param {
-            "info" => {
-                let device_info = device.read().get_device_info()?;
-                let info = format!(
-                    "Firmware revision: {}.{:02}",
-                    device_info.firmware_version / 100,
-                    device_info.firmware_version % 100
-                );
+        match device.get_device_class() {
+            DeviceClass::Keyboard => {
+                let device = device.as_keyboard_device().unwrap();
 
-                Ok(info)
+                match param {
+                    "info" => {
+                        let device_info = device.get_device_info()?;
+                        let info = format!(
+                            "Firmware revision: {}.{:02}",
+                            device_info.firmware_version / 100,
+                            device_info.firmware_version % 100
+                        );
+
+                        Ok(info)
+                    }
+
+                    "firmware" => {
+                        let device_info = device.get_device_info()?;
+                        let info = format!(
+                            "{}.{:02}",
+                            device_info.firmware_version / 100,
+                            device_info.firmware_version % 100
+                        );
+
+                        Ok(info)
+                    }
+
+                    "brightness" => {
+                        let brightness = device.get_brightness()?;
+
+                        Ok(format!("{brightness}"))
+                    }
+
+                    _ => Err(DbusApiError::InvalidParameter {}.into()),
+                }
             }
 
-            "firmware" => {
-                let device_info = device.read().get_device_info()?;
-                let info = format!(
-                    "{}.{:02}",
-                    device_info.firmware_version / 100,
-                    device_info.firmware_version % 100
-                );
+            DeviceClass::Mouse => {
+                let device = device.as_mouse_device().unwrap();
 
-                Ok(info)
+                match param {
+                    "info" => {
+                        let device_info = device.get_device_info()?;
+                        let info = format!(
+                            "Firmware revision: {}.{:02}",
+                            device_info.firmware_version / 100,
+                            device_info.firmware_version % 100
+                        );
+
+                        Ok(info)
+                    }
+
+                    "firmware" => {
+                        let device_info = device.get_device_info()?;
+                        let info = format!(
+                            "{}.{:02}",
+                            device_info.firmware_version / 100,
+                            device_info.firmware_version % 100
+                        );
+
+                        Ok(info)
+                    }
+
+                    "brightness" => {
+                        let brightness = device.get_brightness()?;
+
+                        Ok(format!("{brightness}"))
+                    }
+
+                    "profile" => {
+                        let profile = device.get_profile()?;
+
+                        Ok(format!("{profile}"))
+                    }
+
+                    "dpi" => {
+                        let dpi = device.get_dpi()?;
+
+                        Ok(format!("{dpi}"))
+                    }
+
+                    "rate" => {
+                        let rate = device.get_rate()?;
+
+                        Ok(format!("{rate}"))
+                    }
+
+                    "dcu" => {
+                        let dcu_config = device.get_dcu_config()?;
+
+                        Ok(format!("{dcu_config}"))
+                    }
+
+                    "angle-snapping" => {
+                        let angle_snapping = device.get_angle_snapping()?;
+
+                        Ok(format!("{angle_snapping}"))
+                    }
+
+                    "debounce" => {
+                        let debounce = device.get_debounce()?;
+
+                        Ok(format!("{debounce}"))
+                    }
+
+                    _ => Err(DbusApiError::InvalidParameter {}.into()),
+                }
             }
 
-            "brightness" => {
-                let brightness = device.read().get_local_brightness()?;
+            DeviceClass::Misc => {
+                let device = device.as_misc_device().unwrap();
 
-                Ok(format!("{brightness}"))
+                match param {
+                    "info" => {
+                        let device_info = device.get_device_info()?;
+                        let info = format!(
+                            "Firmware revision: {}.{:02}",
+                            device_info.firmware_version / 100,
+                            device_info.firmware_version % 100
+                        );
+
+                        Ok(info)
+                    }
+
+                    "firmware" => {
+                        let device_info = device.get_device_info()?;
+                        let info = format!(
+                            "{}.{:02}",
+                            device_info.firmware_version / 100,
+                            device_info.firmware_version % 100
+                        );
+
+                        Ok(info)
+                    }
+
+                    "brightness" => {
+                        let brightness = device.get_brightness()?;
+
+                        Ok(format!("{brightness}"))
+                    }
+
+                    _ => Err(DbusApiError::InvalidParameter {}.into()),
+                }
             }
 
-            _ => Err(DbusApiError::InvalidParameter {}.into()),
-        }
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
-    {
-        let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
-        let device = &crate::MOUSE_DEVICES.read()[index];
-
-        match param {
-            "info" => {
-                let device_info = device.read().get_device_info()?;
-                let info = format!(
-                    "Firmware revision: {}.{:02}",
-                    device_info.firmware_version / 100,
-                    device_info.firmware_version % 100
-                );
-
-                Ok(info)
-            }
-
-            "firmware" => {
-                let device_info = device.read().get_device_info()?;
-                let info = format!(
-                    "{}.{:02}",
-                    device_info.firmware_version / 100,
-                    device_info.firmware_version % 100
-                );
-
-                Ok(info)
-            }
-
-            "profile" => {
-                let profile = device.read().get_profile()?;
-
-                Ok(format!("{profile}"))
-            }
-
-            "dpi" => {
-                let dpi = device.read().get_dpi()?;
-
-                Ok(format!("{dpi}"))
-            }
-
-            "rate" => {
-                let rate = device.read().get_rate()?;
-
-                Ok(format!("{rate}"))
-            }
-
-            "dcu" => {
-                let dcu_config = device.read().get_dcu_config()?;
-
-                Ok(format!("{dcu_config}"))
-            }
-
-            "angle-snapping" => {
-                let angle_snapping = device.read().get_angle_snapping()?;
-
-                Ok(format!("{angle_snapping}"))
-            }
-
-            "debounce" => {
-                let debounce = device.read().get_debounce()?;
-
-                Ok(format!("{debounce}"))
-            }
-
-            "brightness" => {
-                let brightness = device.read().get_local_brightness()?;
-
-                Ok(format!("{brightness}"))
-            }
-
-            _ => Err(DbusApiError::InvalidParameter {}.into()),
-        }
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.read().len()
-            + crate::MOUSE_DEVICES.read().len()
-            + crate::MISC_DEVICES.read().len())
-    {
-        let index = device as usize
-            - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
-        let device = &crate::MISC_DEVICES.read()[index];
-
-        match param {
-            "info" => {
-                let device_info = device.read().get_device_info()?;
-                let info = format!(
-                    "Firmware revision: {}.{:02}",
-                    device_info.firmware_version / 100,
-                    device_info.firmware_version % 100
-                );
-
-                Ok(info)
-            }
-
-            "firmware" => {
-                let device_info = device.read().get_device_info()?;
-                let info = format!(
-                    "{}.{:02}",
-                    device_info.firmware_version / 100,
-                    device_info.firmware_version % 100
-                );
-
-                Ok(info)
-            }
-
-            "brightness" => {
-                let brightness = device.read().get_local_brightness()?;
-
-                Ok(format!("{brightness}"))
-            }
-
-            _ => Err(DbusApiError::InvalidParameter {}.into()),
+            _ => Err(DbusApiError::InvalidDeviceClass {}.into()),
         }
     } else {
         Err(DbusApiError::InvalidDevice {}.into())

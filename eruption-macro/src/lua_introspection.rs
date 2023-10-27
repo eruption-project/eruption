@@ -297,8 +297,8 @@ pub mod interpreter {
             .to_string();
 
         let function_stubs = r#"
-                function get_target_fps()
-                    return 24
+                function get_target_fps_limit()
+                    return 60
                 end
 
                 function get_canvas_size()

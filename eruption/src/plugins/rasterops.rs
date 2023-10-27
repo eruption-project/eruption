@@ -513,7 +513,6 @@ impl RasterOpsPlugin {
     // pub(crate) fn flood_fill() {}
 }
 
-#[async_trait::async_trait]
 impl Plugin for RasterOpsPlugin {
     fn get_name(&self) -> String {
         "Rasterops".to_string()
@@ -652,8 +651,6 @@ impl Plugin for RasterOpsPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

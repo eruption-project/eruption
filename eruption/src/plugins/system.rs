@@ -92,7 +92,6 @@ impl SystemPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for SystemPlugin {
     fn get_name(&self) -> String {
         "System".to_string()
@@ -142,8 +141,6 @@ impl Plugin for SystemPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

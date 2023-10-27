@@ -928,7 +928,7 @@ cfg_if::cfg_if! {
                 .language(&toml)
                 .style_scheme(&style_scheme)
                 .highlight_syntax(true)
-                .text(&source_code)
+                .text(source_code)
                 .build();
 
             // add buffer to global text buffers map for later reference

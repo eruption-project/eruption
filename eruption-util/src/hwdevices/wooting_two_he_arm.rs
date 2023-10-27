@@ -107,7 +107,8 @@ impl WootingTwoHeArm {
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
     //                     Ok(_result) => {
-    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //         #[cfg(debug_assertions)]
+    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
     //                         Ok(())
     //                     }
@@ -147,7 +148,8 @@ impl WootingTwoHeArm {
                 let mut buf = Vec::with_capacity(RESPONSE_SIZE);
                 match ctrl_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
                     Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        //         #[cfg(debug_assertions)]
+                        //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                         Ok(())
                     }
@@ -176,7 +178,8 @@ impl WootingTwoHeArm {
 
             //         match ctrl_dev.send_feature_report(&buf) {
             //             Ok(_result) => {
-            //                 hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //                //         #[cfg(debug_assertions)]
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
             //                 Ok(())
             //             }
@@ -215,6 +218,7 @@ impl WootingTwoHeArm {
 
                     // match led_dev.write(&buf) {
                     //     Ok(_result) => {
+                    //        //         #[cfg(debug_assertions)]
                     //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     //     }
 
@@ -232,6 +236,7 @@ impl WootingTwoHeArm {
 
                     // match led_dev.write(&buf) {
                     //     Ok(_result) => {
+                    //        //         #[cfg(debug_assertions)]
                     //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     //     }
 
@@ -249,6 +254,7 @@ impl WootingTwoHeArm {
 
                     // match led_dev.write(&buf) {
                     //     Ok(_result) => {
+                    //        //         #[cfg(debug_assertions)]
                     //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     //     }
 
@@ -266,6 +272,7 @@ impl WootingTwoHeArm {
 
                     // match led_dev.write(&buf) {
                     //     Ok(_result) => {
+                    //        //         #[cfg(debug_assertions)]
                     //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     //     }
 
@@ -283,6 +290,7 @@ impl WootingTwoHeArm {
 
                     // match led_dev.write(&buf) {
                     //     Ok(_result) => {
+                    //        //         #[cfg(debug_assertions)]
                     //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     //     }
 
@@ -310,7 +318,8 @@ impl WootingTwoHeArm {
 
             match ctrl_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    //         #[cfg(debug_assertions)]
+                    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(())
                 }
@@ -334,7 +343,8 @@ impl WootingTwoHeArm {
 
     //         match led_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
     //             Ok(_result) => {
-    //                 hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //                //         #[cfg(debug_assertions)]
+    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
     //                 Ok(())
     //             }
@@ -399,7 +409,8 @@ impl DeviceTrait for WootingTwoHeArm {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
-                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    //         #[cfg(debug_assertions)]
+                    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(buf)
                 }
@@ -441,7 +452,8 @@ impl DeviceTrait for WootingTwoHeArm {
 
     //         match ctrl_dev.get_feature_report(buf.as_mut_slice()) {
     //             Ok(_result) => {
-    //                 hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //                //         #[cfg(debug_assertions)]
+    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
     //                 Ok(buf)
     //             }
@@ -615,7 +627,8 @@ impl DeviceTrait for WootingTwoHeArm {
             match ctrl_dev.read_timeout(&mut buf, millis) {
                 Ok(_size) => {
                     if buf.iter().any(|e| *e != 0) {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                        //         #[cfg(debug_assertions)]
+                        //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     }
 
                     let event = match buf[0..5] {

@@ -34,10 +34,10 @@ pub enum Subcommands {
     Completions { shell: clap_complete::Shell },
 }
 
-pub async fn handle_command(subcommand: Subcommands) -> Result<()> {
+pub fn handle_command(subcommand: Subcommands) -> Result<()> {
     match subcommand {
         Subcommands::Completions { shell } => {
-            completions::handle_command(shell).await?;
+            completions::handle_command(shell)?;
 
             crate::QUIT.store(true, Ordering::SeqCst);
         }

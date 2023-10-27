@@ -38,7 +38,6 @@ resolver = "2"
 [features]
 default = []
 windows = []
-debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
@@ -49,10 +48,10 @@ colored = "2.0.4"
 libc = "0.2.148"
 nix = "0.27.1"
 parking_lot = { version = "0.12.1", features = [
-  "send_guard",
+  # "send_guard",
+  "deadlock_detection",
   "hardware-lock-elision",
 ] }
-tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
@@ -91,4 +90,3 @@ hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "78f273800a7
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
-tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }

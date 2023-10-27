@@ -69,6 +69,9 @@ pub enum DbusApiError {
     #[error("Invalid device")]
     InvalidDevice {},
 
+    #[error("Invalid device class")]
+    InvalidDeviceClass {},
+
     #[error("Invalid parameter")]
     InvalidParameter {},
     // #[error("Operation not supported")]

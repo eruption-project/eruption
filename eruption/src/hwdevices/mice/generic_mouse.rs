@@ -19,19 +19,19 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use std::{any::Any, collections::HashMap, sync::Arc};
+use std::{any::Any, collections::HashMap};
 
-use crate::hwdevices::DeviceStatus;
-use crate::hwdevices::{self, DeviceZoneAllocationTrait, Zone};
+use crate::hwdevices::{self, DeviceZoneAllocationExt, Zone};
+use crate::hwdevices::{DeviceClass, DeviceStatus};
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use parking_lot::RwLock;
+
 use tracing::*;
 
 use crate::hwdevices::{
-    Capability, DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MouseDevice,
-    MouseDeviceTrait, MouseHidEvent, Result, RGBA,
+    Capability, DeviceCapabilities, DeviceExt, DeviceInfoExt, HwDeviceError,
+    MouseDeviceExt, MouseHidEvent, Result, RGBA,
 };
 
 pub fn bind_hiddev(
@@ -39,10 +39,8 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     _serial: &str,
-) -> Result<MouseDevice> {
-    Ok(Arc::new(RwLock::new(Box::new(GenericMouse::bind(
-        usb_vid, usb_pid,
-    )))))
+) -> Result<Box<dyn DeviceExt + Sync + Send>> {
+    Ok(Box::new(GenericMouse::bind(usb_vid, usb_pid)))
 }
 
 #[derive(Clone)]
@@ -79,7 +77,7 @@ impl GenericMouse {
     //     }
 }
 
-impl DeviceInfoTrait for GenericMouse {
+impl DeviceInfoExt for GenericMouse {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse])
     }
@@ -96,7 +94,7 @@ impl DeviceInfoTrait for GenericMouse {
     }
 }
 
-impl DeviceZoneAllocationTrait for GenericMouse {
+impl DeviceZoneAllocationExt for GenericMouse {
     fn get_zone_size_hint(&self) -> usize {
         0
     }
@@ -110,7 +108,7 @@ impl DeviceZoneAllocationTrait for GenericMouse {
     }
 }
 
-impl DeviceTrait for GenericMouse {
+impl DeviceExt for GenericMouse {
     fn get_usb_path(&self) -> String {
         "<unsupported>".to_string()
     }
@@ -187,6 +185,35 @@ impl DeviceTrait for GenericMouse {
         Ok(DeviceStatus(table))
     }
 
+    fn get_brightness(&self) -> Result<i32> {
+        trace!("Querying device specific brightness");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn set_brightness(&mut self, _brightness: i32) -> Result<()> {
+        trace!("Setting device specific brightness");
+
+        Err(HwDeviceError::OpNotSupported {}.into())
+    }
+
+    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
+        trace!("Setting LEDs from supplied map...");
+
+        Ok(())
+    }
+
+    fn set_led_init_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED init pattern...");
+
+        Ok(())
+    }
+
+    fn set_led_off_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED off pattern...");
+
+        Ok(())
+    }
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -195,24 +222,46 @@ impl DeviceTrait for GenericMouse {
         self
     }
 
-    fn as_device(&self) -> &dyn DeviceTrait {
+    fn as_device(&self) -> &(dyn DeviceExt + Sync + Send) {
         self
     }
 
-    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
+    fn as_device_mut(&mut self) -> &mut (dyn DeviceExt + Sync + Send) {
         self
     }
 
-    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
-        Some(self as &dyn MouseDeviceTrait)
+    fn as_mouse_device(&self) -> Option<&(dyn MouseDeviceExt + Sync + Send)> {
+        Some(self)
     }
 
-    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
-        Some(self as &mut dyn MouseDeviceTrait)
+    fn as_mouse_device_mut(&mut self) -> Option<&mut (dyn MouseDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn get_device_class(&self) -> hwdevices::DeviceClass {
+        DeviceClass::Mouse
+    }
+
+    fn as_keyboard_device(&self) -> Option<&(dyn hwdevices::KeyboardDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_keyboard_device_mut(
+        &mut self,
+    ) -> Option<&mut (dyn hwdevices::KeyboardDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_misc_device(&self) -> Option<&(dyn hwdevices::MiscDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Sync + Send)> {
+        None
     }
 }
 
-impl MouseDeviceTrait for GenericMouse {
+impl MouseDeviceExt for GenericMouse {
     fn get_profile(&self) -> Result<i32> {
         trace!("Querying device profile config");
 
@@ -281,18 +330,6 @@ impl MouseDeviceTrait for GenericMouse {
 
     fn set_debounce(&mut self, _debounce: bool) -> Result<()> {
         trace!("Setting device debounce config");
-
-        Err(HwDeviceError::OpNotSupported {}.into())
-    }
-
-    fn get_local_brightness(&self) -> Result<i32> {
-        trace!("Querying device specific brightness");
-
-        Err(HwDeviceError::OpNotSupported {}.into())
-    }
-
-    fn set_local_brightness(&mut self, _brightness: i32) -> Result<()> {
-        trace!("Setting device specific brightness");
 
         Err(HwDeviceError::OpNotSupported {}.into())
     }
@@ -394,23 +431,5 @@ impl MouseDeviceTrait for GenericMouse {
 
             _ => Err(HwDeviceError::MappingError {}.into()),
         }
-    }
-
-    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
-        trace!("Setting LEDs from supplied map...");
-
-        Ok(())
-    }
-
-    fn set_led_init_pattern(&mut self) -> Result<()> {
-        trace!("Setting LED init pattern...");
-
-        Ok(())
-    }
-
-    fn set_led_off_pattern(&mut self) -> Result<()> {
-        trace!("Setting LED off pattern...");
-
-        Ok(())
     }
 }

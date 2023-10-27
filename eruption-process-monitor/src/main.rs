@@ -50,7 +50,7 @@ use config::Config;
 use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
 use dbus_client::{profile, slot};
-use flume::{unbounded, Receiver, Sender};
+use flume::{bounded, Receiver, Sender};
 use hotwatch::EventKind;
 use hotwatch::{
     blocking::{Flow, Hotwatch},
@@ -744,7 +744,7 @@ pub enum DbusApiEvent {
 
 /// Spawns the D-Bus API thread and executes it's main loop
 fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sender<DbusApiEvent>> {
-    let (dbus_api_tx, dbus_api_rx) = unbounded();
+    let (dbus_api_tx, dbus_api_rx) = bounded(8);
 
     thread::Builder::new()
         .name("dbus-interface".into())
@@ -770,7 +770,6 @@ fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sen
     Ok(dbus_api_tx)
 }
 
-/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -803,7 +802,6 @@ mod thread_util {
         Ok(())
     }
 }
-*/
 
 pub fn run_main_loop(
     #[cfg(feature = "sensor-procmon")] sysevents_rx: &Receiver<SystemEvent>,
@@ -1092,7 +1090,62 @@ fn save_rules_map() -> Result<()> {
     Ok(())
 }
 
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    if std::io::stdout().is_terminal() {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        #[cfg(not(target_os = "windows"))]
+        let ansi = true;
+
+        #[cfg(target_os = "windows")]
+        let ansi = false;
+
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_ansi(ansi)
+            .with_line_number(true)
+            .with_filter(filter);
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                let console_layer = console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn();
+
+                tracing_subscriber::registry()
+                    // .with(journald_layer)
+                    .with(console_layer)
+                    .with(format_layer)
+                    .init();
+            } else {
+                tracing_subscriber::registry()
+                    // .with(journald_layer)
+                    .with(format_layer)
+                    .init();
+            }
+        };
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
+
+    // i18n/l10n support
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -1115,9 +1168,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let _daemon = matches!(opts.command, Subcommands::Daemon);
 
     // start the thread deadlock detector
-    // #[cfg(debug_assertions)]
-    // thread_util::deadlock_detector()
-    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    #[cfg(debug_assertions)]
+    thread_util::deadlock_detector()
+        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
 
     info!(
         "Starting eruption-process-monitor: Version {}",
@@ -1125,7 +1178,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     );
 
     // register ctrl-c handler
-    let (ctrl_c_tx, ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, ctrl_c_rx) = bounded(8);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
@@ -1181,19 +1234,19 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             util::create_dir(&rules_dir)?;
             util::create_rules_file_if_not_exists(&rules_file)?;
 
-            let (dbusevents_tx, dbusevents_rx) = unbounded();
+            let (dbusevents_tx, dbusevents_rx) = bounded(8);
             spawn_dbus_thread(dbusevents_tx)?;
 
             // initialize the D-Bus API
-            let (dbus_tx, _dbus_rx) = unbounded();
+            let (dbus_tx, _dbus_rx) = bounded(8);
             let dbus_api_tx = spawn_dbus_api_thread(dbus_tx)?;
 
-            let (fsevents_tx, fsevents_rx) = unbounded();
+            let (fsevents_tx, fsevents_rx) = bounded(8);
             register_filesystem_watcher(fsevents_tx, rules_file)?;
 
             // configure plugins
             #[cfg(feature = "sensor-procmon")]
-            let (sysevents_tx, sysevents_rx) = unbounded();
+            let (sysevents_tx, sysevents_rx) = bounded(8);
 
             #[cfg(feature = "sensor-procmon")]
             if let Some(mut s) = sensors::find_sensor_by_id("process") {
@@ -1206,7 +1259,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             #[cfg(feature = "sensor-wayland")]
-            let (wayland_tx, wayland_rx) = unbounded();
+            let (wayland_tx, wayland_rx) = bounded(8);
 
             #[cfg(feature = "sensor-wayland")]
             if let Some(mut s) = sensors::find_sensor_by_id("wayland") {
@@ -1219,7 +1272,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             #[cfg(feature = "sensor-gnome-shellext")]
-            let (gnome_shellext_tx, gnome_shellext_rx) = unbounded();
+            let (gnome_shellext_tx, gnome_shellext_rx) = bounded(8);
 
             #[cfg(feature = "sensor-gnome-shellext")]
             if let Some(mut s) = sensors::find_sensor_by_id("gnome-shellext") {
@@ -1413,67 +1466,4 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     info!("Exiting now");
 
     Ok(())
-}
-
-/// Main program entrypoint
-pub fn main() -> std::result::Result<(), eyre::Error> {
-    // initialize logging
-    use tracing_subscriber::prelude::*;
-    use tracing_subscriber::util::SubscriberInitExt;
-
-    if std::io::stdout().is_terminal() {
-        // let filter = tracing_subscriber::EnvFilter::from_default_env();
-        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
-
-        #[cfg(not(target_os = "windows"))]
-        let ansi = true;
-
-        #[cfg(target_os = "windows")]
-        let ansi = false;
-
-        let filter = tracing_subscriber::EnvFilter::from_default_env();
-        let format_layer = tracing_subscriber::fmt::layer()
-            .compact()
-            .with_ansi(ansi)
-            .with_line_number(true)
-            .with_filter(filter);
-
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "debug-async")] {
-                let console_layer = console_subscriber::ConsoleLayer::builder()
-                    .with_default_env()
-                    .spawn();
-
-                tracing_subscriber::registry()
-                    // .with(journald_layer)
-                    .with(console_layer)
-                    .with(format_layer)
-                    .init();
-            } else {
-                tracing_subscriber::registry()
-                    // .with(journald_layer)
-                    .with(format_layer)
-                    .init();
-            }
-        };
-    } else {
-        let filter = tracing_subscriber::EnvFilter::from_default_env();
-        let journald_layer = tracing_journald::layer()?.with_filter(filter);
-
-        tracing_subscriber::registry().with(journald_layer).init();
-    }
-
-    // i18n/l10n support
-    let language_loader: FluentLanguageLoader = fluent_language_loader!();
-
-    let requested_languages = DesktopLanguageRequester::requested_languages();
-    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
-
-    STATIC_LOADER.lock().replace(language_loader);
-
-    let runtime = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()?;
-
-    runtime.block_on(async move { async_main().await })
 }

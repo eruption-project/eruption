@@ -37,6 +37,7 @@ use std::vec::Vec;
 use std::{cell::RefCell, thread};
 use tracing::*;
 
+use crate::hwdevices::DeviceClass;
 use crate::scripting::script::LAST_RENDERED_LED_MAP;
 use crate::util::ratelimited;
 
@@ -188,22 +189,15 @@ pub(crate) fn stringify(mut string: &mut String, value: mlua::Value) -> Option<(
 
 /// Returns the target framerate
 pub(crate) fn get_target_fps() -> u64 {
-    constants::TARGET_FPS
+    // assume that we are running close to the FPS limit for now
+    constants::TARGET_FPS_LIMIT
 }
 
 /// Returns the Lua support scripts for all connected devices
 pub(crate) fn get_support_script_files() -> Vec<String> {
     let mut result = Vec::new();
 
-    for device in crate::KEYBOARD_DEVICES.read().iter() {
-        result.push(device.read().get_support_script_file());
-    }
-
-    for device in crate::MOUSE_DEVICES.read().iter() {
-        result.push(device.read().get_support_script_file());
-    }
-
-    for device in crate::MISC_DEVICES.read().iter() {
+    for (_handle, device) in crate::DEVICES.read().iter() {
         result.push(device.read().get_support_script_file());
     }
 
@@ -309,7 +303,7 @@ pub(crate) fn inject_key_with_delay(ev_key: u32, down: bool, millis: u64) {
 
 // pub(crate) fn set_status_led(keyboard_device: &KeyboardDevice, led_id: u8, on: bool) {
 //     keyboard_device
-//         .read()
+//         .lock()
 //         .set_status_led(LedKind::from_id(led_id).unwrap(), on)
 //         .unwrap_or_else(|e| error!("{}", e));
 // }
@@ -706,11 +700,13 @@ fn test_rotate() {
 /// Get the number of keys of the managed device.
 pub(crate) fn get_num_keys() -> usize {
     // TODO: Return the number of keys of a specific device
-    let devices = crate::KEYBOARD_DEVICES.read();
+    let devices = crate::DEVICES.read();
+    let device = devices
+        .iter()
+        .find(|(_handle, device)| device.read().get_device_class() == DeviceClass::Keyboard);
 
-    if !devices.is_empty() {
-        let result = devices[0].read().get_num_keys();
-        result
+    if let Some((_handle, device)) = device {
+        device.read().as_keyboard_device().unwrap().get_num_keys()
     } else {
         constants::MAX_KEYS
     }

@@ -22,15 +22,14 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use parking_lot::RwLock;
-use std::sync::Arc;
+
 use std::{any::Any, collections::HashMap};
 use tracing::*;
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceInfoTrait, DeviceStatus, DeviceTrait,
-    DeviceZoneAllocationTrait, HwDeviceError, KeyboardDevice, KeyboardDeviceTrait,
-    KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, Result, Zone, RGBA,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
+    DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
+    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA,
 };
 
 /// Binds the driver to a device
@@ -39,10 +38,8 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     _serial: &str,
-) -> Result<KeyboardDevice> {
-    Ok(Arc::new(RwLock::new(Box::new(GenericKeyboard::bind(
-        usb_vid, usb_pid,
-    )))))
+) -> Result<Box<dyn DeviceExt + Sync + Send>> {
+    Ok(Box::new(GenericKeyboard::bind(usb_vid, usb_pid)))
 }
 
 #[derive(Clone)]
@@ -85,7 +82,7 @@ impl GenericKeyboard {
     // }
 }
 
-impl DeviceInfoTrait for GenericKeyboard {
+impl DeviceInfoExt for GenericKeyboard {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Keyboard])
     }
@@ -102,7 +99,7 @@ impl DeviceInfoTrait for GenericKeyboard {
     }
 }
 
-impl DeviceZoneAllocationTrait for GenericKeyboard {
+impl DeviceZoneAllocationExt for GenericKeyboard {
     fn get_zone_size_hint(&self) -> usize {
         0
     }
@@ -116,7 +113,7 @@ impl DeviceZoneAllocationTrait for GenericKeyboard {
     }
 }
 
-impl DeviceTrait for GenericKeyboard {
+impl DeviceExt for GenericKeyboard {
     fn get_usb_path(&self) -> String {
         "<unsupported>".to_string()
     }
@@ -193,6 +190,32 @@ impl DeviceTrait for GenericKeyboard {
         Ok(DeviceStatus(table))
     }
 
+    fn set_brightness(&mut self, _brightness: i32) -> Result<()> {
+        Ok(())
+    }
+
+    fn get_brightness(&self) -> Result<i32> {
+        Ok(0)
+    }
+
+    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
+        trace!("Setting LEDs from supplied map...");
+
+        Ok(())
+    }
+
+    fn set_led_init_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED init pattern...");
+
+        Ok(())
+    }
+
+    fn set_led_off_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED off pattern...");
+
+        Ok(())
+    }
+
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -201,24 +224,44 @@ impl DeviceTrait for GenericKeyboard {
         self
     }
 
-    fn as_device(&self) -> &dyn DeviceTrait {
+    fn as_device(&self) -> &(dyn DeviceExt + Sync + Send) {
         self
     }
 
-    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
+    fn as_device_mut(&mut self) -> &mut (dyn DeviceExt + Sync + Send) {
         self
     }
 
-    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
+    fn as_mouse_device(&self) -> Option<&(dyn MouseDeviceExt + Sync + Send)> {
         None
     }
 
-    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
+    fn as_mouse_device_mut(&mut self) -> Option<&mut (dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn get_device_class(&self) -> hwdevices::DeviceClass {
+        DeviceClass::Keyboard
+    }
+
+    fn as_keyboard_device(&self) -> Option<&(dyn KeyboardDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_keyboard_device_mut(&mut self) -> Option<&mut (dyn KeyboardDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_misc_device(&self) -> Option<&(dyn hwdevices::MiscDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Sync + Send)> {
         None
     }
 }
 
-impl KeyboardDeviceTrait for GenericKeyboard {
+impl KeyboardDeviceExt for GenericKeyboard {
     fn set_status_led(&self, _led_kind: LedKind, _on: bool) -> Result<()> {
         trace!("Setting status LED state");
 
@@ -247,32 +290,6 @@ impl KeyboardDeviceTrait for GenericKeyboard {
 
     fn hid_event_code_to_report(&self, _code: &KeyboardHidEventCode) -> u8 {
         0
-    }
-
-    fn set_local_brightness(&mut self, _brightness: i32) -> Result<()> {
-        Ok(())
-    }
-
-    fn get_local_brightness(&self) -> Result<i32> {
-        Ok(0)
-    }
-
-    fn send_led_map(&mut self, _led_map: &[RGBA]) -> Result<()> {
-        trace!("Setting LEDs from supplied map...");
-
-        Ok(())
-    }
-
-    fn set_led_init_pattern(&mut self) -> Result<()> {
-        trace!("Setting LED init pattern...");
-
-        Ok(())
-    }
-
-    fn set_led_off_pattern(&mut self) -> Result<()> {
-        trace!("Setting LED off pattern...");
-
-        Ok(())
     }
 
     /// Returns the number of keys

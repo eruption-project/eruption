@@ -41,7 +41,6 @@ impl MousePlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for MousePlugin {
     fn get_name(&self) -> String {
         "Mouse".to_string()
@@ -65,8 +64,6 @@ impl Plugin for MousePlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

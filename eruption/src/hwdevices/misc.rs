@@ -23,4 +23,4 @@ pub mod custom_serial_leds;
 pub mod roccat_aimo_pad;
 pub mod roccat_elo_71_air;
 
-pub use super::Result;
+

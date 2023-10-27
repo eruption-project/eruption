@@ -19,14 +19,18 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use std::sync::Arc;
+
 use dbus::{
     arg::{Iter, IterAppend},
     MethodErr,
 };
 use dbus_tree::{Access, EmitsChangedSignal, MethodResult, Signal};
-use std::sync::Arc;
 
-use crate::{constants, hwdevices::Zone};
+use crate::{
+    constants,
+    hwdevices::{DeviceHandle, Zone},
+};
 
 use super::{
     convenience::PropertyWithPermission,
@@ -168,25 +172,7 @@ fn get_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
     let mut result: Vec<(u64, Zone)> = Vec::new();
     let mut cntr = 0;
 
-    let keyboards = crate::KEYBOARD_DEVICES.read();
-
-    for device in keyboards.iter() {
-        result.push((cntr, device.read().get_allocated_zone()));
-
-        cntr += 1;
-    }
-
-    let mice = crate::MOUSE_DEVICES.read();
-
-    for device in mice.iter() {
-        result.push((cntr, device.read().get_allocated_zone()));
-
-        cntr += 1;
-    }
-
-    let misc = crate::MISC_DEVICES.read();
-
-    for device in misc.iter() {
+    for (_handle, device) in crate::DEVICES.read().iter() {
         result.push((cntr, device.read().get_allocated_zone()));
 
         cntr += 1;
@@ -200,7 +186,7 @@ fn set_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
 }
 
 fn set_device_zone_allocation(m: &super::MethodInfo) -> MethodResult {
-    let (device, zone): (u64, (i32, i32, i32, i32, bool)) = m.msg.read2()?;
+    let (handle, zone): (u64, (i32, i32, i32, i32, bool)) = m.msg.read2()?;
 
     let zone = Zone::new(zone.0, zone.1, zone.2, zone.3, zone.4);
 
@@ -213,37 +199,14 @@ fn set_device_zone_allocation(m: &super::MethodInfo) -> MethodResult {
         || zone.y2() < 0
         || zone.y2() > constants::CANVAS_HEIGHT as i32
     {
-        return Err(MethodErr::failed("Invalid zone dimensions"));
-    }
-
-    if (device as usize) < crate::KEYBOARD_DEVICES.read().len() {
-        let device = &crate::KEYBOARD_DEVICES.read()[device as usize];
-
-        device.write().set_zone_allocation(zone);
-
-        Ok(vec![m.msg.method_return()])
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len())
-    {
-        let index = device as usize - crate::KEYBOARD_DEVICES.read().len();
-        let device = &crate::MOUSE_DEVICES.read()[index];
-
-        device.write().set_zone_allocation(zone);
-
-        Ok(vec![m.msg.method_return()])
-    } else if (device as usize)
-        < (crate::KEYBOARD_DEVICES.read().len()
-            + crate::MOUSE_DEVICES.read().len()
-            + crate::MISC_DEVICES.read().len())
-    {
-        let index = device as usize
-            - (crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len());
-        let device = &crate::MISC_DEVICES.read()[index];
-
-        device.write().set_zone_allocation(zone);
-
-        Ok(vec![m.msg.method_return()])
+        Err(MethodErr::failed("Invalid zone dimensions"))
     } else {
-        Err(MethodErr::failed("Invalid device index"))
+        if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
+            device.write().set_zone_allocation(zone);
+
+            Ok(vec![m.msg.method_return()])
+        } else {
+            Err(MethodErr::failed("Invalid device handle"))
+        }
     }
 }

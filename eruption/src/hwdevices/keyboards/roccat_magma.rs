@@ -22,7 +22,7 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::time::Duration;
 use std::{any::Any, mem::size_of};
@@ -32,9 +32,9 @@ use tracing::*;
 use crate::constants;
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceStatus, DeviceTrait,
-    DeviceZoneAllocationTrait, HwDeviceError, KeyboardDevice, KeyboardDeviceTrait,
-    KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, Result, Zone, RGBA,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
+    DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
+    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA,
 };
 
 pub const NUM_KEYS: usize = 143;
@@ -53,7 +53,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> Result<KeyboardDevice> {
+) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -71,10 +71,10 @@ pub fn bind_hiddev(
     if ctrl_dev.is_none() || led_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(RoccatMagma::bind(
+        Ok(Box::new(RoccatMagma::bind(
             ctrl_dev.unwrap(),
             led_dev.unwrap(),
-        )))))
+        )))
     }
 }
 
@@ -164,7 +164,8 @@ impl RoccatMagma {
     //
     //                 match ctrl_dev.get_feature_report(&mut buf) {
     //                     Ok(_result) => {
-    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //         #[cfg(debug_assertions)]
+    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
     //
     //                         Ok(())
     //                     }
@@ -195,6 +196,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -212,6 +214,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -226,6 +229,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -242,6 +246,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -265,6 +270,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -294,6 +300,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -322,6 +329,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -340,6 +348,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -354,6 +363,7 @@ impl RoccatMagma {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -385,7 +395,8 @@ impl RoccatMagma {
 
             //     match ctrl_dev.get_feature_report(&mut buf) {
             //         Ok(_result) => {
-            //             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+            //         #[cfg(debug_assertions)]
+            //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
             //             if buf[1] == 0x01 {
             //                 return Ok(());
@@ -403,7 +414,7 @@ impl RoccatMagma {
     }
 }
 
-impl DeviceInfoTrait for RoccatMagma {
+impl DeviceInfoExt for RoccatMagma {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Keyboard, Capability::RgbLighting])
     }
@@ -424,6 +435,7 @@ impl DeviceInfoTrait for RoccatMagma {
 
             match ctrl_dev.get_feature_report(&mut buf) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
@@ -450,7 +462,7 @@ impl DeviceInfoTrait for RoccatMagma {
     }
 }
 
-impl DeviceZoneAllocationTrait for RoccatMagma {
+impl DeviceZoneAllocationExt for RoccatMagma {
     fn get_zone_size_hint(&self) -> usize {
         NUM_LEDS
     }
@@ -464,7 +476,7 @@ impl DeviceZoneAllocationTrait for RoccatMagma {
     }
 }
 
-impl DeviceTrait for RoccatMagma {
+impl DeviceExt for RoccatMagma {
     fn get_usb_path(&self) -> String {
         self.led_hiddev_info
             .clone()
@@ -676,6 +688,7 @@ impl DeviceTrait for RoccatMagma {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(buf)
@@ -683,6 +696,217 @@ impl DeviceTrait for RoccatMagma {
 
                 Err(_) => Err(HwDeviceError::InvalidResult {}.into()),
             }
+        }
+    }
+
+    fn set_brightness(&mut self, brightness: i32) -> Result<()> {
+        trace!("Setting device specific brightness");
+
+        self.brightness = brightness;
+
+        Ok(())
+    }
+
+    fn get_brightness(&self) -> Result<i32> {
+        trace!("Querying device specific brightness");
+
+        Ok(self.brightness)
+    }
+
+    fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
+        trace!("Setting LEDs from supplied map...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
+        } else {
+            match *self.led_hiddev.lock() {
+                Some(ref led_dev) => {
+                    if led_map.len() < NUM_KEYS {
+                        error!(
+                            "Received a short LED map: Got {} elements, but should be {}",
+                            led_map.len(),
+                            NUM_KEYS
+                        );
+
+                        Err(HwDeviceError::LedMapError {}.into())
+                    } else {
+                        fn interpolate_colors(colors: &[RGBA]) -> RGBA {
+                            type ColorRep = u64;
+
+                            let (mut red, mut green, mut blue, mut alpha): (
+                                ColorRep,
+                                ColorRep,
+                                ColorRep,
+                                ColorRep,
+                            ) = (0, 0, 0, 0);
+                            let len = colors.len() as ColorRep;
+
+                            for color in colors {
+                                red = red.saturating_add(color.r as ColorRep);
+                                green = green.saturating_add(color.g as ColorRep);
+                                blue = blue.saturating_add(color.b as ColorRep);
+                                alpha = alpha.saturating_add(color.a as ColorRep);
+                            }
+
+                            RGBA {
+                                r: (red / len) as u8,
+                                g: (green / len) as u8,
+                                b: (blue / len) as u8,
+                                a: (alpha / len) as u8,
+                            }
+                        }
+
+                        if self.allocated_zone.enabled {
+                            let zone1 = interpolate_colors(&led_map[0..25]);
+                            let zone2 = interpolate_colors(&led_map[25..50]);
+                            let zone3 = interpolate_colors(&led_map[50..75]);
+                            let zone4 = interpolate_colors(&led_map[75..100]);
+                            let zone5 = interpolate_colors(&led_map[100..125]);
+
+                            let tmp = [
+                                0xa1,
+                                0x01,
+                                0x40,
+                                // red
+                                (zone1.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone2.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone3.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone4.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone5.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                // green
+                                (zone1.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone2.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone3.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone4.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone5.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                // blue
+                                (zone1.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone2.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone3.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone4.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                (zone5.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                                0x00,
+                            ];
+
+                            match led_dev.write(&tmp) {
+                                Ok(len) => {
+                                    if len < 64 {
+                                        return Err(HwDeviceError::WriteError {}.into());
+                                    }
+                                }
+
+                                Err(_) => {
+                                    // the device has failed or has been disconnected
+                                    self.is_initialized = false;
+                                    self.is_opened = false;
+                                    self.has_failed = true;
+
+                                    return Err(HwDeviceError::InvalidResult {}.into());
+                                }
+                            }
+                        }
+
+                        Ok(())
+                    }
+                }
+
+                None => Err(HwDeviceError::DeviceNotOpened {}.into()),
+            }
+        }
+    }
+
+    fn set_led_init_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED init pattern...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
+        } else {
+            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
+                r: 0x00,
+                g: 0x00,
+                b: 0x00,
+                a: 0x00,
+            }; constants::CANVAS_SIZE];
+
+            self.send_led_map(&led_map)?;
+
+            Ok(())
+        }
+    }
+
+    fn set_led_off_pattern(&mut self) -> Result<()> {
+        trace!("Setting LED off pattern...");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
+        } else {
+            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
+                r: 0x00,
+                g: 0x00,
+                b: 0x00,
+                a: 0x00,
+            }; constants::CANVAS_SIZE];
+
+            self.send_led_map(&led_map)?;
+
+            Ok(())
         }
     }
 
@@ -694,24 +918,44 @@ impl DeviceTrait for RoccatMagma {
         self
     }
 
-    fn as_device(&self) -> &dyn DeviceTrait {
+    fn as_device(&self) -> &(dyn DeviceExt + Sync + Send) {
         self
     }
 
-    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
+    fn as_device_mut(&mut self) -> &mut (dyn DeviceExt + Sync + Send) {
         self
     }
 
-    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
+    fn as_mouse_device(&self) -> Option<&(dyn MouseDeviceExt + Sync + Send)> {
         None
     }
 
-    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
+    fn as_mouse_device_mut(&mut self) -> Option<&mut (dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn get_device_class(&self) -> DeviceClass {
+        DeviceClass::Keyboard
+    }
+
+    fn as_keyboard_device(&self) -> Option<&(dyn KeyboardDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_keyboard_device_mut(&mut self) -> Option<&mut (dyn KeyboardDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_misc_device(&self) -> Option<&(dyn hwdevices::MiscDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Sync + Send)> {
         None
     }
 }
 
-impl KeyboardDeviceTrait for RoccatMagma {
+impl KeyboardDeviceExt for RoccatMagma {
     fn set_status_led(&self, led_kind: LedKind, _on: bool) -> Result<()> {
         trace!("Setting status LED state");
 
@@ -737,20 +981,6 @@ impl KeyboardDeviceTrait for RoccatMagma {
         }
 
         Ok(())
-    }
-
-    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
-        trace!("Setting device specific brightness");
-
-        self.brightness = brightness;
-
-        Ok(())
-    }
-
-    fn get_local_brightness(&self) -> Result<i32> {
-        trace!("Querying device specific brightness");
-
-        Ok(self.brightness)
     }
 
     #[inline]
@@ -919,231 +1149,6 @@ impl KeyboardDeviceTrait for RoccatMagma {
             KeyboardHidEventCode::KEY_EASY_SHIFT => 57,
 
             KeyboardHidEventCode::Unknown(code) => *code,
-        }
-    }
-
-    fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
-        trace!("Setting LEDs from supplied map...");
-
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {}.into())
-        } else {
-            match *self.led_hiddev.lock() {
-                Some(ref led_dev) => {
-                    if led_map.len() < NUM_KEYS {
-                        error!(
-                            "Received a short LED map: Got {} elements, but should be {}",
-                            led_map.len(),
-                            NUM_KEYS
-                        );
-
-                        Err(HwDeviceError::LedMapError {}.into())
-                    } else {
-                        fn interpolate_colors(colors: &[RGBA]) -> RGBA {
-                            type ColorRep = u64;
-
-                            let (mut red, mut green, mut blue, mut alpha): (
-                                ColorRep,
-                                ColorRep,
-                                ColorRep,
-                                ColorRep,
-                            ) = (0, 0, 0, 0);
-                            let len = colors.len() as ColorRep;
-
-                            for color in colors {
-                                red = red.saturating_add(color.r as ColorRep);
-                                green = green.saturating_add(color.g as ColorRep);
-                                blue = blue.saturating_add(color.b as ColorRep);
-                                alpha = alpha.saturating_add(color.a as ColorRep);
-                            }
-
-                            RGBA {
-                                r: (red / len) as u8,
-                                g: (green / len) as u8,
-                                b: (blue / len) as u8,
-                                a: (alpha / len) as u8,
-                            }
-                        }
-
-                        if self.allocated_zone.enabled {
-                            let zone1 = interpolate_colors(&led_map[0..25]);
-                            let zone2 = interpolate_colors(&led_map[25..50]);
-                            let zone3 = interpolate_colors(&led_map[50..75]);
-                            let zone4 = interpolate_colors(&led_map[75..100]);
-                            let zone5 = interpolate_colors(&led_map[100..125]);
-
-                            let tmp = [
-                                0xa1,
-                                0x01,
-                                0x40,
-                                // red
-                                (zone1.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone2.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone3.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone4.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone5.r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                // green
-                                (zone1.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone2.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone3.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone4.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone5.g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                // blue
-                                (zone1.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone2.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone3.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone4.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                (zone5.b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                                0x00,
-                            ];
-
-                            match led_dev.write(&tmp) {
-                                Ok(len) => {
-                                    if len < 64 {
-                                        return Err(HwDeviceError::WriteError {}.into());
-                                    }
-                                }
-
-                                Err(_) => {
-                                    // the device has failed or has been disconnected
-                                    self.is_initialized = false;
-                                    self.is_opened = false;
-                                    self.has_failed = true;
-
-                                    return Err(HwDeviceError::InvalidResult {}.into());
-                                }
-                            }
-                        } else {
-                            // zone is disabled, so black-out the device
-
-                            let tmp = [
-                                0xa1, 0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            ];
-
-                            match led_dev.write(&tmp) {
-                                Ok(len) => {
-                                    if len < 64 {
-                                        return Err(HwDeviceError::WriteError {}.into());
-                                    }
-                                }
-
-                                Err(_) => {
-                                    // the device has failed or has been disconnected
-                                    self.is_initialized = false;
-                                    self.is_opened = false;
-                                    self.has_failed = true;
-
-                                    return Err(HwDeviceError::InvalidResult {}.into());
-                                }
-                            }
-                        }
-
-                        Ok(())
-                    }
-                }
-
-                None => Err(HwDeviceError::DeviceNotOpened {}.into()),
-            }
-        }
-    }
-
-    fn set_led_init_pattern(&mut self) -> Result<()> {
-        trace!("Setting LED init pattern...");
-
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {}.into())
-        } else {
-            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
-                r: 0x00,
-                g: 0x00,
-                b: 0x00,
-                a: 0x00,
-            }; constants::CANVAS_SIZE];
-
-            self.send_led_map(&led_map)?;
-
-            Ok(())
-        }
-    }
-
-    fn set_led_off_pattern(&mut self) -> Result<()> {
-        trace!("Setting LED off pattern...");
-
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {}.into())
-        } else {
-            let led_map: [RGBA; constants::CANVAS_SIZE] = [RGBA {
-                r: 0x00,
-                g: 0x00,
-                b: 0x00,
-                a: 0x00,
-            }; constants::CANVAS_SIZE];
-
-            self.send_led_map(&led_map)?;
-
-            Ok(())
         }
     }
 

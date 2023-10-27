@@ -193,7 +193,7 @@ pub fn initialize_mouse_page(
     timers::register_timer(
         timers::MOUSE_RENDER_TIMER_ID + device as usize,
         TimerMode::ActiveStackPage(Pages::Mice as u8),
-        1000 / (crate::constants::TARGET_FPS * 2),
+        1000 / (crate::constants::TARGET_FPS_LIMIT * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == Pages::Mice as usize {
                 drawing_area.queue_draw();

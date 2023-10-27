@@ -25,7 +25,7 @@ use std::any::Any;
 use crate::plugins::Result;
 
 /// Represents a plugin
-#[async_trait::async_trait]
+
 pub trait Plugin: Any {
     /// Get the user visible name of a plugin
     fn get_name(&self) -> String;
@@ -39,11 +39,8 @@ pub trait Plugin: Any {
     /// Register supplied lua functions and extensions
     fn register_lua_funcs(&self, lua_ctx: &Lua) -> mlua::Result<()>;
 
-    /// Called on each iteration of the main loop
-    async fn main_loop_hook(&self, ticks: u64);
-
     /// Called on each iteration of the main loop,
-    /// use this for really short lived operations
+    /// use this for really short lived operations only
     fn sync_main_loop_hook(&self, ticks: u64);
 
     /// Event handling entrypoint

@@ -23,7 +23,7 @@ use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
 
-use flume::unbounded;
+use flume::bounded;
 use flume::Receiver;
 use flume::Sender;
 use i18n_embed::{
@@ -36,14 +36,13 @@ use lazy_static::lazy_static;
 use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
 use std::sync::Arc;
+use std::time::Duration;
 use std::{
     env,
     sync::atomic::{AtomicBool, Ordering},
     thread,
 };
 use tracing::{debug, error, info};
-
-use tokio::time::Duration;
 
 use eruption_sdk::canvas::Canvas;
 use eruption_sdk::color::Color;
@@ -171,7 +170,7 @@ pub enum DbusApiEvent {}
 
 /// Spawns the D-Bus API thread and executes it's main loop
 fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sender<DbusApiEvent>> {
-    let (dbus_api_tx, dbus_api_rx) = unbounded();
+    let (dbus_api_tx, dbus_api_rx) = bounded(8);
 
     thread::Builder::new()
         .name("dbus-interface".into())
@@ -195,7 +194,7 @@ fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sen
     Ok(dbus_api_tx)
 }
 
-pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
+pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
     debug!("Entering the main loop now...");
 
     'MAIN_LOOP: loop {
@@ -272,115 +271,6 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
     }
 }
 
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
-    cfg_if::cfg_if! {
-        if #[cfg(debug_assertions)] {
-            color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
-            .install()?;
-        } else {
-            color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
-            .display_env_section(false)
-            .install()?;
-        }
-    }
-
-    // print a license header, except if we are generating shell completions
-    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
-        print_header();
-    }
-
-    // start the thread deadlock detector
-    // #[cfg(debug_assertions)]
-    // thread_util::deadlock_detector()
-    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
-
-    let opts = Options::parse();
-    *crate::OPTIONS.write() = Some(opts.clone());
-
-    match opts.command {
-        Subcommands::Daemon => {
-            info!("Starting up...");
-
-            // register ctrl-c handler
-            let (ctrl_c_tx, ctrl_c_rx) = unbounded();
-            ctrlc::set_handler(move || {
-                QUIT.store(true, Ordering::SeqCst);
-
-                ctrl_c_tx
-                    .send(true)
-                    .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
-            })
-            .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
-
-            // initialize the D-Bus API
-            let (dbus_tx, _dbus_rx) = unbounded();
-            let _dbus_api_tx = spawn_dbus_api_thread(dbus_tx)?;
-
-            // register all available screenshot backends
-            backends::register_backends()?;
-
-            tracing::info!("Startup completed");
-
-            // enter the main loop
-            run_main_loop(&ctrl_c_rx)
-                .await
-                .unwrap_or_else(|e| error!("{}", e));
-
-            tracing::debug!("Left the main loop");
-
-            tracing::info!("Exiting now");
-        }
-
-        Subcommands::Completions { shell } => {
-            const BIN_NAME: &str = env!("CARGO_PKG_NAME");
-
-            let mut command = Options::command();
-            let mut fd = std::io::stdout();
-
-            clap_complete::generate(shell, &mut command, BIN_NAME.to_string(), &mut fd);
-        }
-    };
-
-    Ok(())
-}
-
-/*
-#[cfg(debug_assertions)]
-mod thread_util {
-    use crate::Result;
-    use parking_lot::deadlock;
-    use std::thread;
-    use std::time::Duration;
-    use tracing::*;
-
-    /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() -> Result<()> {
-        thread::Builder::new()
-            .name("deadlockd".to_owned())
-            .spawn(move || loop {
-                thread::sleep(Duration::from_secs(5));
-                let deadlocks = deadlock::check_deadlock();
-                if !deadlocks.is_empty() {
-                    error!("{} deadlocks detected", deadlocks.len());
-
-                    for (i, threads) in deadlocks.iter().enumerate() {
-                        error!("Deadlock #{}", i);
-
-                        for t in threads {
-                            error!("Thread Id {:#?}", t.thread_id());
-                            error!("{:#?}", t.backtrace());
-                        }
-                    }
-                }
-            })?;
-
-        Ok(())
-    }
-}
-*/
-
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
     // initialize logging
@@ -438,9 +328,106 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     STATIC_LOADER.lock().replace(language_loader);
 
-    let runtime = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()?;
+    cfg_if::cfg_if! {
+        if #[cfg(debug_assertions)] {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .install()?;
+        } else {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .display_env_section(false)
+            .install()?;
+        }
+    }
 
-    runtime.block_on(async move { async_main().await })
+    // print a license header, except if we are generating shell completions
+    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
+        print_header();
+    }
+
+    // start the thread deadlock detector
+    #[cfg(debug_assertions)]
+    thread_util::deadlock_detector()
+        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
+
+    let opts = Options::parse();
+    *crate::OPTIONS.write() = Some(opts.clone());
+
+    match opts.command {
+        Subcommands::Daemon => {
+            info!("Starting up...");
+
+            // register ctrl-c handler
+            let (ctrl_c_tx, ctrl_c_rx) = bounded(8);
+            ctrlc::set_handler(move || {
+                QUIT.store(true, Ordering::SeqCst);
+
+                ctrl_c_tx
+                    .send(true)
+                    .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
+            })
+            .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
+
+            // initialize the D-Bus API
+            let (dbus_tx, _dbus_rx) = bounded(8);
+            let _dbus_api_tx = spawn_dbus_api_thread(dbus_tx)?;
+
+            // register all available screenshot backends
+            backends::register_backends()?;
+
+            tracing::info!("Startup completed");
+
+            // enter the main loop
+            run_main_loop(&ctrl_c_rx).unwrap_or_else(|e| error!("{}", e));
+
+            tracing::debug!("Left the main loop");
+
+            tracing::info!("Exiting now");
+        }
+
+        Subcommands::Completions { shell } => {
+            const BIN_NAME: &str = env!("CARGO_PKG_NAME");
+
+            let mut command = Options::command();
+            let mut fd = std::io::stdout();
+
+            clap_complete::generate(shell, &mut command, BIN_NAME.to_string(), &mut fd);
+        }
+    };
+
+    Ok(())
+}
+
+#[cfg(debug_assertions)]
+mod thread_util {
+    use crate::Result;
+    use parking_lot::deadlock;
+    use std::thread;
+    use std::time::Duration;
+    use tracing::*;
+
+    /// Creates a background thread which checks for deadlocks every 5 seconds
+    pub(crate) fn deadlock_detector() -> Result<()> {
+        thread::Builder::new()
+            .name("deadlockd".to_owned())
+            .spawn(move || loop {
+                thread::sleep(Duration::from_secs(5));
+                let deadlocks = deadlock::check_deadlock();
+                if !deadlocks.is_empty() {
+                    error!("{} deadlocks detected", deadlocks.len());
+
+                    for (i, threads) in deadlocks.iter().enumerate() {
+                        error!("Deadlock #{}", i);
+
+                        for t in threads {
+                            error!("Thread Id {:#?}", t.thread_id());
+                            error!("{:#?}", t.backtrace());
+                        }
+                    }
+                }
+            })?;
+
+        Ok(())
+    }
 }

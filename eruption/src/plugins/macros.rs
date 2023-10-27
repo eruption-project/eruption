@@ -22,7 +22,7 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, UninitDevice};
 
-use flume::{unbounded, Sender};
+use flume::{bounded, Sender};
 use lazy_static::lazy_static;
 use mlua::prelude::*;
 use parking_lot::RwLock;
@@ -583,7 +583,7 @@ impl MacrosPlugin {
     }
 
     fn spawn_uinput_thread() -> Result<()> {
-        let (uinput_tx, uinput_rx) = unbounded();
+        let (uinput_tx, uinput_rx) = bounded(8);
 
         thread::Builder::new()
             .name("uinput".into())
@@ -654,7 +654,6 @@ impl MacrosPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for MacrosPlugin {
     fn get_name(&self) -> String {
         "Macros".to_string()
@@ -674,8 +673,6 @@ impl Plugin for MacrosPlugin {
     fn register_lua_funcs(&self, _lua_ctx: &Lua) -> mlua::Result<()> {
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

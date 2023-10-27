@@ -26,11 +26,11 @@ use serialport::SerialPort;
 use std::time::Duration;
 use tracing::*;
 
-use crate::hwdevices::{self, DeviceClass, DeviceStatus, DeviceZoneAllocationTrait, Zone};
+use crate::hwdevices::{self, DeviceClass, DeviceStatus, DeviceZoneAllocationExt, Zone};
 
 use crate::hwdevices::{
-    DeviceCapabilities, DeviceInfoTrait, DeviceTrait, HwDeviceError, MiscDeviceTrait,
-    MouseDeviceTrait, Result, RGBA,
+    DeviceCapabilities, DeviceExt, DeviceInfoExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt,
+    Result, RGBA,
 };
 
 const BAUD_RATE: u32 = 460800;
@@ -67,7 +67,7 @@ impl CustomSerialLeds {
     }
 }
 
-impl DeviceInfoTrait for CustomSerialLeds {
+impl DeviceInfoExt for CustomSerialLeds {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([])
     }
@@ -84,7 +84,7 @@ impl DeviceInfoTrait for CustomSerialLeds {
     }
 }
 
-impl DeviceTrait for CustomSerialLeds {
+impl DeviceExt for CustomSerialLeds {
     fn get_usb_path(&self) -> String {
         "<unsupported>".to_string()
     }
@@ -186,51 +186,7 @@ impl DeviceTrait for CustomSerialLeds {
         Ok(DeviceStatus(table))
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
-
-    fn as_device(&self) -> &dyn DeviceTrait {
-        self
-    }
-
-    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
-        self
-    }
-
-    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
-        None
-    }
-
-    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
-        None
-    }
-}
-
-impl DeviceZoneAllocationTrait for CustomSerialLeds {
-    fn get_zone_size_hint(&self) -> usize {
-        NUM_LEDS
-    }
-
-    fn get_allocated_zone(&self) -> Zone {
-        self.allocated_zone
-    }
-
-    fn set_zone_allocation(&mut self, zone: Zone) {
-        self.allocated_zone = zone;
-    }
-}
-
-impl MiscDeviceTrait for CustomSerialLeds {
-    fn has_input_device(&self) -> bool {
-        false
-    }
-
-    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
+    fn set_brightness(&mut self, brightness: i32) -> Result<()> {
         trace!("Setting device specific brightness");
 
         self.brightness = brightness;
@@ -238,7 +194,7 @@ impl MiscDeviceTrait for CustomSerialLeds {
         Ok(())
     }
 
-    fn get_local_brightness(&self) -> Result<i32> {
+    fn get_brightness(&self) -> Result<i32> {
         trace!("Querying device specific brightness");
 
         Ok(self.brightness)
@@ -338,5 +294,71 @@ impl MiscDeviceTrait for CustomSerialLeds {
         }
 
         Ok(())
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+
+    fn as_device(&self) -> &(dyn DeviceExt + Sync + Send) {
+        self
+    }
+
+    fn as_device_mut(&mut self) -> &mut (dyn DeviceExt + Sync + Send) {
+        self
+    }
+
+    fn as_mouse_device(&self) -> Option<&(dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_mouse_device_mut(&mut self) -> Option<&mut (dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn get_device_class(&self) -> DeviceClass {
+        DeviceClass::Misc
+    }
+
+    fn as_keyboard_device(&self) -> Option<&(dyn hwdevices::KeyboardDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_keyboard_device_mut(
+        &mut self,
+    ) -> Option<&mut (dyn hwdevices::KeyboardDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_misc_device(&self) -> Option<&(dyn MiscDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_misc_device_mut(&mut self) -> Option<&mut (dyn MiscDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+}
+
+impl DeviceZoneAllocationExt for CustomSerialLeds {
+    fn get_zone_size_hint(&self) -> usize {
+        NUM_LEDS
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        self.allocated_zone
+    }
+
+    fn set_zone_allocation(&mut self, zone: Zone) {
+        self.allocated_zone = zone;
+    }
+}
+
+impl MiscDeviceExt for CustomSerialLeds {
+    fn has_input_device(&self) -> bool {
+        false
     }
 }

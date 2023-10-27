@@ -39,7 +39,6 @@ resolver = "2"
 default = ["dbus-ipc"]
 windows = []
 dbus-ipc = ["dbus", "dbus-tokio"]
-debug-async = []
 
 [dependencies]
 lazy_static = "1.4.0"
@@ -55,7 +54,8 @@ console = "0.15.7"
 libc = "0.2.148"
 nix = "0.27.1"
 parking_lot = { version = "0.12.1", features = [
-  "send_guard",
+  # "send_guard",
+  "deadlock_detection",
   "hardware-lock-elision",
 ] }
 serde = { version = "1.0.188", features = ["derive"] }

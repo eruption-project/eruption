@@ -43,7 +43,6 @@ windows = ["dbus-ipc"]
 sourceview = ["sourceview4"]
 mimalloc_allocator = ["mimalloc"]
 dbus-ipc = ["dbus"]
-debug-async = []
 
 [dependencies]
 mimalloc = { version = "0.1.39", optional = true, default-features = false }
@@ -53,13 +52,13 @@ is-terminal = "0.4.9"
 nix = { version = "0.27.1", features = ["user", "fs"] }
 walkdir = "2.4.0"
 parking_lot = { version = "0.12.1", features = [
-  "send_guard",
+  # "send_guard",
+  "deadlock_detection",
   "hardware-lock-elision",
 ] }
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
 indexmap = { version = "2.0.0", features = ["serde"] }
-tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
@@ -118,7 +117,6 @@ eruption-sdk = { path = "../sdk/lib/rust/eruption-rs" }
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
-tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [[bench]]

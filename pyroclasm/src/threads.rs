@@ -22,7 +22,7 @@
 use std::{sync::atomic::Ordering, thread, time::Duration};
 
 use dbus::blocking::{stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged, Connection};
-use flume::{unbounded, Sender};
+use flume::{bounded, Sender};
 use tracing::{error, info};
 
 use crate::{
@@ -95,7 +95,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
             update_active_slot()?;
 
             // spawn D-Bus events thread
-            let (dbusevents_tx, dbusevents_rx) = unbounded();
+            let (dbusevents_tx, dbusevents_rx) = bounded(8);
             spawn_dbus_thread(dbusevents_tx)?;
 
             // enter the event loop

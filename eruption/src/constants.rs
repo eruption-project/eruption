@@ -20,6 +20,8 @@
 */
 
 #![allow(dead_code)]
+#![allow(unused_imports)]
+
 // Linux specific configuration
 mod linux {
     // ****************************************************************************
@@ -76,6 +78,9 @@ mod linux {
     // ****************************************************************************
 }
 
+#[cfg(not(target_os = "windows"))]
+pub use linux::*;
+
 // Windows specific configuration
 mod windows {
     /// Default path of eruption master configuration file
@@ -127,9 +132,6 @@ mod windows {
     pub const AUDIO_PIPE_NAME: &str = "//./pipe/eruption-audio";
 }
 
-#[cfg(not(target_os = "windows"))]
-pub use linux::*;
-
 #[cfg(target_os = "windows")]
 pub use windows::*;
 
@@ -156,13 +158,16 @@ pub const DEVICE_SETTLE_DELAY: u64 = 250;
 
 /// Update sensors every n seconds
 /// It is recommended to use a prime number value here
-pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS / 2;
+pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS_LIMIT / 2;
 
 /// Generic timeout value for fast operations
 pub const SHORT_TIMEOUT_MILLIS: u64 = 500;
 
 /// Generic timeout value for slow operations
 pub const LONG_TIMEOUT_MILLIS: u64 = 1000;
+
+/// Timeout value to use for the D-Bus event loop
+pub const DBUS_WAIT_MILLIS: u32 = 250;
 
 /// Timeout value to use for D-Bus connections
 pub const DBUS_TIMEOUT_MILLIS: u32 = 4000;
@@ -171,7 +176,7 @@ pub const DBUS_TIMEOUT_MILLIS: u32 = 4000;
 /// that may involve interactivity like e.g.: PolicyKit authentication
 pub const DBUS_TIMEOUT_MILLIS_INTERACTIVE: u32 = 30000;
 
-/// Wait n seconds before sending the LED "off pattern" on shutdown
+/// Wait n milliseconds before sending the LED "off pattern" on shutdown
 pub const SHUTDOWN_TIMEOUT_MILLIS: u32 = DEVICE_SETTLE_MILLIS as u32;
 
 /// Timer interval in milliseconds for the device config and status poll timer
@@ -185,13 +190,13 @@ pub const MAX_KEYS: usize = 256;
 pub const MAX_MOUSE_BUTTONS: usize = 32;
 
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
-pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 50;
+pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 5;
 
-/// Target frames per second
-pub const TARGET_FPS: u64 = 24;
+/// Limit framerate to n frames per second
+pub const TARGET_FPS_LIMIT: u64 = 60;
 
-/// Target timer tick events per second
-pub const TICK_FPS: u64 = TARGET_FPS;
+/// Timer tick events per second (timer resolution)
+pub const TIMER_TPS: u64 = 60;
 
 /// The width of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
@@ -205,13 +210,13 @@ pub const CANVAS_HEIGHT: usize = 64;
 pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 
 /// Timeout for waiting on condition variables of Lua upcalls
-pub const TIMEOUT_CONDITION_MILLIS: u64 = 35;
+pub const TIMEOUT_CONDITION_MILLIS: u64 = 40;
 
 /// Timeout for waiting on ready condition after the RealizeColorMap upcall
 pub const TIMEOUT_REALIZE_COLOR_MAP_CONDITION_MILLIS: u64 = 40;
 
 /// Max number of events that will be processed in each iteration of the main loop
-pub const MAX_EVENTS_PER_ITERATION: u64 = 64;
+pub const MAX_EVENTS_PER_ITERATION: u64 = 256;
 
 /// Fade in on profile switch for n milliseconds
 pub const FADE_MILLIS: u64 = 1333;

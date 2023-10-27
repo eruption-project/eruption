@@ -40,7 +40,6 @@ impl IntrospectionPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for IntrospectionPlugin {
     fn get_name(&self) -> String {
         "Introspection".to_string()
@@ -59,8 +58,6 @@ impl Plugin for IntrospectionPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

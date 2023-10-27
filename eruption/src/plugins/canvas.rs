@@ -26,7 +26,7 @@ use std::collections::HashMap;
 
 use crate::constants;
 
-use crate::hwdevices::Zone;
+use crate::hwdevices::{DeviceHandle, Zone};
 use crate::plugins::{self, Plugin};
 
 // pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -77,39 +77,17 @@ impl CanvasPlugin {
     }
 
     /// Returns the allocated zones and their respective dimensions
-    pub(crate) fn get_devices_zone_allocations() -> HashMap<u64, Zone> {
+    pub(crate) fn get_devices_zone_allocations() -> HashMap<DeviceHandle, Zone> {
         let mut result = HashMap::new();
-        let mut cntr = 0;
 
-        let keyboards = crate::KEYBOARD_DEVICES.read();
-
-        for device in keyboards.iter() {
-            result.insert(cntr, device.read().get_allocated_zone());
-
-            cntr += 1;
-        }
-
-        let mice = crate::MOUSE_DEVICES.read();
-
-        for device in mice.iter() {
-            result.insert(cntr, device.read().get_allocated_zone());
-
-            cntr += 1;
-        }
-
-        let misc = crate::MISC_DEVICES.read();
-
-        for device in misc.iter() {
-            result.insert(cntr, device.read().get_allocated_zone());
-
-            cntr += 1;
+        for (handle, device) in crate::DEVICES.read().iter() {
+            result.insert(*handle, device.read().get_allocated_zone());
         }
 
         result
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for CanvasPlugin {
     fn get_name(&self) -> String {
         "Canvas".to_string()
@@ -145,8 +123,6 @@ impl Plugin for CanvasPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

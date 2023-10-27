@@ -22,7 +22,7 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use flume::unbounded;
+use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -145,7 +145,6 @@ Copyright (c) 2019-2023, The Eruption Development Team
     );
 }
 
-/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -177,57 +176,6 @@ mod thread_util {
 
         Ok(())
     }
-}
-*/
-
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
-    cfg_if::cfg_if! {
-        if #[cfg(debug_assertions)] {
-            color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
-            .install()?;
-        } else {
-            color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
-            .display_env_section(false)
-            .install()?;
-        }
-    }
-
-    // print a license header, except if we are generating shell completions
-    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
-        print_header();
-    }
-
-    // start the thread deadlock detector
-    // #[cfg(debug_assertions)]
-    // thread_util::deadlock_detector()
-    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
-
-    // register ctrl-c handler
-    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
-    ctrlc::set_handler(move || {
-        QUIT.store(true, Ordering::SeqCst);
-
-        ctrl_c_tx
-            .send(true)
-            .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
-    })
-    .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
-
-    let opts = Options::parse();
-    match opts.command {
-        Subcommands::Completions { shell } => {
-            const BIN_NAME: &str = env!("CARGO_PKG_NAME");
-
-            let mut command = Options::command();
-            let mut fd = std::io::stdout();
-
-            clap_complete::generate(shell, &mut command, BIN_NAME.to_string(), &mut fd);
-        }
-    };
-
-    Ok(())
 }
 
 /// Main program entrypoint
@@ -272,11 +220,51 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     STATIC_LOADER.lock().replace(language_loader);
 
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .thread_name("worker")
-        .enable_all()
-        // .worker_threads(4)
-        .build()?;
+    cfg_if::cfg_if! {
+        if #[cfg(debug_assertions)] {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .install()?;
+        } else {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .display_env_section(false)
+            .install()?;
+        }
+    }
 
-    runtime.block_on(async move { async_main().await })
+    // print a license header, except if we are generating shell completions
+    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
+        print_header();
+    }
+
+    // start the thread deadlock detector
+    #[cfg(debug_assertions)]
+    thread_util::deadlock_detector()
+        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
+
+    // register ctrl-c handler
+    let (ctrl_c_tx, _ctrl_c_rx) = bounded(8);
+    ctrlc::set_handler(move || {
+        QUIT.store(true, Ordering::SeqCst);
+
+        ctrl_c_tx
+            .send(true)
+            .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
+    })
+    .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
+
+    let opts = Options::parse();
+    match opts.command {
+        Subcommands::Completions { shell } => {
+            const BIN_NAME: &str = env!("CARGO_PKG_NAME");
+
+            let mut command = Options::command();
+            let mut fd = std::io::stdout();
+
+            clap_complete::generate(shell, &mut command, BIN_NAME.to_string(), &mut fd);
+        }
+    };
+
+    Ok(())
 }

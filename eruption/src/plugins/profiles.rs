@@ -65,7 +65,6 @@ impl ProfilesPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for ProfilesPlugin {
     fn get_name(&self) -> String {
         "Profiles".to_string()
@@ -105,8 +104,6 @@ impl Plugin for ProfilesPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

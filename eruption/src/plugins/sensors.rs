@@ -138,7 +138,6 @@ impl SensorsPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for SensorsPlugin {
     fn get_name(&self) -> String {
         "Sensors".to_string()
@@ -180,16 +179,6 @@ impl Plugin for SensorsPlugin {
         globals.set("get_swap_used_kb", get_swap_used_kb)?;
 
         Ok(())
-    }
-
-    async fn main_loop_hook(&self, _ticks: u64) {
-        // refresh sensor state (default: every other second), but only
-        // if the sensors have been used at least once
-        // if ticks % crate::constants::SENSOR_UPDATE_TICKS == 0 && DO_REFRESH.load(Ordering::SeqCst) {
-        //     tracing::debug!("Refreshing sensors...");
-        //
-        //     Self::refresh();
-        // }
     }
 
     fn sync_main_loop_hook(&self, ticks: u64) {

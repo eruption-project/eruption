@@ -20,7 +20,7 @@
 */
 
 use hidapi::HidApi;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::Mutex;
 use std::collections::HashMap;
 use tracing::*;
 // use std::sync::atomic::Ordering;
@@ -31,9 +31,9 @@ use std::{mem::size_of, sync::Arc};
 use crate::{constants, hwdevices};
 
 use crate::hwdevices::{
-    Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceStatus, DeviceTrait,
-    DeviceZoneAllocationTrait, HwDeviceError, MiscDevice, MiscDeviceTrait, MouseDeviceTrait,
-    Result, Zone, RGBA,
+    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
+    DeviceZoneAllocationExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt, Result,
+    Zone, RGBA,
 };
 
 // pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device
@@ -50,7 +50,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> Result<MiscDevice> {
+) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -70,10 +70,10 @@ pub fn bind_hiddev(
     {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(RoccatAimoPad::bind(
+        Ok(Box::new(RoccatAimoPad::bind(
             ctrl_dev.unwrap(),
             // led_dev.unwrap(),
-        )))))
+        )))
     }
 }
 
@@ -147,7 +147,8 @@ impl RoccatAimoPad {
     //
     //                 match ctrl_dev.get_feature_report(&mut buf) {
     //                     Ok(_result) => {
-    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //         #[cfg(debug_assertions)]
+    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
     //
     //                         Ok(())
     //                     }
@@ -187,6 +188,7 @@ impl RoccatAimoPad {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -204,6 +206,7 @@ impl RoccatAimoPad {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -218,6 +221,7 @@ impl RoccatAimoPad {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -232,6 +236,7 @@ impl RoccatAimoPad {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -262,6 +267,7 @@ impl RoccatAimoPad {
             //
             // match ctrl_dev.read_timeout(&mut buf, 20) {
             //     Ok(_result) => {
+            //         #[cfg(debug_assertions)]
             //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
             //
             //         #[allow(clippy::if_same_then_else)]
@@ -290,7 +296,7 @@ impl RoccatAimoPad {
     }
 }
 
-impl DeviceInfoTrait for RoccatAimoPad {
+impl DeviceInfoExt for RoccatAimoPad {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([
             Capability::Misc,
@@ -315,6 +321,7 @@ impl DeviceInfoTrait for RoccatAimoPad {
 
             match ctrl_dev.get_feature_report(&mut buf) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
@@ -341,7 +348,7 @@ impl DeviceInfoTrait for RoccatAimoPad {
     }
 }
 
-impl DeviceTrait for RoccatAimoPad {
+impl DeviceExt for RoccatAimoPad {
     fn get_usb_path(&self) -> String {
         self.ctrl_hiddev_info
             .clone()
@@ -539,6 +546,7 @@ impl DeviceTrait for RoccatAimoPad {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(buf)
@@ -557,51 +565,7 @@ impl DeviceTrait for RoccatAimoPad {
         Ok(DeviceStatus(table))
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
-
-    fn as_device(&self) -> &dyn DeviceTrait {
-        self
-    }
-
-    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
-        self
-    }
-
-    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
-        None
-    }
-
-    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
-        None
-    }
-}
-
-impl DeviceZoneAllocationTrait for RoccatAimoPad {
-    fn get_zone_size_hint(&self) -> usize {
-        NUM_LEDS
-    }
-
-    fn get_allocated_zone(&self) -> Zone {
-        self.allocated_zone
-    }
-
-    fn set_zone_allocation(&mut self, zone: Zone) {
-        self.allocated_zone = zone;
-    }
-}
-
-impl MiscDeviceTrait for RoccatAimoPad {
-    fn has_input_device(&self) -> bool {
-        false
-    }
-
-    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
+    fn set_brightness(&mut self, brightness: i32) -> Result<()> {
         trace!("Setting device specific brightness");
 
         self.brightness = brightness;
@@ -609,7 +573,7 @@ impl MiscDeviceTrait for RoccatAimoPad {
         Ok(())
     }
 
-    fn get_local_brightness(&self) -> Result<i32> {
+    fn get_brightness(&self) -> Result<i32> {
         trace!("Querying device specific brightness");
 
         Ok(self.brightness)
@@ -624,73 +588,52 @@ impl MiscDeviceTrait for RoccatAimoPad {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
-        } else {
-            if self.allocated_zone.enabled {
-                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-                let ctrl_dev = ctrl_dev.as_ref().unwrap();
+        } else if self.allocated_zone.enabled {
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
-                #[inline]
-                fn offset_of(x: i32, y: i32) -> usize {
-                    (constants::CANVAS_HEIGHT as i32 * y + x) as usize
+            #[inline]
+            fn offset_of(x: i32, y: i32) -> usize {
+                (constants::CANVAS_HEIGHT as i32 * y + x) as usize
+            }
+
+            let (x, y) = (self.allocated_zone.x, self.allocated_zone.y);
+            let (x2, y2) = (self.allocated_zone.x2(), self.allocated_zone.y2());
+
+            let led0 = offset_of(x, y);
+            let led1 = offset_of(x2, y2);
+
+            let buf: [u8; 9] = [
+                0x03,
+                (led_map[led0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[led0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[led0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[led0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[led1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[led1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[led1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+                (led_map[led1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
+            ];
+
+            match ctrl_dev.send_feature_report(&buf) {
+                Ok(_result) => {
+                    #[cfg(debug_assertions)]
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                 }
 
-                let (x, y) = (self.allocated_zone.x, self.allocated_zone.y);
-                let (x2, y2) = (self.allocated_zone.x2(), self.allocated_zone.y2());
+                Err(_) => {
+                    // the device has failed or has been disconnected
+                    self.is_initialized = false;
+                    self.is_opened = false;
+                    self.has_failed = true;
 
-                let led0 = offset_of(x, y);
-                let led1 = offset_of(x2, y2);
+                    return Err(HwDeviceError::InvalidResult {}.into());
+                }
+            };
 
-                let buf: [u8; 9] = [
-                    0x03,
-                    (led_map[led0].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[led0].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[led0].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[led0].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[led1].r as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[led1].g as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[led1].b as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                    (led_map[led1].a as f32 * (self.brightness as f32 / 100.0)).floor() as u8,
-                ];
-
-                match ctrl_dev.send_feature_report(&buf) {
-                    Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    }
-
-                    Err(_) => {
-                        // the device has failed or has been disconnected
-                        self.is_initialized = false;
-                        self.is_opened = false;
-                        self.has_failed = true;
-
-                        return Err(HwDeviceError::InvalidResult {}.into());
-                    }
-                };
-
-                Ok(())
-            } else {
-                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-                let ctrl_dev = ctrl_dev.as_ref().unwrap();
-
-                let buf: [u8; 9] = [0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-
-                match ctrl_dev.send_feature_report(&buf) {
-                    Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    }
-
-                    Err(_) => {
-                        // the device has failed or has been disconnected
-                        self.is_initialized = false;
-                        self.is_opened = false;
-                        self.has_failed = true;
-
-                        return Err(HwDeviceError::InvalidResult {}.into());
-                    }
-                };
-
-                Ok(())
-            }
+            Ok(())
+        } else {
+            Ok(())
         }
     }
 
@@ -738,5 +681,70 @@ impl MiscDeviceTrait for RoccatAimoPad {
 
             Ok(())
         }
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+
+    fn as_device(&self) -> &(dyn DeviceExt + Sync + Send) {
+        self
+    }
+
+    fn as_device_mut(&mut self) -> &mut (dyn DeviceExt + Sync + Send) {
+        self
+    }
+
+    fn as_mouse_device(&self) -> Option<&(dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_mouse_device_mut(&mut self) -> Option<&mut (dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn get_device_class(&self) -> DeviceClass {
+        DeviceClass::Misc
+    }
+
+    fn as_keyboard_device(&self) -> Option<&(dyn hwdevices::KeyboardDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_keyboard_device_mut(
+        &mut self,
+    ) -> Option<&mut (dyn hwdevices::KeyboardDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_misc_device(&self) -> Option<&(dyn MiscDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_misc_device_mut(&mut self) -> Option<&mut (dyn MiscDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+}
+
+impl DeviceZoneAllocationExt for RoccatAimoPad {
+    fn get_zone_size_hint(&self) -> usize {
+        NUM_LEDS
+    }
+
+    fn get_allocated_zone(&self) -> Zone {
+        self.allocated_zone
+    }
+
+    fn set_zone_allocation(&mut self, zone: Zone) {
+        self.allocated_zone = zone;
+    }
+}
+
+impl MiscDeviceExt for RoccatAimoPad {
+    fn has_input_device(&self) -> bool {
+        false
     }
 }

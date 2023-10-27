@@ -37,9 +37,7 @@ function on_mouse_move(rel_x, rel_y, rel_z)
     offsets[3] = offsets[3] - rel_z
 end
 
-function on_render()
-    submit_color_map(color_map)
-end
+function on_render() submit_color_map(color_map) end
 
 function on_tick(delta)
     ticks = ticks + delta
@@ -52,7 +50,8 @@ function on_tick(delta)
 
             local val = perlin_noise((y + (offsets[2] / 256)) / coord_scale,
                                      (x + (offsets[1] / 256)) / coord_scale,
-                                     (ticks + (offsets[3] / 256)) / time_scale)
+                                     (ticks + (offsets[3] / 256)) / time_scale /
+                                         10)
 
             val = lerp(0, 360, val)
 

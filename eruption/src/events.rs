@@ -25,14 +25,13 @@ use crate::util::ratelimited;
 use crate::macros;
 
 use crate::{
-    constants, dbus_interface, events, script, switch_profile, DbusApiEvent, FileSystemEvent,
-    KeyboardDevice, KeyboardHidEvent, MouseDevice, MouseHidEvent, ACTIVE_SLOT, DEVICE_STATUS,
-    FAILED_TXS, KEY_STATES, LUA_TXS, MOUSE_MOTION_BUF, MOUSE_MOVE_EVENT_LAST_DISPATCHED,
-    REQUEST_FAILSAFE_MODE, REQUEST_PROFILE_RELOAD, UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT,
-    UPCALL_COMPLETED_ON_KEY_DOWN, UPCALL_COMPLETED_ON_KEY_UP,
-    UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN, UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP,
-    UPCALL_COMPLETED_ON_MOUSE_EVENT, UPCALL_COMPLETED_ON_MOUSE_HID_EVENT,
-    UPCALL_COMPLETED_ON_MOUSE_MOVE,
+    constants, dbus_interface, events, hwdevices, script, switch_profile, DbusApiEvent,
+    FileSystemEvent, KeyboardHidEvent, MouseHidEvent, ACTIVE_SLOT, DEVICE_STATUS, FAILED_TXS,
+    KEY_STATES, LUA_TXS, MOUSE_MOTION_BUF, MOUSE_MOVE_EVENT_LAST_DISPATCHED, REQUEST_FAILSAFE_MODE,
+    REQUEST_PROFILE_RELOAD, UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT, UPCALL_COMPLETED_ON_KEY_DOWN,
+    UPCALL_COMPLETED_ON_KEY_UP, UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN,
+    UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP, UPCALL_COMPLETED_ON_MOUSE_EVENT,
+    UPCALL_COMPLETED_ON_MOUSE_HID_EVENT, UPCALL_COMPLETED_ON_MOUSE_MOVE,
 };
 use flume::Sender;
 use lazy_static::lazy_static;
@@ -152,48 +151,161 @@ pub fn process_dbus_event(
 
 /// Process a timer tick event
 pub fn process_timer_event() -> Result<()> {
-    let offset = 0;
+    for (handle, device) in crate::DEVICES.read().iter() {
+        let device_status = device.read().device_status()?;
 
-    for (index, dev) in crate::KEYBOARD_DEVICES.read().iter().enumerate() {
-        let device_status = dev.read().device_status()?;
-
-        DEVICE_STATUS
-            .write()
-            .insert((index + offset) as u64, device_status);
-    }
-
-    let offset = crate::KEYBOARD_DEVICES.read().len();
-
-    for (index, dev) in crate::MOUSE_DEVICES.read().iter().enumerate() {
-        let device_status = dev.read().device_status()?;
-
-        DEVICE_STATUS
-            .write()
-            .insert((index + offset) as u64, device_status);
-    }
-
-    let offset = crate::KEYBOARD_DEVICES.read().len() + crate::MOUSE_DEVICES.read().len();
-
-    for (index, dev) in crate::MISC_DEVICES.read().iter().enumerate() {
-        let device_status = dev.read().device_status()?;
-
-        DEVICE_STATUS
-            .write()
-            .insert((index + offset) as u64, device_status);
+        DEVICE_STATUS.write().insert(*handle as u64, device_status);
     }
 
     Ok(())
 }
 
+/// Process keyboard events
+#[cfg(not(target_os = "windows"))]
+pub fn process_keyboard_event(
+    raw_event: &evdev_rs::InputEvent,
+    keyboard_device: hwdevices::Device,
+) -> Result<()> {
+    // notify all observers of raw events
+    events::notify_observers(events::Event::RawKeyboardEvent(raw_event.clone())).ok();
+
+    if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
+        let is_pressed = raw_event.value > 0;
+        let index = keyboard_device
+            .read()
+            .as_keyboard_device()
+            .unwrap()
+            .ev_key_to_key_index(*code);
+
+        trace!("Key index: {:#x}", index);
+
+        if is_pressed {
+            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+
+            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
+                if !FAILED_TXS.read().contains(&idx) {
+                    lua_tx
+                        .send(script::Message::KeyDown(index))
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending keyboard event to a Lua VM: {}", e)
+                        });
+                } else {
+                    ratelimited::warn!("Not sending a message to a failed tx");
+                }
+            }
+
+            // wait until all Lua VMs completed the event handler
+            loop {
+                // this is required to avoid a deadlock when a Lua script fails
+                // and a key event is pending
+                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = 0;
+                    break;
+                }
+
+                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+
+                UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
+                    &mut pending,
+                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                );
+
+                if *pending == 0 {
+                    break;
+                }
+            }
+
+            events::notify_observers(events::Event::KeyDown(index)).unwrap_or_else(|e| {
+                error!(
+                    "Error during notification of observers [keyboard_event]: {}",
+                    e
+                )
+            });
+        } else {
+            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+
+            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
+                if !FAILED_TXS.read().contains(&idx) {
+                    lua_tx
+                        .send(script::Message::KeyUp(index))
+                        .unwrap_or_else(|e| {
+                            error!("Could not send a pending keyboard event to a Lua VM: {}", e)
+                        });
+                } else {
+                    ratelimited::warn!("Not sending a message to a failed tx");
+                }
+            }
+
+            // wait until all Lua VMs completed the event handler
+            loop {
+                // this is required to avoid a deadlock when a Lua script fails
+                // and a key event is pending
+                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = 0;
+                    break;
+                }
+
+                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+
+                UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
+                    &mut pending,
+                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                );
+
+                if *pending == 0 {
+                    break;
+                }
+            }
+
+            events::notify_observers(events::Event::KeyUp(index)).unwrap_or_else(|e| {
+                error!(
+                    "Error during notification of observers [keyboard_event]: {}",
+                    e
+                )
+            });
+        }
+    }
+
+    // handler for Message::MirrorKey will drop the key if a Lua VM
+    // called inject_key(..), so that the key won't be reported twice
+    macros::UINPUT_TX
+        .read()
+        .as_ref()
+        .unwrap()
+        .send(macros::Message::MirrorKey(raw_event.clone()))
+        .unwrap_or_else(|e| {
+            ratelimited::error!("Could not send a pending keyboard event: {}", e);
+
+            keyboard_device
+                .write()
+                .as_keyboard_device_mut()
+                .unwrap()
+                .fail()
+                .unwrap_or_else(|e| {
+                    error!("Could not mark a device as failed: {}", e);
+                });
+
+            // we need to terminate and then re-enter the main loop to update all global state
+            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+        });
+
+    Ok(())
+}
+
 /// Process HID events
-pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<()> {
+pub fn process_keyboard_hid_events(keyboard_device: hwdevices::Device) -> Result<()> {
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
 
     let mut event_processed = false;
 
     'HID_EVENTS_LOOP: loop {
-        match keyboard_device.read().get_next_event_timeout(0) {
+        match keyboard_device
+            .read()
+            .as_keyboard_device()
+            .unwrap()
+            .get_next_event_timeout(0)
+        {
             Ok(result) if result != KeyboardHidEvent::Unknown => {
                 event_processed = true;
 
@@ -245,7 +357,11 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                 // translate HID event to keyboard event
                 match result {
                     KeyboardHidEvent::KeyDown { code } => {
-                        let index = keyboard_device.read().hid_event_code_to_key_index(&code);
+                        let index = keyboard_device
+                            .read()
+                            .as_keyboard_device()
+                            .unwrap()
+                            .hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
                                 if let Some(mut v) = KEY_STATES.write().get_mut(index as usize) {
@@ -300,7 +416,11 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
                     }
 
                     KeyboardHidEvent::KeyUp { code } => {
-                        let index = keyboard_device.read().hid_event_code_to_key_index(&code);
+                        let index = keyboard_device
+                            .read()
+                            .as_keyboard_device()
+                            .unwrap()
+                            .hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
                                 if let Some(mut v) = KEY_STATES.write().get_mut(index as usize) {
@@ -376,89 +496,11 @@ pub fn process_keyboard_hid_events(keyboard_device: &KeyboardDevice) -> Result<(
     Ok(())
 }
 
-/// Process HID events
-pub fn process_mouse_hid_events(mouse_device: &MouseDevice) -> Result<()> {
-    // limit the number of messages that will be processed during this iteration
-    let mut loop_counter = 0;
-
-    let mut event_processed = false;
-
-    'HID_EVENTS_LOOP: loop {
-        match mouse_device.read().get_next_event_timeout(0) {
-            Ok(result) if result != MouseHidEvent::Unknown => {
-                event_processed = true;
-
-                events::notify_observers(events::Event::MouseHidEvent(result)).unwrap_or_else(
-                    |e| {
-                        error!(
-                            "Error during notification of observers [mouse_hid_event]: {}",
-                            e
-                        )
-                    },
-                );
-
-                *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() =
-                    LUA_TXS.read().len() - FAILED_TXS.read().len();
-
-                for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                    if !FAILED_TXS.read().contains(&idx) {
-                        lua_tx
-                            .send(script::Message::MouseHidEvent(result))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending HID event to a Lua VM: {}", e)
-                            });
-                    } else {
-                        ratelimited::warn!("Not sending a message to a failed tx");
-                    }
-                }
-
-                // wait until all Lua VMs completed the event handler
-                loop {
-                    // this is required to avoid a deadlock when a Lua script fails
-                    // and an event is pending
-                    if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                        *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() = 0;
-                        break;
-                    }
-
-                    let mut pending = UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock();
-
-                    UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.wait_for(
-                        &mut pending,
-                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                    );
-
-                    if *pending == 0 {
-                        break;
-                    }
-                }
-
-                //     _ => { /* ignore other events */ }
-                // }
-            }
-
-            Ok(_) => { /* Ignore unknown events */ }
-
-            Err(_e) => {
-                event_processed = false;
-            }
-        }
-
-        if !event_processed || loop_counter >= constants::MAX_EVENTS_PER_ITERATION {
-            break 'HID_EVENTS_LOOP; // no more events in queue or iteration limit reached
-        }
-
-        loop_counter += 1;
-    }
-
-    Ok(())
-}
-
 /// Process mouse events
 #[cfg(not(target_os = "windows"))]
 pub fn process_mouse_event(
     raw_event: &evdev_rs::InputEvent,
-    mouse_device: &MouseDevice,
+    mouse_device: hwdevices::Device,
 ) -> Result<()> {
     // send pending mouse events to the Lua VMs and to the event dispatcher
 
@@ -637,7 +679,12 @@ pub fn process_mouse_event(
         // mouse button event occurred
 
         let is_pressed = raw_event.value > 0;
-        let index = mouse_device.read().ev_key_to_button_index(code).unwrap();
+        let index = mouse_device
+            .read()
+            .as_mouse_device()
+            .unwrap()
+            .ev_key_to_button_index(code)
+            .unwrap();
 
         if is_pressed {
             *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
@@ -737,9 +784,14 @@ pub fn process_mouse_event(
             .unwrap_or_else(|e| {
                 ratelimited::error!("Could not send a pending mouse event: {}", e);
 
-                mouse_device.write().fail().unwrap_or_else(|e| {
-                    error!("Could not mark a device as failed: {}", e);
-                });
+                mouse_device
+                    .write()
+                    .as_mouse_device_mut()
+                    .unwrap()
+                    .fail()
+                    .unwrap_or_else(|e| {
+                        error!("Could not mark a device as failed: {}", e);
+                    });
 
                 // we need to terminate and then re-enter the main loop to update all global state
                 crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
@@ -749,125 +801,85 @@ pub fn process_mouse_event(
     Ok(())
 }
 
-/// Process keyboard events
-#[cfg(not(target_os = "windows"))]
-pub fn process_keyboard_event(
-    raw_event: &evdev_rs::InputEvent,
-    keyboard_device: &KeyboardDevice,
-) -> Result<()> {
-    // notify all observers of raw events
-    events::notify_observers(events::Event::RawKeyboardEvent(raw_event.clone())).ok();
+/// Process HID events
+pub fn process_mouse_hid_events(mouse_device: hwdevices::Device) -> Result<()> {
+    // limit the number of messages that will be processed during this iteration
+    let mut loop_counter = 0;
 
-    if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
-        let is_pressed = raw_event.value > 0;
-        let index = keyboard_device.read().ev_key_to_key_index(*code);
+    let mut event_processed = false;
 
-        trace!("Key index: {:#x}", index);
+    'HID_EVENTS_LOOP: loop {
+        match mouse_device
+            .read()
+            .as_mouse_device()
+            .unwrap()
+            .get_next_event_timeout(0)
+        {
+            Ok(result) if result != MouseHidEvent::Unknown => {
+                event_processed = true;
 
-        if is_pressed {
-            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
-
-            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                if !FAILED_TXS.read().contains(&idx) {
-                    lua_tx
-                        .send(script::Message::KeyDown(index))
-                        .unwrap_or_else(|e| {
-                            error!("Could not send a pending keyboard event to a Lua VM: {}", e)
-                        });
-                } else {
-                    ratelimited::warn!("Not sending a message to a failed tx");
-                }
-            }
-
-            // wait until all Lua VMs completed the event handler
-            loop {
-                // this is required to avoid a deadlock when a Lua script fails
-                // and a key event is pending
-                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = 0;
-                    break;
-                }
-
-                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
-
-                UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
-                    &mut pending,
-                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                events::notify_observers(events::Event::MouseHidEvent(result)).unwrap_or_else(
+                    |e| {
+                        error!(
+                            "Error during notification of observers [mouse_hid_event]: {}",
+                            e
+                        )
+                    },
                 );
 
-                if *pending == 0 {
-                    break;
+                *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() =
+                    LUA_TXS.read().len() - FAILED_TXS.read().len();
+
+                for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
+                    if !FAILED_TXS.read().contains(&idx) {
+                        lua_tx
+                            .send(script::Message::MouseHidEvent(result))
+                            .unwrap_or_else(|e| {
+                                error!("Could not send a pending HID event to a Lua VM: {}", e)
+                            });
+                    } else {
+                        ratelimited::warn!("Not sending a message to a failed tx");
+                    }
                 }
+
+                // wait until all Lua VMs completed the event handler
+                loop {
+                    // this is required to avoid a deadlock when a Lua script fails
+                    // and an event is pending
+                    if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
+                        *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() = 0;
+                        break;
+                    }
+
+                    let mut pending = UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock();
+
+                    UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.wait_for(
+                        &mut pending,
+                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                    );
+
+                    if *pending == 0 {
+                        break;
+                    }
+                }
+
+                //     _ => { /* ignore other events */ }
+                // }
             }
 
-            events::notify_observers(events::Event::KeyDown(index)).unwrap_or_else(|e| {
-                error!(
-                    "Error during notification of observers [keyboard_event]: {}",
-                    e
-                )
-            });
-        } else {
-            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+            Ok(_) => { /* Ignore unknown events */ }
 
-            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                if !FAILED_TXS.read().contains(&idx) {
-                    lua_tx
-                        .send(script::Message::KeyUp(index))
-                        .unwrap_or_else(|e| {
-                            error!("Could not send a pending keyboard event to a Lua VM: {}", e)
-                        });
-                } else {
-                    ratelimited::warn!("Not sending a message to a failed tx");
-                }
+            Err(_e) => {
+                event_processed = false;
             }
-
-            // wait until all Lua VMs completed the event handler
-            loop {
-                // this is required to avoid a deadlock when a Lua script fails
-                // and a key event is pending
-                if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = 0;
-                    break;
-                }
-
-                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
-
-                UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
-                    &mut pending,
-                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                );
-
-                if *pending == 0 {
-                    break;
-                }
-            }
-
-            events::notify_observers(events::Event::KeyUp(index)).unwrap_or_else(|e| {
-                error!(
-                    "Error during notification of observers [keyboard_event]: {}",
-                    e
-                )
-            });
         }
+
+        if !event_processed || loop_counter >= constants::MAX_EVENTS_PER_ITERATION {
+            break 'HID_EVENTS_LOOP; // no more events in queue or iteration limit reached
+        }
+
+        loop_counter += 1;
     }
-
-    // handler for Message::MirrorKey will drop the key if a Lua VM
-    // called inject_key(..), so that the key won't be reported twice
-    macros::UINPUT_TX
-        .read()
-        .as_ref()
-        .unwrap()
-        .send(macros::Message::MirrorKey(raw_event.clone()))
-        .unwrap_or_else(|e| {
-            ratelimited::error!("Could not send a pending keyboard event: {}", e);
-
-            keyboard_device.write().fail().unwrap_or_else(|e| {
-                error!("Could not mark a device as failed: {}", e);
-            });
-
-            // we need to terminate and then re-enter the main loop to update all global state
-            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-        });
 
     Ok(())
 }

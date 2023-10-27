@@ -32,7 +32,7 @@ use tracing::*;
 
 use crate::color_scheme::ColorScheme;
 use crate::plugins::audio;
-use crate::{constants, util};
+use crate::{constants, hwdevices, util};
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -101,7 +101,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         ))
         .set_default("active_slot", 0)?
         .set_default("enable_sfx", false)?
-        .set_default("brightness", 85)?
+        .set_default("brightness", 100)?
         .set_default("canvas_hue", 0.0)?
         .set_default("canvas_saturation", 0.0)?
         .set_default("canvas_lightness", 0.0)?
@@ -191,7 +191,7 @@ pub fn init_global_runtime_state() -> Result<()> {
     Ok(())
 }
 
-pub fn init_global_runtime_state_late() -> Result<()> {
+pub fn init_runtime_state(device: hwdevices::Device) -> Result<()> {
     // TODO: retain inactive device's brightness values across
     //       restarts of the Eruption daemon
 
@@ -203,59 +203,21 @@ pub fn init_global_runtime_state_late() -> Result<()> {
         .unwrap_or(&empty)
         .get_table("device_brightness")
     {
-        for device in &*crate::KEYBOARD_DEVICES.read() {
-            let make = format!("0x{:x}", device.read().get_usb_vid());
-            let model = format!("0x{:x}", device.read().get_usb_pid());
-            let serial = device.read().get_serial().unwrap_or("").to_string();
+        let make = format!("0x{:x}", device.read().get_usb_vid());
+        let model = format!("0x{:x}", device.read().get_usb_pid());
+        let serial = device.read().get_serial().unwrap_or("").to_string();
 
-            let val = config::Value::new(None, 100);
+        let val = config::Value::new(None, 100);
 
-            let brightness = device_brightness
-                .get(&format!("{make}:{model}:{serial}"))
-                .unwrap_or(&val);
+        let brightness = device_brightness
+            .get(&format!("{make}:{model}:{serial}"))
+            .unwrap_or(&val);
 
-            let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
+        let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
 
-            debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
+        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-            device.write().set_local_brightness(brightness)?;
-        }
-
-        for device in &*crate::MOUSE_DEVICES.read() {
-            let make = format!("0x{:x}", device.read().get_usb_vid());
-            let model = format!("0x{:x}", device.read().get_usb_pid());
-            let serial = device.read().get_serial().unwrap_or("").to_string();
-
-            let val = config::Value::new(None, 100);
-
-            let brightness = device_brightness
-                .get(&format!("{make}:{model}:{serial}"))
-                .unwrap_or(&val);
-
-            let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
-
-            debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
-
-            device.write().set_local_brightness(brightness)?;
-        }
-
-        for device in &*crate::MISC_DEVICES.read() {
-            let make = format!("0x{:x}", device.read().get_usb_vid());
-            let model = format!("0x{:x}", device.read().get_usb_pid());
-            let serial = device.read().get_serial().unwrap_or("").to_string();
-
-            let val = config::Value::new(None, 100);
-
-            let brightness = device_brightness
-                .get(&format!("{make}:{model}:{serial}"))
-                .unwrap_or(&val);
-
-            let brightness = brightness.clone().into_int().unwrap_or(100) as i32;
-
-            debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
-
-            device.write().set_local_brightness(brightness)?;
-        }
+        device.write().set_brightness(brightness)?;
     }
 
     Ok(())
@@ -266,36 +228,14 @@ pub fn save_runtime_state() -> Result<()> {
 
     let mut device_brightness = HashMap::new();
 
-    for device in &*crate::KEYBOARD_DEVICES.read() {
-        let make = format!("0x{:x}", device.read().get_usb_vid());
-        let model = format!("0x{:x}", device.read().get_usb_pid());
-        let serial = device.read().get_serial().unwrap_or("").to_string();
+    for (_handle, device) in &*crate::DEVICES.read() {
+        let device = device.read();
 
-        let brightness = device.read().get_local_brightness()?;
+        let make = format!("0x{:x}", device.get_usb_vid());
+        let model = format!("0x{:x}", device.get_usb_pid());
+        let serial = device.get_serial().unwrap_or("").to_string();
 
-        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
-
-        device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
-    }
-
-    for device in &*crate::MOUSE_DEVICES.read() {
-        let make = format!("0x{:x}", device.read().get_usb_vid());
-        let model = format!("0x{:x}", device.read().get_usb_pid());
-        let serial = device.read().get_serial().unwrap_or("").to_string();
-
-        let brightness = device.read().get_local_brightness()?;
-
-        debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
-
-        device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
-    }
-
-    for device in &*crate::MISC_DEVICES.read() {
-        let make = format!("0x{:x}", device.read().get_usb_vid());
-        let model = format!("0x{:x}", device.read().get_usb_pid());
-        let serial = device.read().get_serial().unwrap_or("").to_string();
-
-        let brightness = device.read().get_local_brightness()?;
+        let brightness = device.get_brightness()?;
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
@@ -332,7 +272,7 @@ fn perform_sanity_checks() {
         .unwrap()
         .get_int("brightness")
         .unwrap()
-        < 25
+        < 10
     {
         warn!("Brightness configuration value is set very low, the LEDs will probably stay dark!");
     }

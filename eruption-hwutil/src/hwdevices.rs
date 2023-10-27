@@ -44,6 +44,7 @@ mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
 mod wooting_two_he_arm;
 
+#[allow(unused_imports)]
 pub use custom_serial_leds::*;
 
 use std::collections::HashMap;

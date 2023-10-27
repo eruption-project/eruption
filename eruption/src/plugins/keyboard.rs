@@ -41,7 +41,6 @@ impl KeyboardPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for KeyboardPlugin {
     fn get_name(&self) -> String {
         "Keyboard".to_string()
@@ -64,8 +63,6 @@ impl Plugin for KeyboardPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

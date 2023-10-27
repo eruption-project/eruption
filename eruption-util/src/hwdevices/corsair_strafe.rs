@@ -76,7 +76,8 @@ impl CorsairStrafe {
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
     //                     Ok(_result) => {
-    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //         #[cfg(debug_assertions)]
+    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
     //                         Ok(())
     //                     }
@@ -112,6 +113,7 @@ impl CorsairStrafe {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -133,6 +135,7 @@ impl CorsairStrafe {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -154,6 +157,7 @@ impl CorsairStrafe {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -175,6 +179,7 @@ impl CorsairStrafe {
 
                     match ctrl_dev.send_feature_report(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                             Ok(())
@@ -268,6 +273,7 @@ impl DeviceTrait for CorsairStrafe {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(buf)
@@ -292,6 +298,7 @@ impl DeviceTrait for CorsairStrafe {
             match ctrl_dev.read_timeout(&mut buf, millis) {
                 Ok(_size) => {
                     if buf.iter().any(|e| *e != 0) {
+                        #[cfg(debug_assertions)]
                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     }
 
@@ -459,6 +466,7 @@ impl DeviceTrait for CorsairStrafe {
 
                             tmp[4..64].copy_from_slice(bytes);
 
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
                             match led_dev.write(&tmp) {
@@ -482,6 +490,7 @@ impl DeviceTrait for CorsairStrafe {
                             0x00, 0x00, 0x00, 0x00,
                         ];
 
+                        #[cfg(debug_assertions)]
                         hexdump::hexdump_iter(&tmp).for_each(|s| trace!("  {}", s));
 
                         match led_dev.write(&tmp) {

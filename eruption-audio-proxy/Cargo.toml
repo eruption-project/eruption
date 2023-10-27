@@ -39,7 +39,6 @@ resolver = "2"
 [features]
 default = []
 windows = []
-debug-async = []
 
 [dependencies]
 cfg-if = "1.0.0"
@@ -52,10 +51,10 @@ libc = "0.2.148"
 nix = { version = "0.27.1", features = ["poll", "socket"] }
 is-terminal = "0.4.9"
 parking_lot = { version = "0.12.1", features = [
-  "send_guard",
+  # "send_guard",
+  "deadlock_detection",
   "hardware-lock-elision",
 ] }
-tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 socket2 = { version = "0.5.4", features = ["all"] }
 ctrlc = { version = "3.4.1", features = ["termination"] }
 tracing = "0.1.37"
@@ -92,7 +91,6 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
-tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }
 
 [build-dependencies]
 prost-build = "0.12.1"

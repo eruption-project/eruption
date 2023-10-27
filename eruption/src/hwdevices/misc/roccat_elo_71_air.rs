@@ -20,7 +20,7 @@
 */
 
 use hidapi::HidApi;
-use parking_lot::{Mutex, RwLock};
+use parking_lot::Mutex;
 use std::collections::HashMap;
 use tracing::*;
 // use std::sync::atomic::Ordering;
@@ -31,9 +31,9 @@ use std::{mem::size_of, sync::Arc};
 use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceStatus, DeviceTrait,
-    DeviceZoneAllocationTrait, HwDeviceError, MiscDevice, MiscDeviceTrait, MouseDeviceTrait,
-    Result, Zone, RGBA,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
+    DeviceZoneAllocationExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt, Result,
+    Zone, RGBA,
 };
 
 // pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device
@@ -51,7 +51,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> Result<MiscDevice> {
+) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -71,10 +71,10 @@ pub fn bind_hiddev(
     {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(RoccatElo71Air::bind(
+        Ok(Box::new(RoccatElo71Air::bind(
             ctrl_dev.unwrap(),
             // led_dev.unwrap(),
-        )))))
+        )))
     }
 }
 
@@ -162,7 +162,8 @@ impl RoccatElo71Air {
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
     //                     Ok(_result) => {
-    //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+    //         #[cfg(debug_assertions)]
+    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
     //                         Ok(())
     //                     }
@@ -203,6 +204,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -216,7 +218,8 @@ impl RoccatElo71Air {
 
                     // match ctrl_dev.read(&mut buf) {
                     //     Ok(_result) => {
-                    //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
+                    //         #[cfg(debug_assertions)]
+                    hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     //     }
 
                     //     Err(_) => return Err(HwDeviceError::InvalidResult {}.into()),
@@ -237,6 +240,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -256,6 +260,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -275,6 +280,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -294,6 +300,7 @@ impl RoccatElo71Air {
 
                     match ctrl_dev.write(&buf) {
                         Ok(_result) => {
+                            #[cfg(debug_assertions)]
                             hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                         }
 
@@ -324,6 +331,7 @@ impl RoccatElo71Air {
 
             match ctrl_dev.read_timeout(&mut buf, 20) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     #[allow(clippy::if_same_then_else)]
@@ -367,6 +375,7 @@ impl RoccatElo71Air {
 
             match ctrl_dev.read_timeout(&mut buf, 5) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     if let Ok(status) = self.parse_device_status(&buf) {
@@ -420,7 +429,7 @@ impl RoccatElo71Air {
     }
 }
 
-impl DeviceInfoTrait for RoccatElo71Air {
+impl DeviceInfoExt for RoccatElo71Air {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([
             Capability::Misc,
@@ -445,6 +454,7 @@ impl DeviceInfoTrait for RoccatElo71Air {
 
             match ctrl_dev.get_feature_report(&mut buf) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     let tmp: DeviceInfo =
                         unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
@@ -471,7 +481,7 @@ impl DeviceInfoTrait for RoccatElo71Air {
     }
 }
 
-impl DeviceZoneAllocationTrait for RoccatElo71Air {
+impl DeviceZoneAllocationExt for RoccatElo71Air {
     fn get_zone_size_hint(&self) -> usize {
         NUM_LEDS
     }
@@ -485,7 +495,7 @@ impl DeviceZoneAllocationTrait for RoccatElo71Air {
     }
 }
 
-impl DeviceTrait for RoccatElo71Air {
+impl DeviceExt for RoccatElo71Air {
     fn get_usb_path(&self) -> String {
         self.ctrl_hiddev_info
             .clone()
@@ -673,6 +683,7 @@ impl DeviceTrait for RoccatElo71Air {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(buf)
@@ -687,37 +698,7 @@ impl DeviceTrait for RoccatElo71Air {
         Ok(self.device_status.clone())
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
-
-    fn as_device(&self) -> &dyn DeviceTrait {
-        self
-    }
-
-    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
-        self
-    }
-
-    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
-        None
-    }
-
-    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
-        None
-    }
-}
-
-impl MiscDeviceTrait for RoccatElo71Air {
-    fn has_input_device(&self) -> bool {
-        true
-    }
-
-    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
+    fn set_brightness(&mut self, brightness: i32) -> Result<()> {
         trace!("Setting device specific brightness");
 
         self.brightness = brightness;
@@ -725,7 +706,7 @@ impl MiscDeviceTrait for RoccatElo71Air {
         Ok(())
     }
 
-    fn get_local_brightness(&self) -> Result<i32> {
+    fn get_brightness(&self) -> Result<i32> {
         trace!("Querying device specific brightness");
 
         Ok(self.brightness)
@@ -828,6 +809,7 @@ impl MiscDeviceTrait for RoccatElo71Air {
 
                 match ctrl_dev.write(&buf) {
                     Ok(_result) => {
+                        #[cfg(debug_assertions)]
                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
                     }
 
@@ -840,37 +822,9 @@ impl MiscDeviceTrait for RoccatElo71Air {
                         return Err(HwDeviceError::InvalidResult {}.into());
                     }
                 };
-
-                Ok(())
-            } else {
-                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
-                let ctrl_dev = ctrl_dev.as_ref().unwrap();
-
-                let buf: [u8; 64] = [
-                    0xff, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                ];
-
-                match ctrl_dev.write(&buf) {
-                    Ok(_result) => {
-                        hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
-                    }
-
-                    Err(_) => {
-                        // the device has failed or has been disconnected
-                        self.is_initialized = false;
-                        self.is_opened = false;
-                        self.has_failed = true;
-
-                        return Err(HwDeviceError::InvalidResult {}.into());
-                    }
-                };
-
-                Ok(())
             }
+
+            Ok(())
         }
     }
 
@@ -918,5 +872,56 @@ impl MiscDeviceTrait for RoccatElo71Air {
 
             Ok(())
         }
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+
+    fn as_device(&self) -> &(dyn DeviceExt + Sync + Send) {
+        self
+    }
+
+    fn as_device_mut(&mut self) -> &mut (dyn DeviceExt + Sync + Send) {
+        self
+    }
+
+    fn as_mouse_device(&self) -> Option<&(dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_mouse_device_mut(&mut self) -> Option<&mut (dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn get_device_class(&self) -> DeviceClass {
+        DeviceClass::Misc
+    }
+
+    fn as_keyboard_device(&self) -> Option<&(dyn hwdevices::KeyboardDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_keyboard_device_mut(
+        &mut self,
+    ) -> Option<&mut (dyn hwdevices::KeyboardDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_misc_device(&self) -> Option<&(dyn MiscDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_misc_device_mut(&mut self) -> Option<&mut (dyn MiscDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+}
+
+impl MiscDeviceExt for RoccatElo71Air {
+    fn has_input_device(&self) -> bool {
+        true
     }
 }

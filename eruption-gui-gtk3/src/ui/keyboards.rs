@@ -138,7 +138,7 @@ pub fn initialize_keyboard_page(
     timers::register_timer(
         timers::KEYBOARD_RENDER_TIMER_ID + device as usize,
         TimerMode::ActiveStackPage(Pages::Keyboards as u8),
-        1000 / (crate::constants::TARGET_FPS * 2),
+        1000 / (crate::constants::TARGET_FPS_LIMIT * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
                 if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == Pages::Keyboards as usize {
                             drawing_area.queue_draw();

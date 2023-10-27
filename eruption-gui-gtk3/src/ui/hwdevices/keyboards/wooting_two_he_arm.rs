@@ -95,7 +95,7 @@ impl Keyboard for WootingTwoHeArm {
         if let Some(allocated_zone) = ZONES.read().iter().find(|&z| z.device == Some(self.device)) {
             let canvas = ArrayView2::from_shape(
                 (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
-                &*led_colors,
+                &led_colors,
             )?;
 
             let canvas = canvas.slice(s![
@@ -114,7 +114,7 @@ impl Keyboard for WootingTwoHeArm {
             let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
             let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
-            resizer.resize(&canvas.as_slice().unwrap(), &mut led_map)?;
+            resizer.resize(canvas.as_slice().unwrap(), &mut led_map)?;
 
             let layout = pangocairo::create_layout(context);
             FONT_DESC.with(|f| -> Result<()> {

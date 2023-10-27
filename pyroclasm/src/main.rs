@@ -25,7 +25,7 @@ use clap::Parser;
 use config::Config;
 use eframe::{HardwareAcceleration, NativeOptions, Theme};
 use egui::{Context, Vec2};
-use flume::unbounded;
+use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -354,13 +354,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     // i18n/l10n support
     translations::load()?;
 
-    tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()?
-        .block_on(async move { async_main().await })
-}
-
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();
@@ -391,12 +384,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
     apply_opts(&opts);
     if let Some(command) = opts.command {
-        subcommands::handle_command(command).await?;
+        subcommands::handle_command(command)?;
     }
 
     if !QUIT.load(Ordering::SeqCst) {
         // spawn our event loop
-        let (events_tx, _events_rx) = unbounded();
+        let (events_tx, _events_rx) = bounded(8);
         threads::spawn_events_thread(events_tx)?;
 
         // build and map main window
@@ -427,7 +420,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 // fn register_sigint_handler() {
 //     // register ctrl-c handler
-//     let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+//     let (ctrl_c_tx, _ctrl_c_rx) = bounded(8);
 //     ctrlc::set_handler(move || {
 //         QUIT.store(true, Ordering::SeqCst);
 

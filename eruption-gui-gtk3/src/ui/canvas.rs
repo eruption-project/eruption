@@ -299,49 +299,51 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
     let cell = gtk::CellRendererToggle::builder().build();
 
-    cell.connect_toggled(clone!(@weak drawing_area_zones, @weak devices_treeview => move |_f, p| {
-        let devices_treestore: gtk::TreeStore = devices_treeview
-            .model()
-            .unwrap()
-            .downcast::<gtk::TreeStore>()
-            .unwrap();
+    cell.connect_toggled(
+        clone!(@weak drawing_area_zones, @weak devices_treeview => move |_f, p| {
+            let devices_treestore: gtk::TreeStore = devices_treeview
+                .model()
+                .unwrap()
+                .downcast::<gtk::TreeStore>()
+                .unwrap();
 
-        let device_index = devices_treestore
-            .value(&devices_treestore.iter(&p).unwrap(), 1)
-            .get::<u64>()
-            .unwrap();
+            let device_index = devices_treestore
+                .value(&devices_treestore.iter(&p).unwrap(), 1)
+                .get::<u64>()
+                .unwrap();
 
-        let value = devices_treestore
-            .value(&devices_treestore.iter(&p).unwrap(), 0)
-            .get::<bool>()
-            .unwrap();
-        devices_treestore.set_value(
-            &devices_treestore.iter(&p).unwrap(),
-            0,
-            &(!value).to_value(),
-        );
+            let value = devices_treestore
+                .value(&devices_treestore.iter(&p).unwrap(), 0)
+                .get::<bool>()
+                .unwrap();
+            devices_treestore.set_value(
+                &devices_treestore.iter(&p).unwrap(),
+                0,
+                &(!value).to_value(),
+            );
 
-        let mut zones = ZONES.write();
-        let zone = zones.iter_mut().find(|v| v.device == Some(device_index));
+            let mut zones = ZONES.write();
+            let zone = zones.iter_mut().find(|v| v.device == Some(device_index));
 
-        match zone {
-            Some(zone) => {
-                zone.enabled = !value;
+            match zone {
+                Some(zone) => {
+                    zone.enabled = !value;
 
-                dbus_client::set_device_zone_allocation(device_index, &zone).unwrap_or_else(|e| {
-                    tracing::error!("Could not set device zone status: {e}");
-                    notifications::error(&format!("Could not set device zone status: {e}"));
-                });
+                    dbus_client::set_device_zone_allocation(device_index, zone).unwrap_or_else(|e| {
+                        tracing::error!("Could not set device zone status: {e}");
+                        notifications::error(&format!("Could not set device zone status: {e}"));
+                    });
+                }
+
+                None => {
+                    tracing::error!("Could not find the devices zone");
+                    notifications::error("Could not find the devices zone");
+                }
             }
 
-            None => {
-                tracing::error!("Could not find the devices zone");
-                notifications::error(&format!("Could not find the devices zone"));
-            }
-        }
-
-        drawing_area_zones.queue_draw();
-    }));
+            drawing_area_zones.queue_draw();
+        }),
+    );
 
     gtk::prelude::CellLayoutExt::pack_start(&column, &cell, false);
     gtk::prelude::TreeViewColumnExt::add_attribute(&column, &cell, "active", 0);
@@ -467,7 +469,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
     timers::register_timer(
         timers::CANVAS_RENDER_TIMER_ID,
         TimerMode::ActiveStackPage(Pages::Canvas as u8),
-        1000 / (crate::constants::TARGET_FPS * 2),
+        1000 / (crate::constants::TARGET_FPS_LIMIT * 2),
         clone!(@weak drawing_area_preview, @weak drawing_area_zones, @weak canvas_stack => @default-return Ok(()), move || {
             let page = crate::ACTIVE_PAGE.load(Ordering::SeqCst);
             if page == Pages::Canvas as usize {
@@ -784,7 +786,7 @@ fn drawing_area_button_press(
 
                                 let _ = dbus_client::set_device_zone_allocation(
                                     zone.device.unwrap(),
-                                    &zone,
+                                    zone,
                                 )
                                 .map_err(|e| {
                                     notifications::error(&format!("Could not update zone: {e}"));
@@ -922,56 +924,52 @@ fn drawing_area_motion_notify(
 
                             set_cursor(None);
                         }
-                    } else {
-                        if event.state() & ModifierType::BUTTON1_MASK == ModifierType::BUTTON1_MASK
-                        {
-                            // primary button is down, move the zone around or resize
+                    } else if event.state() & ModifierType::BUTTON1_MASK
+                        == ModifierType::BUTTON1_MASK
+                    {
+                        // primary button is down, move the zone around or resize
 
-                            // we are not hovering over a sensitive border, but inside the zone
-                            set_cursor(Some(gdk::CursorType::Fleur));
+                        // we are not hovering over a sensitive border, but inside the zone
+                        set_cursor(Some(gdk::CursorType::Fleur));
 
-                            let offset_x = OFFSET_COORDINATES.read().unwrap_or((0, 0)).0;
-                            let offset_y = OFFSET_COORDINATES.read().unwrap_or((0, 0)).1;
+                        let offset_x = OFFSET_COORDINATES.read().unwrap_or((0, 0)).0;
+                        let offset_y = OFFSET_COORDINATES.read().unwrap_or((0, 0)).1;
 
-                            zone.x = cell_x - offset_x;
-                            zone.y = cell_y - offset_y;
+                        zone.x = cell_x - offset_x;
+                        zone.y = cell_y - offset_y;
 
-                            if zone.x < 0 {
-                                zone.x = 0;
-                            }
-
-                            if zone.y < 0 {
-                                zone.y = 0;
-                            }
-
-                            if zone.x2() > constants::CANVAS_WIDTH as i32 {
-                                zone.x = constants::CANVAS_WIDTH as i32 - zone.width;
-                            }
-
-                            if zone.y2() > constants::CANVAS_HEIGHT as i32 {
-                                zone.y = constants::CANVAS_HEIGHT as i32 - zone.height;
-                            }
-
-                            if zone.width < 1 {
-                                zone.width = 1;
-                            }
-
-                            if zone.height < 1 {
-                                zone.height = 1;
-                            }
-
-                            let _ =
-                                dbus_client::set_device_zone_allocation(zone.device.unwrap(), zone)
-                                    .map_err(|e| {
-                                        notifications::error(&format!(
-                                            "Could not update zone: {e}"
-                                        ));
-                                        tracing::error!("Could not update zone: {e}");
-                                    });
-                        } else {
-                            // we are not hovering over a sensitive border, but inside the zone
-                            set_cursor(Some(gdk::CursorType::Arrow));
+                        if zone.x < 0 {
+                            zone.x = 0;
                         }
+
+                        if zone.y < 0 {
+                            zone.y = 0;
+                        }
+
+                        if zone.x2() > constants::CANVAS_WIDTH as i32 {
+                            zone.x = constants::CANVAS_WIDTH as i32 - zone.width;
+                        }
+
+                        if zone.y2() > constants::CANVAS_HEIGHT as i32 {
+                            zone.y = constants::CANVAS_HEIGHT as i32 - zone.height;
+                        }
+
+                        if zone.width < 1 {
+                            zone.width = 1;
+                        }
+
+                        if zone.height < 1 {
+                            zone.height = 1;
+                        }
+
+                        let _ = dbus_client::set_device_zone_allocation(zone.device.unwrap(), zone)
+                            .map_err(|e| {
+                                notifications::error(&format!("Could not update zone: {e}"));
+                                tracing::error!("Could not update zone: {e}");
+                            });
+                    } else {
+                        // we are not hovering over a sensitive border, but inside the zone
+                        set_cursor(Some(gdk::CursorType::Arrow));
                     }
 
                     break;
@@ -1026,7 +1024,7 @@ fn render_canvas(
 
     let canvas = ArrayView2::from_shape(
         (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
-        &*led_map,
+        &led_map,
     )?;
 
     if mode == RenderMode::Zones {
@@ -1166,7 +1164,7 @@ fn paint_zone(
     let pixel_height: f64 = height / constants::CANVAS_HEIGHT as f64;
 
     let zones = ZONES.read();
-    let Zone { enabled, .. } = zones.get(device as usize).map(|v| *v).unwrap_or_default();
+    let Zone { enabled, .. } = zones.get(device as usize).copied().unwrap_or_default();
 
     if enabled {
         let device_info = DEVICE_INFO.read();

@@ -24,7 +24,7 @@ use bitfield_struct::bitfield;
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
 use ndarray::{s, ArrayView2};
-use parking_lot::{Mutex, RwLock};
+use parking_lot::Mutex;
 use resize::Pixel::RGB8;
 use resize::Type;
 use rgb::RGB8;
@@ -37,9 +37,9 @@ use tracing::*;
 use crate::constants;
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceClass, DeviceInfoTrait, DeviceStatus, DeviceTrait,
-    DeviceZoneAllocationTrait, HwDeviceError, KeyboardDevice, KeyboardDeviceTrait,
-    KeyboardHidEvent, KeyboardHidEventCode, LedKind, MouseDeviceTrait, Result, Zone, RGBA,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
+    DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
+    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA,
 };
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
@@ -89,7 +89,7 @@ pub fn bind_hiddev(
     usb_vid: u16,
     usb_pid: u16,
     serial: &str,
-) -> Result<KeyboardDevice> {
+) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
@@ -107,10 +107,10 @@ pub fn bind_hiddev(
     if ctrl_dev.is_none() || led_dev.is_none() {
         Err(HwDeviceError::EnumerationError {}.into())
     } else {
-        Ok(Arc::new(RwLock::new(Box::new(WootingTwoHeArm::bind(
+        Ok(Box::new(WootingTwoHeArm::bind(
             ctrl_dev.unwrap(),
             led_dev.unwrap(),
-        )))))
+        )))
     }
 }
 
@@ -190,6 +190,7 @@ impl WootingTwoHeArm {
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
     //                     Ok(_result) => {
+    //                         #[cfg(debug_assertions)]
     //                         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
     //                         Ok(())
@@ -327,6 +328,7 @@ impl WootingTwoHeArm {
 
             match ctrl_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(())
@@ -353,6 +355,7 @@ impl WootingTwoHeArm {
 
             match led_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(())
@@ -364,7 +367,7 @@ impl WootingTwoHeArm {
     }
 }
 
-impl DeviceInfoTrait for WootingTwoHeArm {
+impl DeviceInfoExt for WootingTwoHeArm {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Keyboard, Capability::RgbLighting])
     }
@@ -385,6 +388,7 @@ impl DeviceInfoTrait for WootingTwoHeArm {
 
             // match ctrl_dev.get_feature_report(&mut buf) {
             //     Ok(_result) => {
+            //         #[cfg(debug_assertions)]
             //         hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
             //         let tmp: DeviceInfo =
             //             unsafe { std::ptr::read_unaligned(buf.as_ptr() as *const _) };
@@ -413,7 +417,7 @@ impl DeviceInfoTrait for WootingTwoHeArm {
     }
 }
 
-impl DeviceZoneAllocationTrait for WootingTwoHeArm {
+impl DeviceZoneAllocationExt for WootingTwoHeArm {
     fn get_zone_size_hint(&self) -> usize {
         NUM_LEDS
     }
@@ -427,7 +431,7 @@ impl DeviceZoneAllocationTrait for WootingTwoHeArm {
     }
 }
 
-impl DeviceTrait for WootingTwoHeArm {
+impl DeviceExt for WootingTwoHeArm {
     fn get_usb_path(&self) -> String {
         self.ctrl_hiddev_info
             .clone()
@@ -609,6 +613,7 @@ impl DeviceTrait for WootingTwoHeArm {
 
             match ctrl_dev.read(buf.as_mut_slice()) {
                 Ok(_result) => {
+                    #[cfg(debug_assertions)]
                     hexdump::hexdump_iter(&buf).for_each(|s| trace!("  {}", s));
 
                     Ok(buf)
@@ -619,60 +624,7 @@ impl DeviceTrait for WootingTwoHeArm {
         }
     }
 
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
-    }
-
-    fn as_device(&self) -> &dyn DeviceTrait {
-        self
-    }
-
-    fn as_device_mut(&mut self) -> &mut dyn DeviceTrait {
-        self
-    }
-
-    fn as_mouse_device(&self) -> Option<&dyn MouseDeviceTrait> {
-        None
-    }
-
-    fn as_mouse_device_mut(&mut self) -> Option<&mut dyn MouseDeviceTrait> {
-        None
-    }
-}
-
-impl KeyboardDeviceTrait for WootingTwoHeArm {
-    fn set_status_led(&self, _led_kind: LedKind, _on: bool) -> Result<()> {
-        trace!("Setting status LED state");
-
-        // match led_kind {
-        //     LedKind::Unknown => warn!("No LEDs have been set, request was a no-op"),
-        //     LedKind::AudioMute => {
-        //         // self.write_data_raw(&[0x00, 0x09, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-        //     }
-        //     LedKind::Fx => {}
-        //     LedKind::Volume => {}
-        //     LedKind::NumLock => {
-        //         self.write_data_raw(&[0x21, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-        //     }
-        //     LedKind::CapsLock => {
-        //         self.write_data_raw(&[0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-        //     }
-        //     LedKind::ScrollLock => {
-        //         self.write_data_raw(&[0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-        //     }
-        //     LedKind::GameMode => {
-        //         self.write_data_raw(&[0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
-        //     }
-        // }
-
-        Ok(())
-    }
-
-    fn set_local_brightness(&mut self, brightness: i32) -> Result<()> {
+    fn set_brightness(&mut self, brightness: i32) -> Result<()> {
         trace!("Setting device specific brightness");
 
         self.brightness = brightness;
@@ -680,68 +632,10 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
         Ok(())
     }
 
-    fn get_local_brightness(&self) -> Result<i32> {
+    fn get_brightness(&self) -> Result<i32> {
         trace!("Querying device specific brightness");
 
         Ok(self.brightness)
-    }
-
-    #[inline]
-    fn get_next_event(&self) -> Result<KeyboardHidEvent> {
-        self.get_next_event_timeout(-1)
-    }
-
-    fn get_next_event_timeout(&self, _millis: i32) -> Result<KeyboardHidEvent> {
-        trace!("Querying control device for next event");
-
-        if !self.is_bound {
-            Err(HwDeviceError::DeviceNotBound {}.into())
-        } else if !self.is_opened {
-            Err(HwDeviceError::DeviceNotOpened {}.into())
-        } else if !self.is_initialized {
-            Err(HwDeviceError::DeviceNotInitialized {}.into())
-        } else {
-            Ok(KeyboardHidEvent::Unknown)
-        }
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    fn ev_key_to_key_index(&self, key: EV_KEY) -> u8 {
-        EV_TO_INDEX_ISO[(key as u8) as usize].saturating_add(1)
-    }
-
-    fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8 {
-        match code {
-            KeyboardHidEventCode::KEY_FN => 65,
-
-            KeyboardHidEventCode::KEY_CAPS_LOCK => 6,
-            KeyboardHidEventCode::KEY_EASY_SHIFT => 6,
-
-            // We don't need all the other key codes, for now
-            _ => 0,
-        }
-    }
-
-    fn hid_event_code_to_report(&self, code: &KeyboardHidEventCode) -> u8 {
-        match code {
-            KeyboardHidEventCode::KEY_F1 => 16,
-            KeyboardHidEventCode::KEY_F2 => 24,
-            KeyboardHidEventCode::KEY_F3 => 33,
-            KeyboardHidEventCode::KEY_F4 => 32,
-
-            KeyboardHidEventCode::KEY_F5 => 40,
-            KeyboardHidEventCode::KEY_F6 => 48,
-            KeyboardHidEventCode::KEY_F7 => 56,
-            KeyboardHidEventCode::KEY_F8 => 57,
-
-            KeyboardHidEventCode::KEY_ESC => 17,
-            KeyboardHidEventCode::KEY_FN => 119,
-
-            KeyboardHidEventCode::KEY_CAPS_LOCK => 57,
-            KeyboardHidEventCode::KEY_EASY_SHIFT => 57,
-
-            KeyboardHidEventCode::Unknown(code) => *code,
-        }
     }
 
     fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
@@ -836,7 +730,7 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                             let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
                             let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
-                            resizer.resize(&canvas.as_slice().unwrap(), &mut led_map)?;
+                            resizer.resize(canvas.as_slice().unwrap(), &mut led_map)?;
 
                             const BUFFER_SIZE: usize =
                                 4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1));
@@ -862,32 +756,6 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
                                 buffer[i..i + 2].copy_from_slice(&encoded_color.to_le_bytes());
 
                                 cntr += 1;
-
-                                if i % 64 == 0 {
-                                    submit_packet(led_dev, &buffer[(i - 64)..=i])?;
-                                    buffer[i] = 0x0;
-                                }
-                            }
-                        } else {
-                            // zone is disabled, so black-out the device
-                            const BUFFER_SIZE: usize =
-                                4 + (SMALL_PACKET_COUNT * (SMALL_PACKET_SIZE + 1));
-                            let mut buffer = [0x00_u8; BUFFER_SIZE];
-
-                            // init sequence
-                            buffer[0..4].copy_from_slice(&[
-                                0x00,
-                                0xd0,
-                                0xda,
-                                Command::RAW_COLORS_REPORT as u8,
-                            ]);
-
-                            // encode color sequence and submit a packet on every 64th byte to the device
-
-                            for i in (4..BUFFER_SIZE).step_by(2) {
-                                let encoded_color = encode_color(&RGB8 { r: 0, g: 0, b: 0 }, 0);
-
-                                buffer[i..i + 2].copy_from_slice(&encoded_color.to_le_bytes());
 
                                 if i % 64 == 0 {
                                     submit_packet(led_dev, &buffer[(i - 64)..=i])?;
@@ -948,6 +816,137 @@ impl KeyboardDeviceTrait for WootingTwoHeArm {
             self.send_led_map(&led_map)?;
 
             Ok(())
+        }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+
+    fn as_device(&self) -> &(dyn DeviceExt + Sync + Send) {
+        self
+    }
+
+    fn as_device_mut(&mut self) -> &mut (dyn DeviceExt + Sync + Send) {
+        self
+    }
+
+    fn as_mouse_device(&self) -> Option<&(dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_mouse_device_mut(&mut self) -> Option<&mut (dyn MouseDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn get_device_class(&self) -> DeviceClass {
+        DeviceClass::Keyboard
+    }
+
+    fn as_keyboard_device(&self) -> Option<&(dyn KeyboardDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_keyboard_device_mut(&mut self) -> Option<&mut (dyn KeyboardDeviceExt + Sync + Send)> {
+        Some(self)
+    }
+
+    fn as_misc_device(&self) -> Option<&(dyn hwdevices::MiscDeviceExt + Sync + Send)> {
+        None
+    }
+
+    fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Sync + Send)> {
+        None
+    }
+}
+
+impl KeyboardDeviceExt for WootingTwoHeArm {
+    fn set_status_led(&self, _led_kind: LedKind, _on: bool) -> Result<()> {
+        trace!("Setting status LED state");
+
+        // match led_kind {
+        //     LedKind::Unknown => warn!("No LEDs have been set, request was a no-op"),
+        //     LedKind::AudioMute => {
+        //         // self.write_data_raw(&[0x00, 0x09, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        //     LedKind::Fx => {}
+        //     LedKind::Volume => {}
+        //     LedKind::NumLock => {
+        //         self.write_data_raw(&[0x21, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        //     LedKind::CapsLock => {
+        //         self.write_data_raw(&[0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        //     LedKind::ScrollLock => {
+        //         self.write_data_raw(&[0x23, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        //     LedKind::GameMode => {
+        //         self.write_data_raw(&[0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])?;
+        //     }
+        // }
+
+        Ok(())
+    }
+
+    #[inline]
+    fn get_next_event(&self) -> Result<KeyboardHidEvent> {
+        self.get_next_event_timeout(-1)
+    }
+
+    fn get_next_event_timeout(&self, _millis: i32) -> Result<KeyboardHidEvent> {
+        trace!("Querying control device for next event");
+
+        if !self.is_bound {
+            Err(HwDeviceError::DeviceNotBound {}.into())
+        } else if !self.is_opened {
+            Err(HwDeviceError::DeviceNotOpened {}.into())
+        } else if !self.is_initialized {
+            Err(HwDeviceError::DeviceNotInitialized {}.into())
+        } else {
+            Ok(KeyboardHidEvent::Unknown)
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn ev_key_to_key_index(&self, key: EV_KEY) -> u8 {
+        EV_TO_INDEX_ISO[(key as u8) as usize].saturating_add(1)
+    }
+
+    fn hid_event_code_to_key_index(&self, code: &KeyboardHidEventCode) -> u8 {
+        match code {
+            KeyboardHidEventCode::KEY_FN => 65,
+
+            KeyboardHidEventCode::KEY_CAPS_LOCK => 6,
+            KeyboardHidEventCode::KEY_EASY_SHIFT => 6,
+
+            // We don't need all the other key codes, for now
+            _ => 0,
+        }
+    }
+
+    fn hid_event_code_to_report(&self, code: &KeyboardHidEventCode) -> u8 {
+        match code {
+            KeyboardHidEventCode::KEY_F1 => 16,
+            KeyboardHidEventCode::KEY_F2 => 24,
+            KeyboardHidEventCode::KEY_F3 => 33,
+            KeyboardHidEventCode::KEY_F4 => 32,
+
+            KeyboardHidEventCode::KEY_F5 => 40,
+            KeyboardHidEventCode::KEY_F6 => 48,
+            KeyboardHidEventCode::KEY_F7 => 56,
+            KeyboardHidEventCode::KEY_F8 => 57,
+
+            KeyboardHidEventCode::KEY_ESC => 17,
+            KeyboardHidEventCode::KEY_FN => 119,
+
+            KeyboardHidEventCode::KEY_CAPS_LOCK => 57,
+            KeyboardHidEventCode::KEY_EASY_SHIFT => 57,
+
+            KeyboardHidEventCode::Unknown(code) => *code,
         }
     }
 

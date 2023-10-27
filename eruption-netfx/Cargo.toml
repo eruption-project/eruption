@@ -37,7 +37,7 @@ resolver = "2"
 
 [features]
 default = ["backends-most"]
-debug-async = []
+
 backends-all = ["backend-wayland", "backend-gnome", "backend-x11"]
 backends-most = ["backend-gnome", "backend-x11"]
 backend-wayland = ["wayland-client", "smithay-client-toolkit"]
@@ -57,7 +57,8 @@ tempfile = "3.8.0"
 rayon = "1.7.0"
 jwalk = "0.8.1"
 parking_lot = { version = "0.12.1", features = [
-  "send_guard",
+  # "send_guard",
+  "deadlock_detection",
   "hardware-lock-elision",
 ] }
 tokio = { version = "1.32.0", features = ["full", "tracing", "test-util"] }

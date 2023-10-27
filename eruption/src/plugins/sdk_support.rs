@@ -22,14 +22,8 @@
 use crate::scripting::script::LAST_RENDERED_LED_MAP;
 use crate::util::ratelimited;
 
-#[cfg(not(target_os = "windows"))]
-use crate::{spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread};
+use crate::{constants, hwdevices, script, SwitchProfileResult};
 
-use crate::{
-    constants, hwdevices, init_keyboard_device, init_misc_device, init_mouse_device, script,
-    DbusApiEvent, SwitchProfileResult,
-};
-use flume::unbounded;
 use lazy_static::lazy_static;
 use mlua::prelude::*;
 
@@ -104,7 +98,9 @@ lazy_static! {
         Arc::new(RwLock::new(None));
 }
 
+use crate::threads::{spawn_device_input_thread, DbusApiEvent};
 use bincode::{Decode, Encode};
+use flume::bounded;
 
 unsafe fn any_as_u8_slice<T: Sized>(p: &T) -> &[u8] {
     ::core::slice::from_raw_parts((p as *const T) as *const u8, ::core::mem::size_of::<T>())
@@ -123,48 +119,50 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
 #[cfg(not(target_os = "windows"))]
 pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
+    use crate::{hwdevices::DeviceClass, init_device};
+
     if crate::QUIT.load(Ordering::SeqCst) {
         info!("Ignoring device hotplug event since Eruption is shutting down");
     } else {
         // enumerate devices
         info!("Enumerating connected devices...");
 
-        if let Ok(devices) = hwdevices::probe_devices_hotplug() {
+        if let Ok(mut devices) = hwdevices::probe_devices() {
             // initialize keyboard devices
-            for (index, device) in devices.0.iter().enumerate() {
-                if !crate::KEYBOARD_DEVICES.read().iter().any(|d| {
-                    d.read().get_usb_vid() == device.read().get_usb_vid()
-                        && d.read().get_usb_pid() == device.read().get_usb_pid()
+            for (index, device) in devices.iter_mut().enumerate() {
+                if !crate::DEVICES.read().iter().any(|(_handle, d)| {
+                    let d = d.read();
+                    let device = device.read();
+
+                    d.get_device_class() == DeviceClass::Keyboard
+                        && d.get_usb_vid() == device.get_usb_vid()
+                        && d.get_usb_pid() == device.get_usb_pid()
                 }) {
                     info!("Initializing the hotplugged keyboard device...");
 
-                    init_keyboard_device(device);
+                    init_device(device.clone());
 
                     // place a request to re-enter the main loop, this will drop all global locks
                     crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
-                    let usb_vid = device.read().get_usb_vid();
-                    let usb_pid = device.read().get_usb_pid();
+                    let dev = device.read();
+
+                    let usb_vid = dev.get_usb_vid();
+                    let usb_pid = dev.get_usb_pid();
 
                     // spawn a thread to handle keyboard input
                     info!("Spawning keyboard input thread...");
 
-                    let (kbd_tx, kbd_rx) = unbounded();
-                    spawn_keyboard_input_thread(
-                        kbd_tx.clone(),
-                        device.clone(),
-                        index,
-                        usb_vid,
-                        usb_pid,
-                    )
-                    .unwrap_or_else(|e| {
-                        error!("Could not spawn a thread: {}", e);
-                        panic!()
-                    });
+                    let (kbd_tx, kbd_rx) = bounded(8);
+                    spawn_device_input_thread(kbd_tx.clone(), index, usb_vid, usb_pid)
+                        .unwrap_or_else(|e| {
+                            error!("Could not spawn a thread: {}", e);
+                            panic!()
+                        });
 
-                    crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
-                    crate::KEYBOARD_DEVICES.write().push(device.clone());
+                    crate::KEYBOARD_DEVICES_RX.write().insert(index, kbd_rx);
+                    crate::DEVICES.write().insert(index, device.clone());
 
                     debug!("Sending device hotplug notification...");
 
@@ -182,7 +180,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
             }
 
             // initialize mouse devices
-            for (index, device) in devices.1.iter().enumerate() {
+            for (index, device) in devices.iter_mut().enumerate() {
                 let enable_mouse = (*crate::CONFIG.read())
                     .as_ref()
                     .unwrap()
@@ -191,40 +189,40 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
                 // enable mouse input
                 if enable_mouse {
-                    if !crate::MOUSE_DEVICES.read().iter().any(|d| {
-                        d.read().get_usb_vid() == device.read().get_usb_vid()
-                            && d.read().get_usb_pid() == device.read().get_usb_pid()
+                    if !crate::DEVICES.read().iter().any(|(_handle, d)| {
+                        let d = d.read();
+                        let device = device.read();
+
+                        d.get_device_class() == DeviceClass::Mouse
+                            && d.get_usb_vid() == device.get_usb_vid()
+                            && d.get_usb_pid() == device.get_usb_pid()
                     }) {
                         info!("Initializing the hotplugged mouse device...");
 
-                        init_mouse_device(device);
+                        init_device(device.clone());
 
                         // place a request to re-enter the main loop, this will drop all global locks
                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                         thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
-                        let usb_vid = device.read().get_usb_vid();
-                        let usb_pid = device.read().get_usb_pid();
+                        let dev = device.read();
 
-                        let (mouse_tx, mouse_rx) = unbounded();
+                        let usb_vid = dev.get_usb_vid();
+                        let usb_pid = dev.get_usb_pid();
+
+                        let (mouse_tx, mouse_rx) = bounded(8);
 
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
 
-                        spawn_mouse_input_thread(
-                            mouse_tx.clone(),
-                            device.clone(),
-                            index,
-                            usb_vid,
-                            usb_pid,
-                        )
-                        .unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
+                        spawn_device_input_thread(mouse_tx.clone(), index, usb_vid, usb_pid)
+                            .unwrap_or_else(|e| {
+                                error!("Could not spawn a thread: {}", e);
+                                panic!()
+                            });
 
-                        crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
-                        crate::MOUSE_DEVICES.write().push(device.clone());
+                        crate::MOUSE_DEVICES_RX.write().insert(index, mouse_rx);
+                        crate::DEVICES.write().insert(index, device.clone());
 
                         debug!("Sending device hotplug notification...");
 
@@ -247,40 +245,41 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
             }
 
             // initialize misc devices
-            for (index, device) in devices.2.iter().enumerate() {
-                if !crate::MISC_DEVICES.read().iter().any(|d| {
-                    d.read().get_usb_vid() == device.read().get_usb_vid()
-                        && d.read().get_usb_pid() == device.read().get_usb_pid()
+            for (index, device) in devices.iter_mut().enumerate() {
+                if !crate::DEVICES.read().iter().any(|(_handle, d)| {
+                    let d = d.read();
+                    let device = device.read();
+
+                    d.get_device_class() == DeviceClass::Misc
+                        && d.get_usb_vid() == device.get_usb_vid()
+                        && d.get_usb_pid() == device.get_usb_pid()
                 }) {
                     info!("Initializing the hotplugged misc device...");
 
-                    init_misc_device(device);
+                    init_device(device.clone());
 
                     // place a request to re-enter the main loop, this will drop all global locks
                     crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
                     thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
 
-                    if device.read().has_input_device() {
-                        let usb_vid = device.read().get_usb_vid();
-                        let usb_pid = device.read().get_usb_pid();
+                    let dev = device.read();
+                    let dev = dev.as_misc_device().unwrap();
+
+                    if dev.has_input_device() {
+                        let usb_vid = dev.get_usb_vid();
+                        let usb_pid = dev.get_usb_pid();
 
                         // spawn a thread to handle input
                         info!("Spawning misc device input thread...");
 
-                        let (misc_tx, misc_rx) = unbounded();
-                        spawn_misc_input_thread(
-                            misc_tx.clone(),
-                            device.clone(),
-                            index,
-                            usb_vid,
-                            usb_pid,
-                        )
-                        .unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
+                        let (misc_tx, misc_rx) = bounded(8);
+                        spawn_device_input_thread(misc_tx.clone(), index, usb_vid, usb_pid)
+                            .unwrap_or_else(|e| {
+                                error!("Could not spawn a thread: {}", e);
+                                panic!()
+                            });
 
-                        crate::MISC_DEVICES_RX.write().push(misc_rx);
+                        crate::MISC_DEVICES_RX.write().insert(index, misc_rx);
 
                         debug!("Sending device hotplug notification...");
 
@@ -293,12 +292,12 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                                 error!("Could not send a pending dbus API event: {}", e)
                             });
                     } else {
-                        let usb_vid = device.read().get_usb_vid();
-                        let usb_pid = device.read().get_usb_pid();
+                        let usb_vid = dev.get_usb_vid();
+                        let usb_pid = dev.get_usb_pid();
 
                         // insert an unused rx
-                        let (_misc_tx, misc_rx) = unbounded();
-                        crate::MISC_DEVICES_RX.write().push(misc_rx);
+                        let (_misc_tx, misc_rx) = bounded(8);
+                        crate::MISC_DEVICES_RX.write().insert(index, misc_rx);
 
                         debug!("Sending device hotplug notification...");
 
@@ -312,7 +311,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                             });
                     }
 
-                    crate::MISC_DEVICES.write().push(device.clone());
+                    crate::DEVICES.write().insert(index, device.clone());
                 } else {
                     info!("Skipped initialization of a misc device");
                 }
@@ -332,8 +331,8 @@ pub fn resume_from_suspend() -> Result<()> {
         // enumerate devices
         info!("Enumerating connected devices...");
 
-        // initialize keyboard devices
-        for device in crate::KEYBOARD_DEVICES.read().iter() {
+        // initialize devices
+        for (_handle, device) in crate::DEVICES.read().iter() {
             let make = hwdevices::get_device_make(
                 device.read().get_usb_vid(),
                 device.read().get_usb_pid(),
@@ -345,7 +344,7 @@ pub fn resume_from_suspend() -> Result<()> {
             )
             .unwrap_or("<unknown>");
 
-            info!("Reinitializing keyboard device '{make} {model}'");
+            info!("Reinitializing device '{make} {model}'");
 
             // send initialization handshake
             device
@@ -354,51 +353,7 @@ pub fn resume_from_suspend() -> Result<()> {
                 .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
         }
 
-        // initialize mouse devices
-        for device in crate::MOUSE_DEVICES.read().iter() {
-            let make = hwdevices::get_device_make(
-                device.read().get_usb_vid(),
-                device.read().get_usb_pid(),
-            )
-            .unwrap_or("<unknown>");
-            let model = hwdevices::get_device_model(
-                device.read().get_usb_vid(),
-                device.read().get_usb_pid(),
-            )
-            .unwrap_or("<unknown>");
-
-            info!("Reinitializing mouse device '{make} {model}'");
-
-            // send initialization handshake
-            device
-                .write()
-                .send_init_sequence()
-                .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
-        }
-
-        // initialize misc devices
-        for device in crate::MISC_DEVICES.read().iter() {
-            let make = hwdevices::get_device_make(
-                device.read().get_usb_vid(),
-                device.read().get_usb_pid(),
-            )
-            .unwrap_or("<unknown>");
-            let model = hwdevices::get_device_model(
-                device.read().get_usb_vid(),
-                device.read().get_usb_pid(),
-            )
-            .unwrap_or("<unknown>");
-
-            info!("Reinitializing misc device '{make} {model}'");
-
-            // send initialization handshake
-            device
-                .write()
-                .send_init_sequence()
-                .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
-
-            info!("Device enumeration completed");
-        }
+        info!("Device enumeration completed");
     }
 
     Ok(())
@@ -968,7 +923,6 @@ impl SdkSupportPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for SdkSupportPlugin {
     fn get_name(&self) -> String {
         "SDK Support".to_string()
@@ -1011,8 +965,6 @@ impl Plugin for SdkSupportPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 

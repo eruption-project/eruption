@@ -50,7 +50,7 @@ function on_render()
 
     -- testing simplex noise instead of the umbrella effect for now
     draw_simplex_noise(canvas, 0, 0, canvas_width, canvas_height,
-                       offsets[1] / 20, offsets[2] / 20, ticks, 0.25)
+                       offsets[1] / 20, offsets[2] / 20, ticks / 10, 0.25)
 
     alpha_blend(layer1, canvas, 0.5)
 

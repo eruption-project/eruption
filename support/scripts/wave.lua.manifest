@@ -50,7 +50,7 @@ name = 'speed_divisor'
 description = 'Speed of the wave'
 min = 0.0
 max = 1000.0
-default = 25.0
+default = 250.0
 
 [[config]]
 type = 'float'

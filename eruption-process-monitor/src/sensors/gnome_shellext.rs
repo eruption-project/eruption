@@ -165,55 +165,53 @@ impl GnomeShellExtensionSensor {
                         Ok(num_fds) => {
                             if num_fds == 0 {
                                 tracing::trace!("No events received within the specified timeout");
-                            } else {
-                                if poll_fd.revents().is_some() {
-                                    // The named pipe is ready for reading
-                                    let mut buffer = [0; 4096 * 4];
+                            } else if poll_fd.revents().is_some() {
+                                // The named pipe is ready for reading
+                                let mut buffer = [0; 4096 * 4];
 
-                                    match unistd::read(fifo_fd.as_raw_fd(), &mut buffer) {
-                                        Ok(bytes_read) => {
-                                            if bytes_read > 0 {
-                                                let data = &buffer[..bytes_read];
-                                                let data_str = String::from_utf8_lossy(data);
-                                                tracing::debug!(
-                                                    "Received data from the FIFO: {}",
-                                                    data_str
-                                                );
+                                match unistd::read(fifo_fd.as_raw_fd(), &mut buffer) {
+                                    Ok(bytes_read) => {
+                                        if bytes_read > 0 {
+                                            let data = &buffer[..bytes_read];
+                                            let data_str = String::from_utf8_lossy(data);
+                                            tracing::debug!(
+                                                "Received data from the FIFO: {}",
+                                                data_str
+                                            );
 
-                                                if !data_str.trim().is_empty() {
-                                                    match serde_json::from_str::<
-                                                        GnomeShellExtSensorData,
-                                                    >(
-                                                        &data_str
-                                                    ) {
-                                                        Ok(result) => {
-                                                            tracing::debug!(
-                                                                "Sensor data: {result:#?}"
-                                                            );
+                                            if !data_str.trim().is_empty() {
+                                                match serde_json::from_str::<
+                                                    GnomeShellExtSensorData,
+                                                >(
+                                                    &data_str
+                                                ) {
+                                                    Ok(result) => {
+                                                        tracing::debug!(
+                                                            "Sensor data: {result:#?}"
+                                                        );
 
-                                                THREAD_TX
-                                                            .lock()
-                                                            .as_ref()
-                                                            .unwrap()
-                                                            .send(result)
-                                                            .unwrap_or_else(|e| {
-                                                                tracing::error!("Could not send on a channel: {}", e)
-                                                            });
-                                                        }
+                                            THREAD_TX
+                                                        .lock()
+                                                        .as_ref()
+                                                        .unwrap()
+                                                        .send(result)
+                                                        .unwrap_or_else(|e| {
+                                                            tracing::error!("Could not send on a channel: {}", e)
+                                                        });
+                                                    }
 
-                                                        Err(e) => {
-                                                            tracing::error!(
-                                                                "Error parsing sensor data: {e}"
-                                                            );
-                                                        }
+                                                    Err(e) => {
+                                                        tracing::error!(
+                                                            "Error parsing sensor data: {e}"
+                                                        );
                                                     }
                                                 }
                                             }
                                         }
+                                    }
 
-                                        Err(_e) => {
-                                            tracing::error!("Error reading from the FIFO");
-                                        }
+                                    Err(_e) => {
+                                        tracing::error!("Error reading from the FIFO");
                                     }
                                 }
                             }

@@ -168,7 +168,7 @@ pub fn initialize_misc_page(
     timers::register_timer(
         timers::MISC_RENDER_TIMER_ID + device as usize,
         TimerMode::ActiveStackPage(Pages::Misc as u8),
-        1000 / (crate::constants::TARGET_FPS * 2),
+        1000 / (crate::constants::TARGET_FPS_LIMIT * 2),
         clone!(@weak drawing_area => @default-return Ok(()), move || {
             if crate::ACTIVE_PAGE.load(Ordering::SeqCst) == Pages::Misc as usize {
                 drawing_area.queue_draw();

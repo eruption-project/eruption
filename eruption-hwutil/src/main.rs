@@ -24,7 +24,7 @@ use clap::Parser;
 use clap_complete::Shell;
 use colored::*;
 use config::Config;
-use flume::unbounded;
+use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -257,7 +257,48 @@ fn print_notice() {
     );
 }
 
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let format_layer = tracing_subscriber::fmt::layer()
+    //     .compact()
+    //     .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            // initialize logging
+            use tracing_subscriber::prelude::*;
+            use tracing_subscriber::util::SubscriberInitExt;
+
+            let console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(console_layer)
+                // .with(format_layer)
+                .init();
+        } else {
+            // tracing_subscriber::registry()
+            //     // .with(journald_layer)
+            //     // .with(console_layer)
+            //     // .with(format_layer)
+            //     .init();
+        }
+    };
+
+    // i18n/l10n support
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -279,7 +320,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // register ctrl-c handler
-    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, _ctrl_c_rx) = bounded(8);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
@@ -557,55 +598,4 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     };
 
     Ok(())
-}
-
-/// Main program entrypoint
-pub fn main() -> std::result::Result<(), eyre::Error> {
-    // let filter = tracing_subscriber::EnvFilter::from_default_env();
-    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
-
-    // let filter = tracing_subscriber::EnvFilter::from_default_env();
-    // let format_layer = tracing_subscriber::fmt::layer()
-    //     .compact()
-    //     .with_filter(filter);
-
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "debug-async")] {
-            // initialize logging
-            use tracing_subscriber::prelude::*;
-            use tracing_subscriber::util::SubscriberInitExt;
-
-            let console_layer = console_subscriber::ConsoleLayer::builder()
-                .with_default_env()
-                .spawn();
-
-            tracing_subscriber::registry()
-                // .with(journald_layer)
-                .with(console_layer)
-                // .with(format_layer)
-                .init();
-        } else {
-            // tracing_subscriber::registry()
-            //     // .with(journald_layer)
-            //     // .with(console_layer)
-            //     // .with(format_layer)
-            //     .init();
-        }
-    };
-
-    // i18n/l10n support
-    let language_loader: FluentLanguageLoader = fluent_language_loader!();
-
-    let requested_languages = DesktopLanguageRequester::requested_languages();
-    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
-
-    STATIC_LOADER.lock().replace(language_loader);
-
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .thread_name("worker")
-        .enable_all()
-        // .worker_threads(4)
-        .build()?;
-
-    runtime.block_on(async move { async_main().await })
 }

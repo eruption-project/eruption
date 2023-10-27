@@ -21,7 +21,7 @@
 
 use clap::Parser;
 use config::Config;
-use flume::unbounded;
+use flume::bounded;
 use lazy_static::lazy_static;
 use parking_lot::RwLock;
 use std::env;
@@ -177,7 +177,7 @@ fn print_header() {
 
 fn register_sigint_handler() {
     // register ctrl-c handler
-    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, _ctrl_c_rx) = bounded(8);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 

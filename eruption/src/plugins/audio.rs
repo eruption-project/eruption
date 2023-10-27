@@ -175,7 +175,6 @@ impl AudioPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for AudioPlugin {
     fn get_name(&self) -> String {
         "Audio".to_string()
@@ -241,8 +240,6 @@ impl Plugin for AudioPlugin {
         Ok(())
     }
 
-    async fn main_loop_hook(&self, _ticks: u64) {}
-
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 
     fn as_any(&self) -> &dyn Any {
@@ -266,7 +263,7 @@ mod backends {
     use super::CURRENT_RMS;
     use super::FFT_SIZE;
 
-    use flume::{self, unbounded, Receiver, Sender};
+    use flume::{self, bounded, Receiver, Sender};
     use lazy_static::lazy_static;
 
     #[cfg(not(target_os = "windows"))]
@@ -379,7 +376,7 @@ mod backends {
 
             LISTENER.write().replace(listener);
 
-            let (tx, rx): (Sender<u32>, Receiver<u32>) = unbounded();
+            let (tx, rx): (Sender<u32>, Receiver<u32>) = bounded(8);
 
             *SFX_TX.write() = Some(tx);
             *SFX_RX.write() = Some(rx);

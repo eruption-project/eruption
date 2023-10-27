@@ -28,7 +28,7 @@ use comfy_table::{
     modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL, Cell, ContentArrangement, Table,
 };
 use evdev_rs::enums::{EventCode, EV_KEY};
-use flume::unbounded;
+use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -304,7 +304,6 @@ fn print_header() {
     println!();
 }
 
-/*
 #[cfg(debug_assertions)]
 mod thread_util {
     use crate::Result;
@@ -337,9 +336,49 @@ mod thread_util {
         Ok(())
     }
 }
-*/
 
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+    // let filter = tracing_subscriber::EnvFilter::from_default_env();
+    // let format_layer = tracing_subscriber::fmt::layer()
+    //     .compact()
+    //     .with_filter(filter);
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "debug-async")] {
+            // initialize logging
+            use tracing_subscriber::prelude::*;
+            use tracing_subscriber::util::SubscriberInitExt;
+
+            let console_layer = console_subscriber::ConsoleLayer::builder()
+                .with_default_env()
+                .spawn();
+
+            tracing_subscriber::registry()
+                // .with(journald_layer)
+                .with(console_layer)
+                // .with(format_layer)
+                .init();
+        } else {
+            // tracing_subscriber::registry()
+            //     // .with(journald_layer)
+            //     // .with(console_layer)
+            //     // .with(format_layer)
+            //     .init();
+        }
+    };
+
+    // i18n/l10n support
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -359,12 +398,12 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // start the thread deadlock detector
-    // #[cfg(debug_assertions)]
-    // thread_util::deadlock_detector()
-    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    #[cfg(debug_assertions)]
+    thread_util::deadlock_detector()
+        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
 
     // register ctrl-c handler
-    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, _ctrl_c_rx) = bounded(8);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
@@ -596,9 +635,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 };
 
                 let enabled = if action.enabled {
-                    Cell::new(format!("{}", tr!("enabled")))
+                    Cell::new(tr!("enabled").to_string())
                 } else {
-                    Cell::new(format!("{}", tr!("disabled")))
+                    Cell::new(tr!("disabled").to_string())
                 };
 
                 tab.add_row(vec![
@@ -680,55 +719,4 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     };
 
     Ok(())
-}
-
-/// Main program entrypoint
-pub fn main() -> std::result::Result<(), eyre::Error> {
-    // let filter = tracing_subscriber::EnvFilter::from_default_env();
-    // let journald_layer = tracing_journald::layer()?.with_filter(filter);
-
-    // let filter = tracing_subscriber::EnvFilter::from_default_env();
-    // let format_layer = tracing_subscriber::fmt::layer()
-    //     .compact()
-    //     .with_filter(filter);
-
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "debug-async")] {
-            // initialize logging
-            use tracing_subscriber::prelude::*;
-            use tracing_subscriber::util::SubscriberInitExt;
-
-            let console_layer = console_subscriber::ConsoleLayer::builder()
-                .with_default_env()
-                .spawn();
-
-            tracing_subscriber::registry()
-                // .with(journald_layer)
-                .with(console_layer)
-                // .with(format_layer)
-                .init();
-        } else {
-            // tracing_subscriber::registry()
-            //     // .with(journald_layer)
-            //     // .with(console_layer)
-            //     // .with(format_layer)
-            //     .init();
-        }
-    };
-
-    // i18n/l10n support
-    let language_loader: FluentLanguageLoader = fluent_language_loader!();
-
-    let requested_languages = DesktopLanguageRequester::requested_languages();
-    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
-
-    STATIC_LOADER.lock().replace(language_loader);
-
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .thread_name("worker")
-        .enable_all()
-        // .worker_threads(4)
-        .build()?;
-
-    runtime.block_on(async move { async_main().await })
 }

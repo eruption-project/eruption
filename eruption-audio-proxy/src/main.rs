@@ -20,7 +20,7 @@
 */
 
 use std::collections::HashMap;
-use std::io::Cursor;
+use std::io::{self, Cursor};
 use std::mem::MaybeUninit;
 use std::sync::atomic::AtomicI32;
 use std::sync::{
@@ -33,7 +33,7 @@ use std::{env, thread};
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use flume::{unbounded, Receiver};
+use flume::{bounded, Receiver};
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -45,7 +45,6 @@ use parking_lot::{Mutex, RwLock};
 use prost::Message;
 use rust_embed::RustEmbed;
 use socket2::{Domain, SockAddr, Socket, Type};
-use tokio::io::{self};
 use tracing::{debug, error, info, trace, warn};
 
 use protocol::Command;
@@ -174,7 +173,7 @@ fn print_header() {
     println!();
 }
 
-pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
+pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
     unsafe fn assume_init(buf: &[MaybeUninit<u8>]) -> &[u8] {
         &*(buf as *const [MaybeUninit<u8>] as *const [u8])
     }
@@ -509,130 +508,6 @@ pub async fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
     }
 }
 
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
-    cfg_if::cfg_if! {
-        if #[cfg(debug_assertions)] {
-            color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
-            .install()?;
-        } else {
-            color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
-            .display_env_section(false)
-            .install()?;
-        }
-    }
-
-    // print a license header, except if we are generating shell completions
-    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
-        print_header();
-    }
-
-    // start the thread deadlock detector
-    // #[cfg(debug_assertions)]
-    // thread_util::deadlock_detector()
-    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
-
-    let opts = Options::parse();
-    let _daemon = matches!(opts.command, Subcommands::Daemon);
-
-    match opts.command {
-        Subcommands::Daemon => {
-            info!("Starting up...");
-
-            // register ctrl-c handler
-            let (ctrl_c_tx, ctrl_c_rx) = unbounded();
-            ctrlc::set_handler(move || {
-                QUIT.store(true, Ordering::SeqCst);
-
-                ctrl_c_tx
-                    .send(true)
-                    .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
-            })
-            .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
-
-            // load sound effects
-            info!("Loading sound effects...");
-
-            let sample_data_key_down_fx =
-                util::load_audio_file("/usr/share/eruption/sfx/key-down.wav").unwrap_or_else(|e| {
-                    error!("Could not load waveform audio file: {}", e);
-                    Vec::new()
-                });
-
-            let sample_data_key_up_fx = util::load_audio_file("/usr/share/eruption/sfx/key-up.wav")
-                .unwrap_or_else(|e| {
-                    error!("Could not load waveform audio file: {}", e);
-                    Vec::new()
-                });
-
-            {
-                let mut sound_fx = SOUND_FX.write();
-
-                sound_fx.insert(0, sample_data_key_down_fx);
-                sound_fx.insert(1, sample_data_key_up_fx);
-            }
-
-            info!("Startup completed");
-
-            // enter the main loop
-            run_main_loop(&ctrl_c_rx)
-                .await
-                .unwrap_or_else(|e| error!("{}", e));
-
-            debug!("Left the main loop");
-
-            info!("Exiting now");
-        }
-
-        Subcommands::Completions { shell } => {
-            const BIN_NAME: &str = env!("CARGO_PKG_NAME");
-
-            let mut command = Options::command();
-            let mut fd = std::io::stdout();
-
-            clap_complete::generate(shell, &mut command, BIN_NAME.to_string(), &mut fd);
-        }
-    };
-
-    Ok(())
-}
-
-/*
-#[cfg(debug_assertions)]
-mod thread_util {
-    use crate::Result;
-    use parking_lot::deadlock;
-    use std::thread;
-    use std::time::Duration;
-    use tracing::*;
-
-    /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() -> Result<()> {
-        thread::Builder::new()
-            .name("deadlockd".to_owned())
-            .spawn(move || loop {
-                thread::sleep(Duration::from_secs(5));
-                let deadlocks = deadlock::check_deadlock();
-                if !deadlocks.is_empty() {
-                    error!("{} deadlocks detected", deadlocks.len());
-
-                    for (i, threads) in deadlocks.iter().enumerate() {
-                        error!("Deadlock #{}", i);
-
-                        for t in threads {
-                            error!("Thread Id {:#?}", t.thread_id());
-                            error!("{:#?}", t.backtrace());
-                        }
-                    }
-                }
-            })?;
-
-        Ok(())
-    }
-}
-*/
-
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
     // initialize logging
@@ -690,9 +565,121 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     STATIC_LOADER.lock().replace(language_loader);
 
-    let runtime = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()?;
+    cfg_if::cfg_if! {
+        if #[cfg(debug_assertions)] {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .install()?;
+        } else {
+            color_eyre::config::HookBuilder::default()
+            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .display_env_section(false)
+            .install()?;
+        }
+    }
 
-    runtime.block_on(async move { async_main().await })
+    // print a license header, except if we are generating shell completions
+    if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
+        print_header();
+    }
+
+    // start the thread deadlock detector
+    #[cfg(debug_assertions)]
+    thread_util::deadlock_detector()
+        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
+
+    let opts = Options::parse();
+    let _daemon = matches!(opts.command, Subcommands::Daemon);
+
+    match opts.command {
+        Subcommands::Daemon => {
+            info!("Starting up...");
+
+            // register ctrl-c handler
+            let (ctrl_c_tx, ctrl_c_rx) = bounded(8);
+            ctrlc::set_handler(move || {
+                QUIT.store(true, Ordering::SeqCst);
+
+                ctrl_c_tx
+                    .send(true)
+                    .unwrap_or_else(|e| error!("Could not send on a channel: {}", e));
+            })
+            .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
+
+            // load sound effects
+            info!("Loading sound effects...");
+
+            let sample_data_key_down_fx =
+                util::load_audio_file("/usr/share/eruption/sfx/key-down.wav").unwrap_or_else(|e| {
+                    error!("Could not load waveform audio file: {}", e);
+                    Vec::new()
+                });
+
+            let sample_data_key_up_fx = util::load_audio_file("/usr/share/eruption/sfx/key-up.wav")
+                .unwrap_or_else(|e| {
+                    error!("Could not load waveform audio file: {}", e);
+                    Vec::new()
+                });
+
+            {
+                let mut sound_fx = SOUND_FX.write();
+
+                sound_fx.insert(0, sample_data_key_down_fx);
+                sound_fx.insert(1, sample_data_key_up_fx);
+            }
+
+            info!("Startup completed");
+
+            // enter the main loop
+            run_main_loop(&ctrl_c_rx).unwrap_or_else(|e| error!("{}", e));
+
+            debug!("Left the main loop");
+
+            info!("Exiting now");
+        }
+
+        Subcommands::Completions { shell } => {
+            const BIN_NAME: &str = env!("CARGO_PKG_NAME");
+
+            let mut command = Options::command();
+            let mut fd = std::io::stdout();
+
+            clap_complete::generate(shell, &mut command, BIN_NAME.to_string(), &mut fd);
+        }
+    };
+
+    Ok(())
+}
+
+#[cfg(debug_assertions)]
+mod thread_util {
+    use crate::Result;
+    use parking_lot::deadlock;
+    use std::thread;
+    use std::time::Duration;
+    use tracing::*;
+
+    /// Creates a background thread which checks for deadlocks every 5 seconds
+    pub(crate) fn deadlock_detector() -> Result<()> {
+        thread::Builder::new()
+            .name("deadlockd".to_owned())
+            .spawn(move || loop {
+                thread::sleep(Duration::from_secs(5));
+                let deadlocks = deadlock::check_deadlock();
+                if !deadlocks.is_empty() {
+                    error!("{} deadlocks detected", deadlocks.len());
+
+                    for (i, threads) in deadlocks.iter().enumerate() {
+                        error!("Deadlock #{}", i);
+
+                        for t in threads {
+                            error!("Thread Id {:#?}", t.thread_id());
+                            error!("{:#?}", t.backtrace());
+                        }
+                    }
+                }
+            })?;
+
+        Ok(())
+    }
 }

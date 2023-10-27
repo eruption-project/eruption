@@ -208,7 +208,7 @@ pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
 /// Provide a simple means to rate-limit log output
 pub mod ratelimited {
     use lazy_static::lazy_static;
-    use parking_lot::RwLock;
+    use parking_lot::Mutex;
     use std::{
         collections::{hash_map::Entry, HashMap},
         sync::Arc,
@@ -223,8 +223,8 @@ pub mod ratelimited {
     }
 
     lazy_static! {
-        static ref LAST_LOG_MAP: Arc<RwLock<HashMap<String, Metadata>>> =
-            Arc::new(RwLock::new(HashMap::new()));
+        static ref LAST_LOG_MAP: Arc<Mutex<HashMap<String, Metadata>>> =
+            Arc::new(Mutex::new(HashMap::new()));
     }
 
     #[allow(unused)]
@@ -389,7 +389,7 @@ pub mod ratelimited {
     pub(crate) use warning as warn;
 
     pub(crate) fn is_within_rate_limit(p: &str) -> (bool, usize) {
-        let mut map = LAST_LOG_MAP.write();
+        let mut map = LAST_LOG_MAP.lock();
         let e = map.entry(p.to_string());
 
         match e {

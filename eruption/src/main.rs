@@ -19,25 +19,6 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use bitvec::prelude::*;
-use clap::{Arg, Command};
-use color_eyre::owo_colors::OwoColorize;
-use config::Config;
-use flume::{select::SelectError, unbounded, Receiver, Selector, Sender};
-use hotwatch::{
-    blocking::{Flow, Hotwatch},
-    notify::event::ModifyKind,
-    Event, EventKind,
-};
-use i18n_embed::{
-    fluent::{fluent_language_loader, FluentLanguageLoader},
-    DesktopLanguageRequester,
-};
-use is_terminal::IsTerminal;
-use lazy_static::lazy_static;
-use parking_lot::{Condvar, Mutex, RwLock};
-use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
-use rust_embed::RustEmbed;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::u64;
@@ -51,44 +32,61 @@ use std::{
     process,
     sync::atomic::{AtomicBool, AtomicIsize, AtomicUsize, Ordering},
 };
+
+use bitvec::prelude::*;
+use clap::{Arg, Command};
+use color_eyre::owo_colors::OwoColorize;
+use config::Config;
+use flume::{bounded, select::SelectError, Receiver, Selector, Sender};
+use hotwatch::{
+    blocking::{Flow, Hotwatch},
+    notify::event::ModifyKind,
+    Event, EventKind,
+};
+use i18n_embed::{
+    fluent::{fluent_language_loader, FluentLanguageLoader},
+    DesktopLanguageRequester,
+};
+use indexmap::IndexMap;
+use is_terminal::IsTerminal;
+use lazy_static::lazy_static;
+#[cfg(feature = "mimalloc_allocator")]
+use mimalloc::MiMalloc;
+use parking_lot::{Condvar, Mutex, RwLock};
+use rayon::prelude::*;
+use rust_embed::RustEmbed;
 use tracing::*;
+#[cfg(target_os = "windows")]
+use windows_named_pipe::PipeStream;
+
+use hwdevices::{KeyboardHidEvent, MouseHidEvent};
 use util::ratelimited;
 
+use crate::hwdevices::DeviceClass;
+use crate::threads::DbusApiEvent;
+use crate::{
+    color_scheme::ColorScheme,
+    hwdevices::{Device, DeviceHandle, DeviceStatus, MaturityLevel, RGBA},
+    plugins::sdk_support,
+    profiles::Profile,
+    scripting::script,
+};
+#[cfg(not(target_os = "windows"))]
+use crate::{plugins::macros, plugins::uleds};
+
 mod threads;
-use threads::*;
-
 mod util;
-
-mod hwdevices;
-use hwdevices::{KeyboardDevice, KeyboardHidEvent, MiscDevice, MouseDevice, MouseHidEvent};
 
 mod color_scheme;
 mod constants;
 mod dbus_interface;
 mod events;
+mod hwdevices;
 mod plugin_manager;
 mod plugins;
 mod profiles;
 mod scripting;
 mod state;
-
-#[cfg(not(target_os = "windows"))]
-use crate::{plugins::macros, plugins::uleds};
-
-#[cfg(target_os = "windows")]
-use windows_named_pipe::PipeStream;
-
-use crate::{
-    color_scheme::ColorScheme,
-    hwdevices::{DeviceStatus, MaturityLevel, RGBA},
-    plugins::sdk_support,
-    profiles::Profile,
-    scripting::script,
-};
-
-use crate::threads::DbusApiEvent;
-#[cfg(feature = "mimalloc_allocator")]
-use mimalloc::MiMalloc;
 
 #[cfg(feature = "mimalloc_allocator")]
 #[global_allocator]
@@ -141,28 +139,22 @@ macro_rules! tr {
 #[cfg(not(target_os = "windows"))]
 lazy_static! {
     #[cfg(not(target_os = "windows"))]
-    pub static ref KEYBOARD_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+    pub static ref KEYBOARD_DEVICES_RX: Arc<RwLock<IndexMap<DeviceHandle, Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(IndexMap::new()));
 
     #[cfg(not(target_os = "windows"))]
-    pub static ref MOUSE_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+    pub static ref MOUSE_DEVICES_RX: Arc<RwLock<IndexMap<DeviceHandle, Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(IndexMap::new()));
 
     #[cfg(not(target_os = "windows"))]
-    pub static ref MISC_DEVICES_RX: Arc<RwLock<Vec<Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(Vec::new()));
+    pub static ref MISC_DEVICES_RX: Arc<RwLock<IndexMap<DeviceHandle, Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(IndexMap::new()));
 
 }
 
 lazy_static! {
-    /// Managed keyboard devices
-    pub static ref KEYBOARD_DEVICES: Arc<RwLock<Vec<hwdevices::KeyboardDevice>>> = Arc::new(RwLock::new(Vec::new()));
-
-    /// Managed mouse devices
-    pub static ref MOUSE_DEVICES: Arc<RwLock<Vec<hwdevices::MouseDevice>>> = Arc::new(RwLock::new(Vec::new()));
-
-    /// Managed miscellaneous devices
-    pub static ref MISC_DEVICES: Arc<RwLock<Vec<hwdevices::MiscDevice>>> = Arc::new(RwLock::new(Vec::new()));
-
     /// Hidapi object
     pub static ref HIDAPI: Arc<RwLock<Option<hidapi::HidApi>>> = Arc::new(RwLock::new(None));
+
+    /// Connected devices managed by Eruption
+    pub static ref DEVICES: Arc<RwLock<IndexMap<DeviceHandle, Device>>> = Arc::new(RwLock::new(IndexMap::new()));
 
     /// Holds device status information, like e.g: current signal strength or battery levels
     pub static ref DEVICE_STATUS: Arc<RwLock<HashMap<u64, DeviceStatus>>> =
@@ -464,7 +456,7 @@ pub fn switch_profile(
 
         // spawn a new set of Lua VMs, with scripts from the failsafe profile
         for (thread_idx, manifest) in profile.manifests.values().enumerate() {
-            let (lua_tx, lua_rx) = unbounded();
+            let (lua_tx, lua_rx) = bounded(8);
             let parameters = &manifest.get_merged_parameters(&profile);
             threads::spawn_lua_thread(thread_idx, lua_rx, &manifest.script_file, parameters)
                 .unwrap_or_else(|e| {
@@ -596,7 +588,7 @@ pub fn switch_profile(
 
                 // now spawn a new set of Lua VMs, with scripts from the new profile
                 for (thread_idx, manifest) in profile.manifests.values().enumerate() {
-                    let (lua_tx, lua_rx) = unbounded();
+                    let (lua_tx, lua_rx) = bounded(8);
                     if let Err(e) = threads::spawn_lua_thread(
                         thread_idx,
                         lua_rx,
@@ -664,7 +656,8 @@ pub fn switch_profile(
                         .unwrap()
                         .get_int("global.profile_fade_milliseconds")
                         .unwrap_or(constants::FADE_MILLIS as i64);
-                    let fade_frames = (fade_millis * constants::TARGET_FPS as i64 / 1000) as isize;
+                    let fade_frames =
+                        (fade_millis * constants::TARGET_FPS_LIMIT as i64 / 1000) as isize;
                     crate::FADER.store(fade_frames, Ordering::SeqCst);
                     crate::FADER_BASE.store(fade_frames, Ordering::SeqCst);
 
@@ -758,7 +751,8 @@ fn run_main_loop(
     let mut saved_afk_mode = false;
 
     // fade-in from an all black canvas to the saved profile on startup
-    let fade_frames = (constants::STARTUP_FADE_IN_MILLIS * constants::TARGET_FPS / 1000) as isize;
+    let fade_frames =
+        (constants::STARTUP_FADE_IN_MILLIS * constants::TARGET_FPS_LIMIT / 1000) as isize;
     crate::FADER.store(fade_frames, Ordering::SeqCst);
     crate::FADER_BASE.store(fade_frames, Ordering::SeqCst);
 
@@ -769,9 +763,9 @@ fn run_main_loop(
         let mut device_has_failed = false;
 
         #[cfg(not(target_os = "windows"))]
-        let kbd_rxs = crate::KEYBOARD_DEVICES_RX.write();
+        let kbd_rxs = crate::KEYBOARD_DEVICES_RX.read();
         #[cfg(not(target_os = "windows"))]
-        let mouse_rxs = crate::MOUSE_DEVICES_RX.write();
+        let mouse_rxs = crate::MOUSE_DEVICES_RX.read();
 
         #[cfg(not(target_os = "windows"))]
         let kbd_rxs_clone = kbd_rxs.clone();
@@ -818,19 +812,21 @@ fn run_main_loop(
 
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
-                    // TODO: support multiple keyboards
-                    events::process_keyboard_event(&event, &crate::KEYBOARD_DEVICES.read()[0])
+                    let device =
+                        hwdevices::get_device_by_index(DeviceClass::Keyboard, index).unwrap();
+
+                    events::process_keyboard_event(&event, device.clone())
                         .unwrap_or_else(|e| {
                             device_has_failed = true;
 
                             // let make = hwdevices::get_device_make(
-                            //     device.read().get_usb_vid(),
-                            //     device.read().get_usb_pid(),
+                            //     device.get_usb_vid(),
+                            //     device.get_usb_pid(),
                             // )
                             // .unwrap_or_else(|| "<unknown>");
                             // let model = hwdevices::get_device_model(
-                            //     device.read().get_usb_vid(),
-                            //     device.read().get_usb_pid(),
+                            //     device.get_usb_vid(),
+                            //     device.get_usb_pid(),
                             // )
                             // .unwrap_or_else(|| "<unknown>");
 
@@ -839,9 +835,7 @@ fn run_main_loop(
                                 e
                             );
 
-                            (*crate::KEYBOARD_DEVICES.read()[0])
-                                .write()
-                                .as_device_mut()
+                            device.write()
                                 .close_all()
                                 .map_err(|e| ratelimited::error!("An error occurred while closing the device: {e}"))
                                 .ok();
@@ -849,30 +843,24 @@ fn run_main_loop(
                 } else {
                     device_has_failed = true;
 
-                    // let make = hwdevices::get_device_make(
-                    //     device.read().get_usb_vid(),
-                    //     device.read().get_usb_pid(),
-                    // )
-                    // .unwrap_or_else(|| "<unknown>");
-                    // let model = hwdevices::get_device_model(
-                    //     device.read().get_usb_vid(),
-                    //     device.read().get_usb_pid(),
-                    // )
-                    // .unwrap_or_else(|| "<unknown>");
+                    if let Some(device) =
+                        hwdevices::get_device_by_index(DeviceClass::Keyboard, index)
+                    {
+                        ratelimited::error!(
+                            "Could not process a keyboard event from: {}",
+                            event.as_ref().unwrap_err()
+                        );
 
-                    ratelimited::error!(
-                        "Could not process a keyboard event from: {}",
-                        event.as_ref().unwrap_err()
-                    );
-
-                    (*crate::KEYBOARD_DEVICES.read()[0])
-                        .write()
-                        .as_device_mut()
-                        .close_all()
-                        .map_err(|e| {
-                            ratelimited::error!("An error occurred while closing the device: {e}")
-                        })
-                        .ok();
+                        device
+                            .write()
+                            .close_all()
+                            .map_err(|e| {
+                                ratelimited::error!(
+                                    "An error occurred while closing the device: {e}"
+                                )
+                            })
+                            .ok();
+                    }
                 }
 
                 if device_has_failed {
@@ -880,7 +868,7 @@ fn run_main_loop(
                 }
             };
 
-            sel = sel.recv(rx, mapper);
+            sel = sel.recv(rx.1, mapper);
         }
 
         #[cfg(not(target_os = "windows"))]
@@ -892,26 +880,26 @@ fn run_main_loop(
 
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
-                    events::process_mouse_event(&event, &crate::MOUSE_DEVICES.read()[0])
+                    let device = hwdevices::get_device_by_index(DeviceClass::Mouse, index).unwrap();
+
+                    events::process_mouse_event(&event, device.clone())
                         .unwrap_or_else(|e| {
                             device_has_failed = true;
 
                             // let make = hwdevices::get_device_make(
-                            //     device.read().get_usb_vid(),
-                            //     device.read().get_usb_pid(),
+                            //     device.get_usb_vid(),
+                            //     device.get_usb_pid(),
                             // )
                             // .unwrap_or_else(|| "<unknown>");
                             // let model = hwdevices::get_device_model(
-                            //     device.read().get_usb_vid(),
-                            //     device.read().get_usb_pid(),
+                            //     device.get_usb_vid(),
+                            //     device.get_usb_pid(),
                             // )
                             // .unwrap_or_else(|| "<unknown>");
 
                             ratelimited::error!("Could not process a mouse event from: {}. Trying to close the device now...", e);
 
-                            (*crate::MOUSE_DEVICES.read()[0])
-                                .write()
-                                .as_device_mut()
+                            device.write()
                                 .close_all()
                                 .map_err(|e| ratelimited::error!("An error occurred while closing the device: {e}"))
                                 .ok();
@@ -919,30 +907,23 @@ fn run_main_loop(
                 } else {
                     device_has_failed = true;
 
-                    // let make = hwdevices::get_device_make(
-                    //     device.read().get_usb_vid(),
-                    //     device.read().get_usb_pid(),
-                    // )
-                    // .unwrap_or_else(|| "<unknown>");
-                    // let model = hwdevices::get_device_model(
-                    //     device.read().get_usb_vid(),
-                    //     device.read().get_usb_pid(),
-                    // )
-                    // .unwrap_or_else(|| "<unknown>");
-
                     ratelimited::error!(
                         "Could not process a mouse event from: {}",
                         event.as_ref().unwrap_err()
                     );
 
-                    (*crate::MOUSE_DEVICES.read()[0])
-                        .write()
-                        .as_device_mut()
-                        .close_all()
-                        .map_err(|e| {
-                            ratelimited::error!("An error occurred while closing the device: {e}")
-                        })
-                        .ok();
+                    if let Some(device) = hwdevices::get_device_by_index(DeviceClass::Mouse, index)
+                    {
+                        device
+                            .write()
+                            .close_all()
+                            .map_err(|e| {
+                                ratelimited::error!(
+                                    "An error occurred while closing the device: {e}"
+                                )
+                            })
+                            .ok();
+                    }
                 }
 
                 if device_has_failed {
@@ -950,7 +931,7 @@ fn run_main_loop(
                 }
             };
 
-            sel = sel.recv(rx, mapper);
+            sel = sel.recv(rx.1, mapper);
         }
 
         // update timekeeping and state
@@ -1143,10 +1124,6 @@ fn run_main_loop(
                 // call the sync main loop hook, intended to be used
                 // for very short running pieces of code
                 plugin.sync_main_loop_hook(ticks);
-
-                // enqueue a call to the async main loop hook, intended
-                // to be used for longer running pieces of code
-                // futures.push(plugin.main_loop_hook(ticks));
             }
 
             // join_all(futures);
@@ -1187,7 +1164,9 @@ fn run_main_loop(
         }
 
         // now, process events from all available sources...
-        let result = sel.wait_timeout(Duration::from_millis(1000 / (constants::TARGET_FPS * 2)));
+        let result = sel.wait_timeout(Duration::from_millis(
+            1000 / (constants::TARGET_FPS_LIMIT * 2),
+        ));
 
         let timedout = if let Err(result) = result {
             match result {
@@ -1203,12 +1182,13 @@ fn run_main_loop(
             warn!("Removing failed keyboard device with index {idx}");
             // kbd_rxs.remove(*idx);
 
-            if let Some(device) = crate::KEYBOARD_DEVICES.write().get_mut(*idx) {
+            if let Some(device) = hwdevices::get_device_by_index(DeviceClass::Keyboard, *idx) {
                 let _ = device
                     .write()
-                    .as_device_mut()
                     .fail()
                     .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+            } else {
+                ratelimited::error!("Device does not exist");
             }
         }
 
@@ -1217,28 +1197,30 @@ fn run_main_loop(
             warn!("Removing failed mouse device with index {idx}");
             // mouse_rxs.remove(*idx);
 
-            if let Some(device) = crate::MOUSE_DEVICES.write().get_mut(*idx) {
+            if let Some(device) = hwdevices::get_device_by_index(DeviceClass::Mouse, *idx) {
                 let _ = device
                     .write()
-                    .as_device_mut()
                     .fail()
                     .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+            } else {
+                ratelimited::error!("Device does not exist");
             }
         }
 
-        // #[cfg(not(target_os = "windows"))]
-        // for idx in failed_misc_rxs.read().iter() {
-        //     warn!("Removing failed misc device with index {idx}");
-        //     // misc_rxs.remove(*idx);
+        /* #[cfg(not(target_os = "windows"))]
+        for idx in failed_misc_rxs.read().iter() {
+            warn!("Removing failed misc device with index {idx}");
+            // mouse_rxs.remove(*idx);
 
-        //     if let Some(device) = crate::MISC_DEVICES.write().get_mut(*idx) {
-        //         let _ = device
-        //             .write()
-        //             .as_device_mut()
-        //             .fail()
-        //             .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
-        //     }
-        // }
+            if let Some(device) = hwdevices::get_device_by_index(DeviceClass::Misc, *idx) {
+                device
+                    .lock()
+                    .fail()
+                    .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+            } else {
+                ratelimited::error!("Device does not exist");
+            }
+        } */
 
         // terminate the main loop (and later re-enter it) on device failure
         // in most cases eruption should better be restarted
@@ -1257,7 +1239,7 @@ fn run_main_loop(
         }
 
         if delay_time_hid_poll.elapsed()
-            >= Duration::from_millis(1000 / (constants::TARGET_FPS * 8))
+            >= Duration::from_millis(1000 / (constants::TARGET_FPS_LIMIT * 8))
         {
             #[cfg(feature = "profiling")]
             coz::scope!("HID events polling");
@@ -1265,25 +1247,30 @@ fn run_main_loop(
             delay_time_hid_poll = Instant::now();
 
             // poll HID events on all available devices
-            for device in crate::KEYBOARD_DEVICES.read().iter() {
-                events::process_keyboard_hid_events(device).unwrap_or_else(|e| {
-                    ratelimited::error!("Could not process a keyboard HID event: {}", e)
-                });
-            }
+            for (_handle, device) in crate::DEVICES.read().iter() {
+                match device.read().get_device_class() {
+                    DeviceClass::Keyboard => events::process_keyboard_hid_events(device.clone())
+                        .unwrap_or_else(|e| {
+                            ratelimited::error!("Could not process a keyboard HID event: {}", e)
+                        }),
 
-            for device in crate::MOUSE_DEVICES.read().iter() {
-                events::process_mouse_hid_events(device).unwrap_or_else(|e| {
-                    ratelimited::error!("Could not process a mouse HID event: {}", e)
-                });
+                    DeviceClass::Mouse => events::process_mouse_hid_events(device.clone())
+                        .unwrap_or_else(|e| {
+                            ratelimited::error!("Could not process a mouse HID event: {}", e)
+                        }),
+
+                    _ => {
+                        // ignore HID events on all other devices
+                    }
+                }
             }
         }
 
-        if delay_time_tick.elapsed() >= Duration::from_millis(1000 / constants::TICK_FPS) {
+        if delay_time_tick.elapsed() >= Duration::from_millis(1000 / constants::TIMER_TPS) {
             #[cfg(feature = "profiling")]
             coz::scope!("timer tick code");
 
-            let delta =
-                (delay_time_tick.elapsed().as_millis() as u64 / constants::TARGET_FPS) as u32;
+            let delta = delay_time_tick.elapsed().as_millis() as u32 / 10;
 
             delay_time_tick = Instant::now();
 
@@ -1302,7 +1289,8 @@ fn run_main_loop(
         }
 
         if !device_has_failed
-            && delay_time_render.elapsed() >= Duration::from_millis(1000 / constants::TARGET_FPS)
+            && delay_time_render.elapsed()
+                >= Duration::from_millis(1000 / constants::TARGET_FPS_LIMIT)
         {
             #[cfg(feature = "profiling")]
             coz::scope!("render code");
@@ -1342,13 +1330,13 @@ fn run_main_loop(
         }
 
         let elapsed_after_sleep = start_time.elapsed().as_millis();
-        if elapsed_after_sleep > (1000 / constants::TARGET_FPS + 82_u64).into() {
+        if elapsed_after_sleep > (1000 / constants::TARGET_FPS_LIMIT + 82_u64).into() {
             warn!("More than 82 milliseconds of jitter detected!");
             warn!("This means that we dropped at least one frame");
             warn!(
                 "Loop took: {} milliseconds, goal: {}",
                 elapsed_after_sleep,
-                1000 / constants::TARGET_FPS
+                1000 / constants::TARGET_FPS_LIMIT
             );
         }
         /* else if elapsed_after_sleep < 5_u128 {
@@ -1356,14 +1344,14 @@ fn run_main_loop(
             debug!(
                 "Loop took: {} milliseconds, goal: {}",
                 elapsed_after_sleep,
-                1000 / constants::TARGET_FPS
+                1000 / constants::TARGET_FPS_LIMIT
             );
         }
         else {
             debug!(
                 "Loop took: {} milliseconds, goal: {}",
                 elapsed_after_sleep,
-                1000 / constants::TARGET_FPS
+                1000 / constants::TARGET_FPS_LIMIT
             );
         } */
 
@@ -1383,109 +1371,36 @@ fn run_main_loop(
 pub fn remove_failed_devices() -> Result<bool> {
     let mut result = false;
 
-    let mut keyboard_devices = crate::KEYBOARD_DEVICES.write();
-    if let Some(index) = keyboard_devices
-        .iter()
-        .position(|device: &hwdevices::KeyboardDevice| device.read().has_failed().unwrap_or(true))
-    {
-        info!("Unplugging a failed keyboard device...");
+    for (handle, device) in crate::DEVICES.read().iter() {
+        if device.read().has_failed()? {
+            info!("Unplugging the failed device: {handle}...");
 
-        cfg_if::cfg_if! {
-            if #[cfg(not(target_os = "windows"))] {
-                let mut devices_rx = crate::KEYBOARD_DEVICES_RX.write();
-                assert!(devices_rx.len() > index);
-                devices_rx.remove(index);
-            }
+            // cfg_if::cfg_if! {
+            //     if #[cfg(not(target_os = "windows"))] {
+            //         let mut devices_rx = crate::KEYBOARD_DEVICES_RX.lock();
+            //         assert!(devices_rx.len() > index);
+            //         devices_rx.remove(index);
+            //     }
+            // }
+
+            let usb_id = (device.read().get_usb_vid(), device.read().get_usb_pid());
+
+            result = true;
+
+            debug!("Sending device hot remove notification...");
+
+            let dbus_api_tx = crate::DBUS_API_TX.read();
+            let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+            dbus_api_tx
+                .send(DbusApiEvent::DeviceHotplug(usb_id, true))
+                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
         }
-
-        assert!(keyboard_devices.len() > index);
-
-        let usb_id = keyboard_devices
-            .get(index)
-            .map(|d| (d.read().get_usb_vid(), d.read().get_usb_pid()));
-
-        keyboard_devices.remove(index);
-
-        result = true;
-
-        debug!("Sending device hot remove notification...");
-
-        let dbus_api_tx = crate::DBUS_API_TX.read();
-        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
-
-        dbus_api_tx
-            .send(DbusApiEvent::DeviceHotplug(usb_id.unwrap_or((0, 0)), true))
-            .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
     }
 
-    let mut mouse_devices = crate::MOUSE_DEVICES.write();
-    if let Some(index) = mouse_devices
-        .iter()
-        .position(|device: &hwdevices::MouseDevice| device.read().has_failed().unwrap_or(true))
-    {
-        info!("Unplugging a failed mouse device...");
-
-        cfg_if::cfg_if! {
-            if #[cfg(not(target_os = "windows"))] {
-                let mut devices_rx = crate::MOUSE_DEVICES_RX.write();
-                assert!(devices_rx.len() > index);
-                devices_rx.remove(index);
-            }
-        }
-
-        assert!(mouse_devices.len() > index);
-
-        let usb_id = mouse_devices
-            .get(index)
-            .map(|d| (d.read().get_usb_vid(), d.read().get_usb_pid()));
-
-        mouse_devices.remove(index);
-
-        result = true;
-
-        debug!("Sending device hot remove notification...");
-
-        let dbus_api_tx = crate::DBUS_API_TX.read();
-        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
-
-        dbus_api_tx
-            .send(DbusApiEvent::DeviceHotplug(usb_id.unwrap_or((0, 0)), true))
-            .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
-    }
-
-    let mut misc_devices = crate::MISC_DEVICES.write();
-    if let Some(index) = misc_devices
-        .iter()
-        .position(|device: &hwdevices::MiscDevice| device.read().has_failed().unwrap_or(true))
-    {
-        info!("Unplugging a failed misc device...");
-
-        cfg_if::cfg_if! {
-            if #[cfg(not(target_os = "windows"))] {
-                let mut devices_rx = crate::MISC_DEVICES_RX.write();
-                assert!(devices_rx.len() > index);
-                devices_rx.remove(index);
-            }
-        }
-
-        assert!(misc_devices.len() > index);
-        misc_devices.remove(index);
-
-        let usb_id = misc_devices
-            .get(index)
-            .map(|d| (d.read().get_usb_vid(), d.read().get_usb_pid()));
-
-        result = true;
-
-        debug!("Sending device hot remove notification...");
-
-        let dbus_api_tx = crate::DBUS_API_TX.read();
-        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
-
-        dbus_api_tx
-            .send(DbusApiEvent::DeviceHotplug(usb_id.unwrap_or((0, 0)), true))
-            .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
-    }
+    crate::DEVICES
+        .write()
+        .retain(|_handle, device| !device.read().has_failed().unwrap_or(false));
 
     Ok(result)
 }
@@ -1593,14 +1508,15 @@ pub fn register_filesystem_watcher(
     Ok(())
 }
 
-/*
 #[cfg(debug_assertions)]
 mod thread_util {
-    use crate::Result;
-    use parking_lot::deadlock;
     use std::thread;
     use std::time::Duration;
+
+    use parking_lot::deadlock;
     use tracing::*;
+
+    use crate::Result;
 
     /// Creates a background thread which checks for deadlocks every 5 seconds
     pub(crate) fn deadlock_detector() -> Result<()> {
@@ -1631,161 +1547,95 @@ mod thread_util {
         Ok(())
     }
 }
-*/
 
-/// open the control and LED devices of the keyboard
-pub fn init_keyboard_device(keyboard_device: &KeyboardDevice) {
-    info!("Opening keyboard device...");
+/// open the control and LED devices
+pub fn init_device(device: hwdevices::Device) {
+    info!("Opening device...");
 
-    let hidapi = crate::HIDAPI.read();
-    let hidapi = hidapi.as_ref().unwrap();
+    let make = hwdevices::get_device_make(device.read().get_usb_vid(), device.read().get_usb_pid())
+        .unwrap_or("<unknown>");
+    let model =
+        hwdevices::get_device_model(device.read().get_usb_vid(), device.read().get_usb_pid())
+            .unwrap_or("<unknown>");
 
-    let make = hwdevices::get_device_make(
-        keyboard_device.read().get_usb_vid(),
-        keyboard_device.read().get_usb_pid(),
-    )
-    .unwrap_or("<unknown>");
-    let model = hwdevices::get_device_model(
-        keyboard_device.read().get_usb_vid(),
-        keyboard_device.read().get_usb_pid(),
-    )
-    .unwrap_or("<unknown>");
+    {
+        let hidapi = crate::HIDAPI.read();
+        let hidapi = hidapi.as_ref().unwrap();
 
-    keyboard_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the keyboard device '{make} {model}': {}", e);
-        error!(
+        device.write().open(&hidapi).unwrap_or_else(|e| {
+            error!("Error opening the device '{make} {model}': {}", e);
+            error!(
             "This could be a permission problem, or maybe the device is locked by another process?"
         );
-    });
+        });
+    }
 
     // send initialization handshake
-    info!("Initializing keyboard device...");
-    keyboard_device
+    info!("Initializing device...");
+    device
         .write()
         .send_init_sequence()
         .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
 
     // set LEDs to a known good initial state
-    info!("Configuring keyboard LEDs...");
-    keyboard_device
-        .write()
-        .set_led_init_pattern()
-        .unwrap_or_else(|e| {
-            error!(
-                "Could not initialize LEDs of the device '{make} {model}': {}",
-                e
-            )
-        });
-
-    info!(
-        "Firmware revision: '{make} {model}': {}",
-        keyboard_device.read().get_firmware_revision()
-    );
-}
-
-/// open the sub-devices of the mouse
-pub fn init_mouse_device(mouse_device: &MouseDevice) {
-    info!("Opening mouse device...");
-
-    let hidapi = crate::HIDAPI.read();
-    let hidapi = hidapi.as_ref().unwrap();
-
-    let make = hwdevices::get_device_make(
-        mouse_device.read().get_usb_vid(),
-        mouse_device.read().get_usb_pid(),
-    )
-    .unwrap_or("<unknown>");
-    let model = hwdevices::get_device_model(
-        mouse_device.read().get_usb_vid(),
-        mouse_device.read().get_usb_pid(),
-    )
-    .unwrap_or("<unknown>");
-
-    mouse_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the mouse device '{make} {model}': {}", e);
+    info!("Configuring LEDs...");
+    device.write().set_led_init_pattern().unwrap_or_else(|e| {
         error!(
-            "This could be a permission problem, or maybe the device is locked by another process?"
-        );
+            "Could not initialize LEDs of the device '{make} {model}': {}",
+            e
+        )
     });
 
-    // send initialization handshake
-    info!("Initializing mouse device...");
-    mouse_device
-        .write()
-        .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
-
-    // set LEDs to a known good initial state
-    info!("Configuring mouse LEDs...");
-    mouse_device
-        .write()
-        .set_led_init_pattern()
-        .unwrap_or_else(|e| {
-            error!(
-                "Could not initialize LEDs of the device '{make} {model}': {}",
-                e
-            )
-        });
-
     info!(
         "Firmware revision: '{make} {model}': {}",
-        mouse_device.read().get_firmware_revision()
+        device.read().get_firmware_revision()
     );
 }
 
-/// open the misc device
-pub fn init_misc_device(misc_device: &MiscDevice) {
-    info!("Opening misc device...");
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
 
-    let hidapi = crate::HIDAPI.read();
-    let hidapi = hidapi.as_ref().unwrap();
+    if std::io::stdout().is_terminal() {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
 
-    let make = hwdevices::get_device_make(
-        misc_device.read().get_usb_vid(),
-        misc_device.read().get_usb_pid(),
-    )
-    .unwrap_or("<unknown>");
-    let model = hwdevices::get_device_model(
-        misc_device.read().get_usb_vid(),
-        misc_device.read().get_usb_pid(),
-    )
-    .unwrap_or("<unknown>");
+        #[cfg(not(target_os = "windows"))]
+        let ansi = true;
 
-    misc_device.write().open(hidapi).unwrap_or_else(|e| {
-        error!("Error opening the misc device '{make} {model}': {}", e);
-        error!(
-            "This could be a permission problem, or maybe the device is locked by another process?"
-        );
-    });
+        #[cfg(target_os = "windows")]
+        let ansi = false;
 
-    // send initialization handshake
-    info!("Initializing misc device...");
-    misc_device
-        .write()
-        .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_ansi(ansi)
+            .with_line_number(true)
+            .with_filter(filter);
 
-    // set LEDs to a known good initial state
-    info!("Configuring misc device LEDs...");
-    misc_device
-        .write()
-        .set_led_init_pattern()
-        .unwrap_or_else(|e| {
-            error!(
-                "Could not initialize LEDs of the device '{make} {model}': {}",
-                e
-            )
-        });
+        tracing_subscriber::registry()
+            // .with(journald_layer)
+            .with(format_layer)
+            .init();
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
 
-    info!(
-        "Firmware revision: '{make} {model}': {}",
-        misc_device.read().get_firmware_revision()
-    );
-}
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
 
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     #[cfg(feature = "profiling")]
     coz::thread_init();
+
+    // i18n/l10n support
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -1814,14 +1664,14 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             eprintln!(
                 "If you intended to run the Eruption daemon, please execute one of the following commands:"
             );
-            eprintln!("");
+            eprintln!();
             eprintln!("To run the Eruption daemon in the background please use:");
             eprintln!(
                 "{}",
                 "sudo systemctl unmask eruption.service && sudo systemctl restart eruption.service"
                     .bold()
             );
-            eprintln!("");
+            eprintln!();
             eprintln!("To run the Eruption daemon from a terminal (e.g. for debugging purposes) please use:");
             eprintln!(
                 "{}",
@@ -1838,9 +1688,9 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // start the thread deadlock detector
-    // #[cfg(debug_assertions)]
-    // thread_util::deadlock_detector()
-    //     .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
+    #[cfg(debug_assertions)]
+    thread_util::deadlock_detector()
+        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
 
     let matches = parse_commandline();
 
@@ -1866,7 +1716,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     );
 
     // register ctrl-c handler
-    let (ctrl_c_tx, ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, ctrl_c_rx) = bounded(8);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
@@ -1944,9 +1794,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     // create the one and only hidapi instance
     match hidapi::HidApi::new() {
         Ok(hidapi) => {
-            {
-                *crate::HIDAPI.write() = Some(hidapi);
-            }
+            *crate::HIDAPI.write() = Some(hidapi);
 
             // initialize plugins
             info!("Registering plugins...");
@@ -1955,345 +1803,265 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
             // load plugin state from disk
             plugins::PersistencePlugin::load_persistent_data()
-                .unwrap_or_else(|e| warn!("Could not load persisted state: {}", e));
+                .unwrap_or_else(|e| warn!("Could not load persisted state data: {}", e));
 
             info!("Plugins loaded and initialized successfully");
 
             // enumerate devices
             info!("Enumerating connected devices...");
 
-            if let Ok(devices) = hwdevices::probe_devices() {
-                thread::scope(|s| -> Result<()> {
-                    let keyboard_init_thread = thread::Builder::new()
-                        .name("init/kbd:all".to_string())
-                        .spawn_scoped(s, move || {
-                            // initialize keyboard devices
-                            devices.0.par_iter().enumerate().for_each_init(
-                                || {},
-                                |_, (index, device)| {
-                                    init_keyboard_device(device);
+            if let Ok(mut devices) = hwdevices::probe_devices() {
+                // initialize the devices
+                devices.par_iter().enumerate().for_each(|(handle, device)| {
+                    crate::DEVICES
+                        .write()
+                        .insert(handle as DeviceHandle, device.clone());
 
-                                    let usb_vid = device.read().get_usb_vid();
-                                    let usb_pid = device.read().get_usb_pid();
+                    let (usb_vid, usb_pid) =
+                        (device.read().get_usb_vid(), device.read().get_usb_pid());
 
-                                    cfg_if::cfg_if! {
-                                        if #[cfg(not(target_os = "windows"))] {
-                                            // spawn a thread to handle keyboard input
-                                            info!("Spawning keyboard input thread...");
+                    let device_class = device.read().get_device_class();
+                    match device_class {
+                        DeviceClass::Keyboard => {
+                            init_device(device.clone());
 
-                                            let (kbd_tx, kbd_rx) = unbounded();
-                                            threads::spawn_keyboard_input_thread(
-                                                kbd_tx,
-                                                device.clone(),
-                                                index,
-                                                usb_vid,
-                                                usb_pid,
-                                            )
-                                            .unwrap_or_else(|e| {
-                                                error!("Could not spawn a thread: {}", e);
-                                                panic!()
-                                            });
+                            cfg_if::cfg_if! {
+                                if #[cfg(not(target_os = "windows"))] {
+                                    // spawn a thread to handle keyboard input
+                                    info!("Spawning device input thread...");
 
-                                            crate::KEYBOARD_DEVICES_RX.write().push(kbd_rx);
-                                        }
-                                    }
+                                    let (kbd_tx, kbd_rx) = bounded(8);
+                                    threads::spawn_device_input_thread(
+                                        kbd_tx,
+                                        handle,
+                                        usb_vid,
+                                        usb_pid,
+                                    )
+                                    .unwrap_or_else(|e| {
+                                        error!("Could not spawn a thread: {}", e);
+                                        panic!()
+                                    });
 
-                                    crate::KEYBOARD_DEVICES.write().push(device.clone());
-                                },
-                            )
-                        })?;
+                                    crate::KEYBOARD_DEVICES_RX.write().insert(handle, kbd_rx);
+                                }
+                            }
+                        }
 
-                    let mice_init_thread = thread::Builder::new()
-                        .name("init/mice:all".to_string())
-                        .spawn_scoped(s, move  || {
-                            // initialize mouse devices
-                            devices.1.par_iter().enumerate().for_each_init(
-                                || {},
-                                |_, (index, device)| {
-                                    // enable mouse input
-                                    if enable_mouse {
-                                        init_mouse_device(device);
+                        DeviceClass::Mouse => {
+                            if enable_mouse {
+                                init_device(device.clone());
 
-                                        let usb_vid = device.read().get_usb_vid();
-                                        let usb_pid = device.read().get_usb_pid();
-
-                                        cfg_if::cfg_if! {
-                                            if #[cfg(not(target_os = "windows"))] {
-                                                let (mouse_tx, mouse_rx) = unbounded();
-
-                                                // spawn a thread to handle mouse input
-                                                info!("Spawning mouse input thread...");
-
-                                                spawn_mouse_input_thread(
-                                                    mouse_tx,
-                                                    device.clone(),
-                                                    index,
-                                                    usb_vid,
-                                                    usb_pid,
-                                                )
-                                                .unwrap_or_else(|e| {
-                                                    error!("Could not spawn a thread: {}", e);
-                                                    panic!()
-                                                });
-
-                                                crate::MOUSE_DEVICES_RX.write().push(mouse_rx);
-                                            }
-                                        }
-
-                                        crate::MOUSE_DEVICES.write().push(device.clone());
-                                    } else {
-                                        info!("Found mouse device, but mouse support is DISABLED by configuration");
-                                    }
-                                },
-                            )
-                        })?;
-
-                    let misc_init_thread = thread::Builder::new()
-                        .name("init/misc:all".to_string())
-                        .spawn_scoped(s, || {
-                            // initialize misc devices
-                            devices.2.par_iter().enumerate().for_each_init(
-                                || {},
-                                move |_, (index, device)| {
-                                    init_misc_device(device);
-
-                                    cfg_if::cfg_if! {
+                                cfg_if::cfg_if! {
                                     if #[cfg(not(target_os = "windows"))] {
-                                            if device.read().has_input_device() {
-                                                let usb_vid = device.read().get_usb_vid();
-                                                let usb_pid = device.read().get_usb_pid();
+                                        // spawn a thread to handle mouse input
+                                        info!("Spawning device input thread...");
 
-                                                // spawn a thread to handle keyboard input
-                                                info!("Spawning misc device input thread...");
+                                        let (mouse_tx, mouse_rx) = bounded(8);
+                                        threads::spawn_device_input_thread(
+                                            mouse_tx,
+                                            handle,
+                                            usb_vid,
+                                            usb_pid,
+                                        )
+                                        .unwrap_or_else(|e| {
+                                            error!("Could not spawn a thread: {}", e);
+                                            panic!()
+                                        });
 
-                                                let (misc_tx, misc_rx) = unbounded();
-                                                threads::spawn_misc_input_thread(
-                                                    misc_tx,
-                                                    device.clone(),
-                                                    index,
-                                                    usb_vid,
-                                                    usb_pid,
-                                                )
-                                                .unwrap_or_else(|e| {
-                                                    error!("Could not spawn a thread: {}", e);
-                                                    panic!()
-                                                });
-
-                                                crate::MISC_DEVICES_RX.write().push(misc_rx);
-                                            } else {
-                                                // insert an unused rx
-                                                let (_misc_tx, misc_rx) = unbounded();
-                                                crate::MISC_DEVICES_RX.write().push(misc_rx);
-                                            }
-                                        }
+                                        crate::MOUSE_DEVICES_RX.write().insert(handle, mouse_rx);
                                     }
+                                }
+                            }
+                        }
 
-                                    crate::MISC_DEVICES.write().push(device.clone());
-                                },
-                            );
-                        })?;
+                        DeviceClass::Misc => {
+                            init_device(device.clone());
 
-                    info!("Device enumeration completed");
+                            cfg_if::cfg_if! {
+                                if #[cfg(not(target_os = "windows"))] {
+                                    // spawn a thread to handle device input
+                                    info!("Spawning device input thread...");
 
-                    // optionally, wait a bit for devices to settle; this should
-                    // not be technically required it just prevents fast devices
-                    // from showing LED lighting long before the slower ones do,
-                    // which can lead to an uneven experience on startup
+                                    let (misc_tx, misc_rx) = bounded(8);
+                                    threads::spawn_device_input_thread(
+                                        misc_tx,
+                                        handle,
+                                        usb_vid,
+                                        usb_pid,
+                                    )
+                                    .unwrap_or_else(|e| {
+                                        error!("Could not spawn a thread: {}", e);
+                                        panic!()
+                                    });
 
-                    // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
+                                    crate::MISC_DEVICES_RX.write().insert(handle, misc_rx);
+                                }
+                            }
+                        }
 
-                    let _ = keyboard_init_thread.join().map_err(|_| {
-                        error!("Error during initialization of at least one device occurred")
-                    });
-                    let _ = mice_init_thread.join().map_err(|_| {
-                        error!("Error during initialization of at least one device occurred")
-                    });
-                    let _ = misc_init_thread.join().map_err(|_| {
-                        error!("Error during initialization of at least one device occurred")
-                    });
-
-                    if crate::KEYBOARD_DEVICES.read().is_empty()
-                        && crate::MOUSE_DEVICES.read().is_empty()
-                        && crate::MISC_DEVICES.read().is_empty()
-                    {
-                        warn!("No supported devices found!");
+                        _ => {
+                            error!("Invalid device class");
+                        }
                     }
-
-                    info!("Performing late initializations...");
 
                     // load and initialize global runtime state (late init)
                     info!("Loading saved device state...");
-                    state::init_global_runtime_state_late()
+                    state::init_runtime_state(device.clone())
                         .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+                });
 
-                    // initialize the Linux uleds interface
-                    #[cfg(not(target_os = "windows"))]
-                    info!("Initializing Linux Userspace LEDs interface...");
+                info!("Device enumeration completed");
 
-                    #[cfg(not(target_os = "windows"))]
-                    plugins::UledsPlugin::spawn_uleds_thread().unwrap_or_else(|e| {
-                        warn!("Could not spawn a thread: {}", e);
-                        panic!()
+                // optionally, wait a bit for devices to settle; this should
+                // not be technically required it just prevents fast devices
+                // from showing LED lighting long before the slower ones do,
+                // which can lead to an uneven experience on startup
+
+                // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
+
+                if crate::DEVICES.read().is_empty() {
+                    warn!("No supported devices found!");
+                }
+
+                info!("Performing late initializations...");
+
+                // initialize the Linux uleds interface
+                #[cfg(not(target_os = "windows"))]
+                info!("Initializing Linux Userspace LEDs interface...");
+
+                #[cfg(not(target_os = "windows"))]
+                plugins::UledsPlugin::spawn_uleds_thread().unwrap_or_else(|e| {
+                    warn!("Could not spawn a thread: {}", e);
+                    panic!()
+                });
+
+                // initialize the D-Bus API
+                info!("Initializing D-Bus API...");
+                let (dbus_tx, dbus_rx) = bounded(8);
+                let dbus_api_tx = threads::spawn_dbus_api_thread(dbus_tx).unwrap_or_else(|e| {
+                    error!("Could not spawn a thread: {}", e);
+                    panic!()
+                });
+
+                *DBUS_API_TX.write() = Some(dbus_api_tx.clone());
+
+                let (fsevents_tx, fsevents_rx) = bounded(8);
+                register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))
+                    .unwrap_or_else(|e| error!("Could not register file changes watcher: {}", e));
+
+                // initialize the device I/O thread
+                info!("Initializing device I/O thread...");
+                let (dev_io_tx, dev_io_rx) = bounded(8);
+                threads::spawn_device_io_thread(dev_io_rx).unwrap_or_else(|e| {
+                    error!("Could not spawn the render thread: {}", e);
+                    panic!()
+                });
+
+                *DEV_IO_TX.write() = Some(dev_io_tx);
+
+                info!("Startup completed");
+
+                'OUTER_LOOP: loop {
+                    info!("Entering the main loop now...");
+
+                    let mut errors_present = false;
+
+                    // enter the main loop
+                    run_main_loop(&dbus_api_tx, &ctrl_c_rx, &dbus_rx, &fsevents_rx).unwrap_or_else(
+                        |e| {
+                            warn!("Left the main loop due to an irrecoverable error: {}", e);
+                            errors_present = true;
+                        },
+                    );
+
+                    if !errors_present {
+                        info!("Main loop terminated gracefully");
+                    }
+
+                    if crate::QUIT.load(Ordering::SeqCst) {
+                        break 'OUTER_LOOP;
+                    }
+
+                    // wait a few milliseconds to give devices time to settle
+                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+
+                    // remove disconnected or failed devices
+                    remove_failed_devices().unwrap_or_else(|e| {
+                        error!("Could not remove failed devices: {}", e);
+                        false
+                    });
+                }
+
+                events::notify_observers(events::Event::DaemonShutdown)
+                    .unwrap_or_else(|e| error!("Error during notification of observer: {}", e));
+
+                // we left the main loop, so send a final message to the running Lua VMs
+                info!("Shutting down all Lua VMs now...");
+
+                *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.read().len();
+
+                for lua_tx in LUA_TXS.read().iter() {
+                    lua_tx
+                        .send(script::Message::Quit(0))
+                        .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
+                }
+
+                // wait until all Lua VMs completed the event handler
+                loop {
+                    let mut pending = UPCALL_COMPLETED_ON_QUIT.0.lock();
+
+                    let result = UPCALL_COMPLETED_ON_QUIT.1.wait_for(
+                        &mut pending,
+                        Duration::from_millis(constants::SHORT_TIMEOUT_MILLIS),
+                    );
+
+                    if result.timed_out() {
+                        warn!("Timed out while waiting for a Lua VM to shut down");
+                        break;
+                    }
+
+                    if *pending == 0 {
+                        break;
+                    }
+                }
+
+                // store plugin state to disk
+                plugins::PersistencePlugin::store_persistent_data()
+                    .unwrap_or_else(|e| error!("Could not write persisted state: {}", e));
+
+                // save state
+                info!("Saving global runtime state...");
+                state::save_runtime_state()
+                    .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
+
+                // save color-schemes
+                state::save_color_schemes()
+                    .unwrap_or_else(|e| error!("Could not save color-schemes: {}", e));
+
+                // close all managed devices
+                info!("Closing all devices now...");
+
+                thread::sleep(Duration::from_millis(
+                    constants::SHUTDOWN_TIMEOUT_MILLIS as u64,
+                ));
+
+                // set LEDs of all keyboards to a known final state, then close all associated devices
+                for device in devices.iter_mut() {
+                    device
+                        .write()
+                        .set_led_off_pattern()
+                        .unwrap_or_else(|e| error!("Could not finalize LEDs configuration: {}", e));
+
+                    device.write().send_shutdown_sequence().unwrap_or_else(|e| {
+                        error!("Could not send shutdown sequence to the device: {}", e);
                     });
 
-                    // initialize the D-Bus API
-                    info!("Initializing D-Bus API...");
-                    let (dbus_tx, dbus_rx) = unbounded();
-                    let dbus_api_tx = threads::spawn_dbus_api_thread(dbus_tx).unwrap_or_else(|e| {
-                        error!("Could not spawn a thread: {}", e);
-                        panic!()
+                    device.write().close_all().unwrap_or_else(|e| {
+                        warn!("Could not close the device: {}", e);
                     });
-
-                    *DBUS_API_TX.write() = Some(dbus_api_tx.clone());
-
-                    let (fsevents_tx, fsevents_rx) = unbounded();
-                    register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))
-                        .unwrap_or_else(|e| {
-                            error!("Could not register file changes watcher: {}", e)
-                        });
-
-                    // initialize the device I/O thread
-                    info!("Initializing device I/O thread...");
-                    let (dev_io_tx, dev_io_rx) = unbounded();
-                    threads::spawn_device_io_thread(dev_io_rx).unwrap_or_else(|e| {
-                        error!("Could not spawn the render thread: {}", e);
-                        panic!()
-                    });
-
-                    *DEV_IO_TX.write() = Some(dev_io_tx);
-
-                    info!("Late initializations completed");
-
-                    info!("Startup completed");
-
-                    'OUTER_LOOP: loop {
-                        info!("Entering the main loop now...");
-
-                        let mut errors_present = false;
-
-                        // enter the main loop
-                        run_main_loop(&dbus_api_tx, &ctrl_c_rx, &dbus_rx, &fsevents_rx)
-                            .unwrap_or_else(|e| {
-                                warn!("Left the main loop due to an irrecoverable error: {}", e);
-                                errors_present = true;
-                            });
-
-                        if !errors_present {
-                            info!("Main loop terminated gracefully");
-                        }
-
-                        if crate::QUIT.load(Ordering::SeqCst) {
-                            break 'OUTER_LOOP;
-                        }
-
-                        // wait a few milliseconds to give devices time to settle
-                        thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
-
-                        // remove disconnected or failed devices
-                        remove_failed_devices()?;
-                    }
-
-                    events::notify_observers(events::Event::DaemonShutdown)?;
-
-                    // we left the main loop, so send a final message to the running Lua VMs
-                    info!("Shutting down all Lua VMs now...");
-
-                    *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.read().len();
-
-                    for lua_tx in LUA_TXS.read().iter() {
-                        lua_tx
-                            .send(script::Message::Quit(0))
-                            .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
-                    }
-
-                    // wait until all Lua VMs completed the event handler
-                    loop {
-                        let mut pending = UPCALL_COMPLETED_ON_QUIT.0.lock();
-
-                        let result = UPCALL_COMPLETED_ON_QUIT.1.wait_for(
-                            &mut pending,
-                            Duration::from_millis(constants::SHORT_TIMEOUT_MILLIS),
-                        );
-
-                        if result.timed_out() {
-                            warn!("Timed out while waiting for a Lua VM to shut down");
-                            break;
-                        }
-
-                        if *pending == 0 {
-                            break;
-                        }
-                    }
-
-                    // store plugin state to disk
-                    plugins::PersistencePlugin::store_persistent_data()
-                        .unwrap_or_else(|e| error!("Could not write persisted state: {}", e));
-
-                    // save state
-                    info!("Saving global runtime state...");
-                    state::save_runtime_state()
-                        .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
-
-                    // save color-schemes
-                    state::save_color_schemes()
-                        .unwrap_or_else(|e| error!("Could not save color-schemes: {}", e));
-
-                    // close all managed devices
-                    info!("Closing all devices now...");
-
-                    thread::sleep(Duration::from_millis(
-                        constants::SHUTDOWN_TIMEOUT_MILLIS as u64,
-                    ));
-
-                    // set LEDs of all keyboards to a known final state, then close all associated devices
-                    for device in crate::KEYBOARD_DEVICES.read().iter() {
-                        device.write().set_led_off_pattern().unwrap_or_else(|e| {
-                            error!("Could not finalize LEDs configuration: {}", e)
-                        });
-
-                        device.write().send_shutdown_sequence().unwrap_or_else(|e| {
-                            error!("Could not send shutdown sequence to the device: {}", e);
-                        });
-
-                        device.write().close_all().unwrap_or_else(|e| {
-                            warn!("Could not close the device: {}", e);
-                        });
-                    }
-
-                    // set LEDs of all mice to a known final state, then close all associated devices
-                    for device in crate::MOUSE_DEVICES.read().iter() {
-                        device.write().set_led_off_pattern().unwrap_or_else(|e| {
-                            error!("Could not finalize LEDs configuration: {}", e)
-                        });
-
-                        device.write().send_shutdown_sequence().unwrap_or_else(|e| {
-                            error!("Could not send shutdown sequence to the device: {}", e);
-                        });
-
-                        device.write().close_all().unwrap_or_else(|e| {
-                            warn!("Could not close the device: {}", e);
-                        });
-                    }
-
-                    // set LEDs of all misc devices to a known final state, then close all associated devices
-                    for device in crate::MISC_DEVICES.read().iter() {
-                        device.write().set_led_off_pattern().unwrap_or_else(|e| {
-                            error!("Could not finalize LEDs configuration: {}", e)
-                        });
-
-                        device.write().send_shutdown_sequence().unwrap_or_else(|e| {
-                            error!("Could not send shutdown sequence to the device: {}", e);
-                        });
-
-                        device.write().close_all().unwrap_or_else(|e| {
-                            warn!("Could not close the device: {}", e);
-                        });
-                    }
-
-                    Ok(())
-                })?;
+                }
             } else {
-                error!("Could not enumerate connected devices");
+                error!("Could not probe connected devices");
             }
         }
 
@@ -2306,70 +2074,4 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     info!("Exiting now");
 
     Ok(())
-}
-
-/// Main program entrypoint
-pub fn main() -> std::result::Result<(), eyre::Error> {
-    // initialize logging
-    use tracing_subscriber::prelude::*;
-    use tracing_subscriber::util::SubscriberInitExt;
-
-    if std::io::stdout().is_terminal() {
-        // let filter = tracing_subscriber::EnvFilter::from_default_env();
-        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
-
-        #[cfg(not(target_os = "windows"))]
-        let ansi = true;
-
-        #[cfg(target_os = "windows")]
-        let ansi = false;
-
-        let filter = tracing_subscriber::EnvFilter::from_default_env();
-        let format_layer = tracing_subscriber::fmt::layer()
-            .compact()
-            .with_ansi(ansi)
-            .with_line_number(true)
-            .with_filter(filter);
-
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "debug-async")] {
-                let console_layer = console_subscriber::ConsoleLayer::builder()
-                    .with_default_env()
-                    .spawn();
-
-                tracing_subscriber::registry()
-                    // .with(journald_layer)
-                    .with(console_layer)
-                    .with(format_layer)
-                    .init();
-            } else {
-                tracing_subscriber::registry()
-                    // .with(journald_layer)
-                    .with(format_layer)
-                    .init();
-            }
-        };
-    } else {
-        let filter = tracing_subscriber::EnvFilter::from_default_env();
-        let journald_layer = tracing_journald::layer()?.with_filter(filter);
-
-        tracing_subscriber::registry().with(journald_layer).init();
-    }
-
-    #[cfg(feature = "profiling")]
-    coz::thread_init();
-
-    // i18n/l10n support
-    let language_loader: FluentLanguageLoader = fluent_language_loader!();
-
-    let requested_languages = DesktopLanguageRequester::requested_languages();
-    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
-
-    STATIC_LOADER.lock().replace(language_loader);
-
-    let runtime = tokio::runtime::Builder::new_current_thread()
-        // .enable_all()
-        .build()?;
-
-    runtime.block_on(async move { async_main().await })
 }

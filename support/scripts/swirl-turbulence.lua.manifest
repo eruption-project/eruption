@@ -37,8 +37,8 @@ type = 'float'
 name = 'time_scale'
 description = 'Scale of time axis (3rd coordinate of the noise function)'
 min = 0.0
-max = 1000.0
-default = 5.0
+max = 10000.0
+default = 500.0
 
 [[config]]
 type = 'float'

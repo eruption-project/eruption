@@ -208,7 +208,63 @@ fn print_header() {
 //     Ok(())
 // }
 
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
+/// Main program entrypoint
+pub fn main() -> std::result::Result<(), eyre::Error> {
+    // initialize logging
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::util::SubscriberInitExt;
+
+    if std::io::stdout().is_terminal() {
+        // let filter = tracing_subscriber::EnvFilter::from_default_env();
+        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        #[cfg(not(target_os = "windows"))]
+        let ansi = true;
+
+        #[cfg(target_os = "windows")]
+        let ansi = false;
+
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let format_layer = tracing_subscriber::fmt::layer()
+            .compact()
+            .with_ansi(ansi)
+            .with_line_number(true)
+            .with_filter(filter);
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "debug-async")] {
+                let console_layer = Some(console_subscriber::ConsoleLayer::builder()
+                    .with_default_env()
+                    .spawn());
+
+                tracing_subscriber::registry()
+                    // .with(journald_layer)
+                    .with(console_layer)
+                    .with(format_layer)
+                    .init();
+            } else {
+                tracing_subscriber::registry()
+                    // .with(journald_layer)
+                    // .with(console_layer)
+                    .with(format_layer)
+                    .init();
+            }
+        };
+    } else {
+        let filter = tracing_subscriber::EnvFilter::from_default_env();
+        let journald_layer = tracing_journald::layer()?.with_filter(filter);
+
+        tracing_subscriber::registry().with(journald_layer).init();
+    }
+
+    // i18n/l10n support
+    let language_loader: FluentLanguageLoader = fluent_language_loader!();
+
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
+
+    STATIC_LOADER.lock().replace(language_loader);
+
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
@@ -334,68 +390,4 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     Ok(())
-}
-
-/// Main program entrypoint
-pub fn main() -> std::result::Result<(), eyre::Error> {
-    // initialize logging
-    use tracing_subscriber::prelude::*;
-    use tracing_subscriber::util::SubscriberInitExt;
-
-    if std::io::stdout().is_terminal() {
-        // let filter = tracing_subscriber::EnvFilter::from_default_env();
-        // let journald_layer = tracing_journald::layer()?.with_filter(filter);
-
-        #[cfg(not(target_os = "windows"))]
-        let ansi = true;
-
-        #[cfg(target_os = "windows")]
-        let ansi = false;
-
-        let filter = tracing_subscriber::EnvFilter::from_default_env();
-        let format_layer = tracing_subscriber::fmt::layer()
-            .compact()
-            .with_ansi(ansi)
-            .with_line_number(true)
-            .with_filter(filter);
-
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "debug-async")] {
-                let console_layer = Some(console_subscriber::ConsoleLayer::builder()
-                    .with_default_env()
-                    .spawn());
-
-                tracing_subscriber::registry()
-                    // .with(journald_layer)
-                    .with(console_layer)
-                    .with(format_layer)
-                    .init();
-            } else {
-                tracing_subscriber::registry()
-                    // .with(journald_layer)
-                    // .with(console_layer)
-                    .with(format_layer)
-                    .init();
-            }
-        };
-    } else {
-        let filter = tracing_subscriber::EnvFilter::from_default_env();
-        let journald_layer = tracing_journald::layer()?.with_filter(filter);
-
-        tracing_subscriber::registry().with(journald_layer).init();
-    }
-
-    // i18n/l10n support
-    let language_loader: FluentLanguageLoader = fluent_language_loader!();
-
-    let requested_languages = DesktopLanguageRequester::requested_languages();
-    i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
-
-    STATIC_LOADER.lock().replace(language_loader);
-
-    let runtime = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()?;
-
-    runtime.block_on(async move { async_main().await })
 }

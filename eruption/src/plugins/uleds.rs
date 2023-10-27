@@ -25,7 +25,7 @@ use mlua::prelude::*;
 use nix::fcntl::{self, OFlag};
 use nix::sys::stat::Mode;
 use nix::unistd;
-use parking_lot::RwLock;
+use parking_lot::Mutex;
 use std::any::Any;
 use std::ffi::CString;
 use std::os::unix::prelude::RawFd;
@@ -50,7 +50,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 lazy_static! {
     /// Global LED map, the "canvas"
-    pub static ref LED_MAP: Arc<RwLock<Vec<RGBA>>> = Arc::new(RwLock::new(vec![RGBA {
+    pub static ref LED_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA {
         r: 0x00,
         g: 0x00,
         b: 0x00,
@@ -62,7 +62,7 @@ lazy_static! {
     // pub static ref ULEDS_TX: Arc<RwLock<Option<Sender<Message>>>> = Arc::new(RwLock::new(None));
 
     /// File descriptors for Linux Userspace LEDs subsystem
-    pub static ref ULEDS_FDS: Arc<RwLock<Vec<RawFd>>> = Arc::new(RwLock::new(Vec::new()));
+    pub static ref ULEDS_FDS: Arc<Mutex<Vec<RawFd>>> = Arc::new(Mutex::new(Vec::new()));
 }
 
 /// A plugin that creates an interface to the Linux ULEDs subsystem.
@@ -75,7 +75,7 @@ impl UledsPlugin {
     }
 
     pub fn spawn_uleds_thread() -> Result<()> {
-        // let (uleds_tx, uleds_rx) = unbounded();
+        // let (uleds_tx, uleds_rx) = bounded(8);
 
         thread::Builder::new()
             .name("uleds".into())
@@ -85,11 +85,11 @@ impl UledsPlugin {
 
                 // Self::initialize_thread_locals()?;
 
-                if ULEDS_FDS.read().len() > 0 {
+                if ULEDS_FDS.lock().len() > 0 {
                     ULEDS_SUPPORT_ACTIVE.store(true, Ordering::SeqCst);
 
                     loop {
-                        for fd in ULEDS_FDS.read().iter() {
+                        for fd in ULEDS_FDS.lock().iter() {
                             let mut buffer = [0u8; 4];
                             let _result = unistd::read(*fd, &mut buffer)?;
 
@@ -97,7 +97,7 @@ impl UledsPlugin {
 
                             debug!("ULEDS: value read: {}", brightness);
 
-                            let mut led_map = LED_MAP.write();
+                            let mut led_map = LED_MAP.lock();
                             for (_i, color) in led_map.iter_mut().enumerate() {
                                 *color = RGBA {
                                     r: brightness as u8,
@@ -121,7 +121,6 @@ impl UledsPlugin {
     }
 }
 
-#[async_trait::async_trait]
 impl Plugin for UledsPlugin {
     fn get_name(&self) -> String {
         "Linux ULEDs".to_string()
@@ -154,7 +153,7 @@ impl Plugin for UledsPlugin {
             let bytes = unsafe { any_as_u8_slice(&dev) };
             let _result = nix::unistd::write(fd, bytes)?;
 
-            ULEDS_FDS.write().push(fd);
+            ULEDS_FDS.lock().push(fd);
 
             debug!("Successfully initialized the ULEDs subsystem");
 
@@ -175,8 +174,6 @@ impl Plugin for UledsPlugin {
 
         Ok(())
     }
-
-    async fn main_loop_hook(&self, _ticks: u64) {}
 
     fn sync_main_loop_hook(&self, _ticks: u64) {}
 
