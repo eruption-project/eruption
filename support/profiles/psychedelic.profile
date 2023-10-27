@@ -24,6 +24,6 @@ active_scripts = [
 	'psychedelic.lua',
 	'shockwave.lua',
 #	'impact.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]

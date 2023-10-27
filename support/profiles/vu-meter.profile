@@ -23,7 +23,7 @@ description = "VU-Meter"
 active_scripts = [
 	'solid.lua',
 	'audioviz4.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

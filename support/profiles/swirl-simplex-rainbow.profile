@@ -47,8 +47,8 @@ default = 0.0
 [[config."Simplex Swirl"]]
 type = 'float'
 name = 'time_scale'
-value = 200.0
-default = 200.0
+value = 250.0
+default = 250.0
 
 [[config."Simplex Swirl"]]
 type = 'float'

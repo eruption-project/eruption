@@ -24,7 +24,7 @@ active_scripts = [
 	'stripes.lua',
 	'audioviz3.lua',
 	'afterglow.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

@@ -24,6 +24,6 @@ active_scripts = [
 	'gradient.lua',
 	'shockwave.lua',
 #	'impact.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]

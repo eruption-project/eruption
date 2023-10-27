@@ -26,7 +26,7 @@ active_scripts = [
 	'shockwave.lua',
 #	'water.lua',
 # 	'raindrops.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

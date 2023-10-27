@@ -26,7 +26,7 @@ active_scripts = [
 	'halo.lua',
 	'shockwave.lua',
 	'impact.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

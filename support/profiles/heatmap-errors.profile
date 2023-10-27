@@ -22,8 +22,8 @@ name = "Heat Map (Typing Errors)"
 description = "Display a heat map of previously recorded statistics"
 active_scripts = [
 	'heatmap.lua',
- 	'macros.lua',
- 	'stats.lua',
+	'macros.lua',
+	'stats.lua',
 ]
 
 [[config.Heatmap]]

@@ -22,7 +22,7 @@ name = 'Blackout (all LEDs off)'
 description = 'Turn all LEDs off except for overlays and indicators'
 active_scripts = [
 	'solid.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

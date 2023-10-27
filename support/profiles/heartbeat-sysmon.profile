@@ -23,6 +23,6 @@ description = 'A system monitor effect'
 active_scripts = [
 	'heartbeat.lua',
 	'afterhue.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]

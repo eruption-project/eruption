@@ -23,7 +23,7 @@ description = "Spectrum Analyzer"
 active_scripts = [
 	'solid.lua',
 	'audioviz3.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

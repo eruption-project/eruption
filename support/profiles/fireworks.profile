@@ -24,7 +24,7 @@ active_scripts = [
 	'solid.lua',
 	'fireworks.lua',
 #	'impact.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

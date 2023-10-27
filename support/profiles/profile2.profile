@@ -24,6 +24,6 @@ active_scripts = [
 	'stripes.lua',
 	'shockwave.lua',
 	'afterhue.lua',
- 	'macros.lua',
+	'macros.lua',
 #   'stats.lua',
 ]

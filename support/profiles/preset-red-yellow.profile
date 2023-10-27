@@ -23,7 +23,7 @@ description = '''Presets for a 'red and yellow' color scheme'''
 active_scripts = [
 	'batique.lua',
 	'shockwave.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

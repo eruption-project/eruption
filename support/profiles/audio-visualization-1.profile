@@ -23,7 +23,7 @@ description = "Audio Visualization effect"
 active_scripts = [
 	'solid.lua',
 	'audioviz1.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 

@@ -25,7 +25,7 @@ active_scripts = [
 	'audioviz3.lua',
     'halo.lua',
     'shockwave.lua',
- 	'macros.lua',
+	'macros.lua',
 #	'stats.lua',
 ]
 
