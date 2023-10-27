@@ -36,8 +36,7 @@ use crate::{constants, hwdevices};
 
 use crate::hwdevices::{
     Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
-    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result,
-    Zone, RGBA,
+    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
 };
 
 // pub const NUM_BUTTONS: usize = 9;

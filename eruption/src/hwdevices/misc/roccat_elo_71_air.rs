@@ -32,8 +32,7 @@ use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use crate::hwdevices::{
     self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
-    DeviceZoneAllocationExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt, Result,
-    Zone, RGBA,
+    DeviceZoneAllocationExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt, Result, Zone, RGBA,
 };
 
 // pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device

@@ -30,8 +30,8 @@ use hidapi::HidApi;
 use tracing::*;
 
 use crate::hwdevices::{
-    Capability, DeviceCapabilities, DeviceExt, DeviceInfoExt, HwDeviceError,
-    MouseDeviceExt, MouseHidEvent, Result, RGBA,
+    Capability, DeviceCapabilities, DeviceExt, DeviceInfoExt, HwDeviceError, MouseDeviceExt,
+    MouseHidEvent, Result, RGBA,
 };
 
 pub fn bind_hiddev(

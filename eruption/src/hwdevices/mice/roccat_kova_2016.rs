@@ -32,8 +32,7 @@ use crate::{constants, hwdevices::DeviceStatus};
 
 use crate::hwdevices::{
     self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt,
-    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result,
-    Zone, RGBA,
+    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
 };
 
 pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
