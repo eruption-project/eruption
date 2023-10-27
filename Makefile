@@ -124,7 +124,7 @@ stop:
 	-@$(SUDO) systemctl mask eruption.service > /dev/null 2>&1
 	-@$(SUDO) systemctl disable --now eruption.service > /dev/null 2>&1
 
-install:
+install: install_scripts install_profiles
 	@echo "Please ensure that all Eruption daemons have been shut down completely!"
 	@echo "Otherwise there will probably be errors during installation (file busy)"
 	@echo ""
@@ -141,16 +141,9 @@ install:
 
 	@mkdir -p "/etc/eruption"
 	@mkdir -p "$(TARGET_DIR)/share/doc/eruption"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/macros"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/keymaps"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/themes"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/keyboards"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/mice"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/examples"
 	@mkdir -p "$(TARGET_DIR)/share/applications"
 	@mkdir -p "$(TARGET_DIR)/share/icons/hicolor/64x64/apps"
 	@mkdir -p "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas"
-	@mkdir -p "/var/lib/eruption/profiles"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system-preset"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/user"
@@ -260,9 +253,6 @@ install:
 	@ln -fs "phaser1.wav" "$(TARGET_DIR)/share/eruption/sfx/key-down.wav"
 	@ln -fs "phaser2.wav" "$(TARGET_DIR)/share/eruption/sfx/key-up.wav"
 
-	@cp -r support/scripts/* $(TARGET_DIR)/share/eruption/scripts/
-	@cp -r support/profiles/* /var/lib/eruption/profiles/
-
 	@cp $(SOURCE_DIR)/eruption $(TARGET_DIR)/bin/
 	@cp $(SOURCE_DIR)/eruptionctl $(TARGET_DIR)/bin/
 	@cp $(SOURCE_DIR)/eruption-cmd $(TARGET_DIR)/bin/
@@ -298,6 +288,35 @@ install:
 	@echo ""
 	@echo "Successfully installed Eruption!"
 	@echo "Now please run 'make start' to enable Eruption"
+	@echo ""
+
+install_scripts:
+	@echo "Installing Lua scripts..."
+	@echo ""
+
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/macros"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/keymaps"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/themes"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/keyboards"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/mice"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/examples"
+
+	@cp -vr support/scripts/* $(TARGET_DIR)/share/eruption/scripts/
+
+	@echo ""
+	@echo "Successfully installed Eruption Lua script files!"
+	@echo ""
+
+install_profiles:
+	@echo "Installing profiles..."
+	@echo ""
+
+	@mkdir -p "/var/lib/eruption/profiles"
+
+	@cp -vr support/profiles/* /var/lib/eruption/profiles/
+
+	@echo ""
+	@echo "Successfully installed Eruption profiles!"
 	@echo ""
 
 uninstall:
@@ -435,6 +454,7 @@ clean:
 test:
 	@cargo test
 
-.SILENT: check clean all start stop install uninstall build test
-.PHONY: check clean all start stop install uninstall build test xtask \
+.SILENT: check clean all start stop install install_scripts install_profiles uninstall build test
+.PHONY: check clean all start stop install install_scripts install_profiles \
+		uninstall build test xtask \
 		windows windows-installer
