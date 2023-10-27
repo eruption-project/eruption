@@ -26,11 +26,11 @@ frequency = "always"
 [build]
 rustflags = [
   # "--cfg",
-  "-Clink-arg=-fuse-ld=mold",
-  "-Ctarget-cpu=native",
-  "-Zshare-generics=y",
-  "-Clink-arg=-Wl,--no-rosegment",
+  # "-Clink-arg=-fuse-ld=mold",
+  # "-Ctarget-cpu=native",
+  # "-Zshare-generics=y",
+  # "-Clink-arg=-Wl,--no-rosegment",
 ]
 
-[target.x86_64-unknown-linux-gnu]
-linker = "/usr/bin/clang"
+# [target.x86_64-unknown-linux-gnu]
+# linker = "/usr/bin/clang"
