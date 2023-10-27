@@ -412,18 +412,18 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 .init();
         } else {
             // initialize logging
-            use tracing_subscriber::prelude::*;
-            use tracing_subscriber::util::SubscriberInitExt;
+            // use tracing_subscriber::prelude::*;
+            // use tracing_subscriber::util::SubscriberInitExt;
 
-            let console_layer = console_subscriber::ConsoleLayer::builder()
-                .with_default_env()
-                .spawn();
+            // let console_layer = console_subscriber::ConsoleLayer::builder()
+            //     .with_default_env()
+            //     .spawn();
 
-             tracing_subscriber::registry()
-                 // .with(journald_layer)
-                  .with(console_layer)
-                 // .with(format_layer)
-                 .init();
+            //  tracing_subscriber::registry()
+            //      // .with(journald_layer)
+            //       .with(console_layer)
+            //      // .with(format_layer)
+            //      .init();
         }
     };
 
