@@ -36,6 +36,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
+use std::time::Duration;
 use std::vec::Vec;
 use tracing::*;
 
@@ -479,9 +480,19 @@ fn realize_color_map() -> Result<RunningScriptResult> {
     if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
         LOCAL_LED_MAP.with(|foreground| {
             LED_MAP
-                .write()
-                .chunks_exact_mut(constants::CANVAS_SIZE)
-                .for_each(|chunks| alpha_blend(&foreground.borrow(), chunks));
+                .try_write_for(Duration::from_millis(25))
+                .and_then(|mut led_map| {
+                    led_map
+                        .chunks_exact_mut(constants::CANVAS_SIZE)
+                        .for_each(|chunks| alpha_blend(&foreground.borrow(), chunks));
+
+                    Some(led_map)
+                })
+                .or_else(|| {
+                    warn!("Locking error during realization of a LED map");
+
+                    None
+                });
         });
     }
 
