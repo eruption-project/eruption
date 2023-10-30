@@ -263,4 +263,4 @@ For a C++ example, please refer to `sdk/examples/c++`.
 ## Reporting Bugs
 
 Please feel free to report issues and minor paper cuts that you encounter on the project's GitHub site at
-<https://github.com/X3n0m0rph59/eruption/>
+<https://github.com/eruption-project/eruption/>

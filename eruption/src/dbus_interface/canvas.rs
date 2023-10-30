@@ -202,9 +202,13 @@ fn set_device_zone_allocation(m: &super::MethodInfo) -> MethodResult {
         Err(MethodErr::failed("Invalid zone dimensions"))
     } else {
         if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
-            device.write().set_zone_allocation(zone);
-
-            Ok(vec![m.msg.method_return()])
+            device
+                .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS_LONG)
+                .and_then(|mut device| {
+                    device.set_zone_allocation(zone);
+                    Some(vec![m.msg.method_return()])
+                })
+                .ok_or_else(|| MethodErr::failed("Could not update device settings"))
         } else {
             Err(MethodErr::failed("Invalid device handle"))
         }

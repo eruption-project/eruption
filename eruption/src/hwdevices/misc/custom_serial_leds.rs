@@ -52,7 +52,7 @@ pub struct CustomSerialLeds {
 impl CustomSerialLeds {
     /// Binds the driver to the supplied device
     pub fn bind(serial_port: PathBuf) -> Self {
-        info!("Bound driver: Adalight Custom Serial LEDs");
+        debug!("Bound driver: Adalight Custom Serial LEDs");
 
         Self {
             device_file: serial_port,
@@ -85,8 +85,8 @@ impl DeviceInfoExt for CustomSerialLeds {
 }
 
 impl DeviceExt for CustomSerialLeds {
-    fn get_usb_path(&self) -> String {
-        "<unsupported>".to_string()
+    fn get_dev_paths(&self) -> Vec<String> {
+        vec![]
     }
 
     fn get_usb_vid(&self) -> u16 {

@@ -15,7 +15,7 @@ conflicts=('eruption' 'eruption-roccat-vulcan')
 replaces=('eruption-roccat-vulcan-git')
 backup=(etc/eruption/eruption.conf etc/eruption/process-monitor.conf etc/eruption/fx-proxy.conf etc/eruption/audio-proxy.conf usr/share/eruption/scripts/lib/keymaps/default.keymap)
 install='eruption.install'
-source=('eruption::git+https://github.com/X3n0m0rph59/eruption.git')
+source=('eruption::git+https://github.com/eruption-project/eruption.git')
 sha512sums=('SKIP')
 
 pkgver() {

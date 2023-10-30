@@ -22,6 +22,7 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
+use libc::wchar_t;
 
 use std::{any::Any, collections::HashMap};
 use tracing::*;
@@ -37,7 +38,7 @@ pub fn bind_hiddev(
     _hidapi: &HidApi,
     usb_vid: u16,
     usb_pid: u16,
-    _serial: &str,
+    _serial: &[wchar_t],
 ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     Ok(Box::new(GenericKeyboard::bind(usb_vid, usb_pid)))
 }
@@ -54,7 +55,7 @@ pub struct GenericKeyboard {
 impl GenericKeyboard {
     /// Binds the driver to the supplied HID devices
     pub fn bind(usb_vid: u16, usb_pid: u16) -> Self {
-        info!("Bound driver: Generic Keyboard Device");
+        debug!("Bound driver: Generic Keyboard Device");
 
         Self {
             usb_vid,
@@ -114,8 +115,8 @@ impl DeviceZoneAllocationExt for GenericKeyboard {
 }
 
 impl DeviceExt for GenericKeyboard {
-    fn get_usb_path(&self) -> String {
-        "<unsupported>".to_string()
+    fn get_dev_paths(&self) -> Vec<String> {
+        vec![]
     }
 
     fn get_usb_vid(&self) -> u16 {

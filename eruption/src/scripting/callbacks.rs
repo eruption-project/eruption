@@ -230,11 +230,17 @@ pub(crate) fn inject_key(ev_key: u32, down: bool) {
 
     #[cfg(not(target_os = "windows"))]
     macros::UINPUT_TX
-        .read()
-        .as_ref()
-        .unwrap()
-        .send(macros::Message::InjectKey { key: ev_key, down })
-        .unwrap();
+        .try_read_recursive_for(constants::LOCK_CONTENDED_WAIT_MILLIS_LONG)
+        .and_then(|tx| {
+            tx.as_ref()
+                .unwrap()
+                .send(macros::Message::InjectKey { key: ev_key, down })
+                .unwrap_or_else(|e| {
+                    ratelimited::error!("Could not inject a key event: {}", e);
+                });
+
+            Some(tx)
+        });
 }
 
 /// Inject a button event on the eruption virtual mouse.
@@ -255,7 +261,9 @@ pub(crate) fn inject_mouse_button(button_index: u32, down: bool) {
             button: button_index,
             down,
         })
-        .unwrap();
+        .unwrap_or_else(|e| {
+            ratelimited::error!("Could not inject a button event: {}", e);
+        });
 }
 
 /// Inject a mouse wheel scroll event on the eruption virtual mouse.
@@ -273,7 +281,9 @@ pub(crate) fn inject_mouse_wheel(direction: u32) {
         .as_ref()
         .unwrap()
         .send(macros::Message::InjectMouseWheelEvent { direction })
-        .unwrap();
+        .unwrap_or_else(|e| {
+            ratelimited::error!("Could not inject a mouse wheel event: {}", e);
+        });
 }
 
 /// Inject a key on the eruption virtual keyboard after sleeping for `millis` milliseconds.
@@ -296,7 +306,9 @@ pub(crate) fn inject_key_with_delay(ev_key: u32, down: bool, millis: u64) {
                 .as_ref()
                 .unwrap()
                 .send(macros::Message::InjectKey { key: ev_key, down })
-                .unwrap();
+                .unwrap_or_else(|e| {
+                    ratelimited::error!("Could not inject a key event: {}", e);
+                })
         })
         .unwrap();
 }

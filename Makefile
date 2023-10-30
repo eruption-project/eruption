@@ -186,7 +186,7 @@ install: install_scripts install_profiles
 	@cp "support/systemd/eruption-audio-proxy.preset" "$(TARGET_DIR)/lib/systemd/user-preset/50-eruption-audio-proxy.preset"
 	@cp "support/systemd/eruption-process-monitor.service" "$(TARGET_DIR)/lib/systemd/user/"
 	@cp "support/systemd/eruption-process-monitor.preset" "$(TARGET_DIR)/lib/systemd/user-preset/50-eruption-process-monitor.preset"
-	@cp "support/systemd/eruption-hotplug-helper.service" "$(TARGET_DIR)/lib/systemd/system/"
+	@cp "support/systemd/eruption-hotplug-helper@.service" "$(TARGET_DIR)/lib/systemd/system/"
 	@cp "support/systemd/eruption-hotplug-helper.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
 	# @cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
 	# @cp "support/tmpfiles.d/eruption.conf" "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
@@ -290,6 +290,28 @@ install: install_scripts install_profiles
 	@echo "Now please run 'make start' to enable Eruption"
 	@echo ""
 
+install_binaries:
+	@echo "Copying Eruption executable files..."
+	@echo ""
+
+	-@cp $(SOURCE_DIR)/eruption $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruptionctl $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-cmd $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-macro $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-keymap $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-hwutil $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-netfx $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-debug-tool $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-hotplug-helper $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-util $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-gui-gtk3 $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-fx-proxy $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-audio-proxy $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-process-monitor $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/pyroclasm $(TARGET_DIR)/bin/
+
+	-@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
+
 install_scripts:
 	@echo "Installing Lua scripts..."
 	@echo ""
@@ -352,7 +374,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/lib/systemd/user-preset/50-eruption-audio-proxy.preset
 	-@rm $(TARGET_DIR)/lib/systemd/user/eruption-process-monitor.service
 	-@rm $(TARGET_DIR)/lib/systemd/user-preset/50-eruption-process-monitor.preset
-	-@rm $(TARGET_DIR)/lib/systemd/system/eruption-hotplug-helper.service
+	-@rm $(TARGET_DIR)/lib/systemd/system/eruption-hotplug-helper@.service
 	-@rm $(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset
 	-@rm $(TARGET_DIR)/lib/sysusers.d/eruption.conf
 	-@rm $(TARGET_DIR)/lib/tmpfiles.d/eruption.conf

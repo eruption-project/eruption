@@ -37,7 +37,8 @@ use bitvec::prelude::*;
 use clap::{Arg, Command};
 use color_eyre::owo_colors::OwoColorize;
 use config::Config;
-use flume::{bounded, select::SelectError, Receiver, Selector, Sender};
+use flume::select::SelectError;
+use flume::{bounded, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     notify::event::ModifyKind,
@@ -136,25 +137,15 @@ macro_rules! tr {
     }};
 }
 
-#[cfg(not(target_os = "windows"))]
-lazy_static! {
-    #[cfg(not(target_os = "windows"))]
-    pub static ref KEYBOARD_DEVICES_RX: Arc<RwLock<IndexMap<DeviceHandle, Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(IndexMap::new()));
-
-    #[cfg(not(target_os = "windows"))]
-    pub static ref MOUSE_DEVICES_RX: Arc<RwLock<IndexMap<DeviceHandle, Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(IndexMap::new()));
-
-    #[cfg(not(target_os = "windows"))]
-    pub static ref MISC_DEVICES_RX: Arc<RwLock<IndexMap<DeviceHandle, Receiver<Option<evdev_rs::InputEvent>>>>> = Arc::new(RwLock::new(IndexMap::new()));
-
-}
-
 lazy_static! {
     /// Hidapi object
     pub static ref HIDAPI: Arc<RwLock<Option<hidapi::HidApi>>> = Arc::new(RwLock::new(None));
 
     /// Connected devices managed by Eruption
     pub static ref DEVICES: Arc<RwLock<IndexMap<DeviceHandle, Device>>> = Arc::new(RwLock::new(IndexMap::new()));
+
+    #[cfg(not(target_os = "windows"))]
+    pub static ref EVENT_RX: Arc<RwLock<IndexMap<DeviceHandle, Option<Receiver<Option<evdev_rs::InputEvent>>>>>> = Arc::new(RwLock::new(IndexMap::new()));
 
     /// Holds device status information, like e.g: current signal strength or battery levels
     pub static ref DEVICE_STATUS: Arc<RwLock<HashMap<u64, DeviceStatus>>> =
@@ -247,57 +238,50 @@ lazy_static! {
 
     pub static ref MOUSE_MOVE_EVENT_LAST_DISPATCHED: Arc<RwLock<Instant>> = Arc::new(RwLock::new(Instant::now()));
     pub static ref MOUSE_MOTION_BUF: Arc<RwLock<(i32, i32, i32)>> = Arc::new(RwLock::new((0,0,0)));
-
-    // cached value
-    static ref GRAB_MOUSE: AtomicBool = {
-        let config = &*crate::CONFIG.read();
-        let grab_mouse = config
-            .as_ref()
-            .unwrap()
-            .get::<bool>("global.grab_mouse")
-            .unwrap_or(true);
-
-        AtomicBool::from(grab_mouse)
-    };
 }
 
 lazy_static! {
-    // Color maps of Lua VMs ready?
-    pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  // Eruption start completed and event processing is ready?
+  pub static ref STARTUP_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
+    Arc::new((Mutex::new(false), Condvar::new()));
 
-    // This is the "switch profile fence" condition variable
-    pub static ref PROFILE_SWITCHING_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
+  // Color maps of Lua VMs ready?
+  pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
+
+  // This is the "switch profile fence" condition variable
+  pub static ref PROFILE_SWITCHING_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
     Arc::new((Mutex::new(true), Condvar::new()));
 
-    // All upcalls (event handlers) in Lua VM completed?
-    pub static ref UPCALL_COMPLETED_ON_KEY_DOWN: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
-    pub static ref UPCALL_COMPLETED_ON_KEY_UP: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  // All upcalls (event handlers) in Lua VM completed?
+  pub static ref UPCALL_COMPLETED_ON_KEY_DOWN: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 
-    pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
-    pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  pub static ref UPCALL_COMPLETED_ON_KEY_UP: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 
-    pub static ref UPCALL_COMPLETED_ON_MOUSE_MOVE: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
+  pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 
-    pub static ref UPCALL_COMPLETED_ON_MOUSE_EVENT: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  pub static ref UPCALL_COMPLETED_ON_MOUSE_MOVE: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 
-    pub static ref UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  pub static ref UPCALL_COMPLETED_ON_MOUSE_EVENT: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 
-    pub static ref UPCALL_COMPLETED_ON_MOUSE_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  pub static ref UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 
-    pub static ref UPCALL_COMPLETED_ON_SYSTEM_EVENT: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  pub static ref UPCALL_COMPLETED_ON_MOUSE_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 
-    pub static ref UPCALL_COMPLETED_ON_QUIT: Arc<(Mutex<usize>, Condvar)> =
-        Arc::new((Mutex::new(0), Condvar::new()));
+  pub static ref UPCALL_COMPLETED_ON_SYSTEM_EVENT: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
+
+  pub static ref UPCALL_COMPLETED_ON_QUIT: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 }
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -417,10 +401,10 @@ fn parse_commandline() -> clap::ArgMatches {
                 .help("Sets the configuration file to use"),
         )
         // .arg(
-        //     Arg::new("completions")
-        //         .long("completions")
-        //         .value_name("SHELL")
-        //         .about("Generate shell completions"),
+        //   Arg::new("completions")
+        //   .long("completions")
+        //   .value_name("SHELL")
+        //   .about("Generate shell completions"),
         // )
         .get_matches()
 }
@@ -502,7 +486,7 @@ pub fn switch_profile(
 
         let result = PROFILE_SWITCHING_COMPLETED_CONDITION.1.wait_for(
             &mut switch_completed,
-            Duration::from_millis(constants::LONG_TIMEOUT_MILLIS),
+            Duration::from_millis(constants::TIMEOUT_MILLIS_LONG),
         );
 
         if result.timed_out() {
@@ -763,14 +747,10 @@ fn run_main_loop(
         let mut device_has_failed = false;
 
         #[cfg(not(target_os = "windows"))]
-        let kbd_rxs = crate::KEYBOARD_DEVICES_RX.read();
-        #[cfg(not(target_os = "windows"))]
-        let mouse_rxs = crate::MOUSE_DEVICES_RX.read();
+        let event_rxs = crate::EVENT_RX.read();
 
         #[cfg(not(target_os = "windows"))]
-        let kbd_rxs_clone = kbd_rxs.clone();
-        #[cfg(not(target_os = "windows"))]
-        let mouse_rxs_clone = mouse_rxs.clone();
+        let event_rxs_clone = event_rxs.clone();
 
         let mut sel = Selector::new()
             .recv(ctrl_c_rx, |_event| {
@@ -804,50 +784,93 @@ fn run_main_loop(
             });
 
         #[cfg(not(target_os = "windows"))]
-        let failed_kbd_rxs = Arc::new(RwLock::new(HashSet::new()));
+        let failed_event_rxs = Arc::new(RwLock::new(HashSet::new()));
 
         #[cfg(not(target_os = "windows"))]
-        for (index, rx) in kbd_rxs_clone.iter().enumerate() {
-            let failed_kbd_rxs = failed_kbd_rxs.clone();
+        for (handle, rx) in event_rxs_clone.iter() {
+            let failed_event_rxs = failed_event_rxs.clone();
 
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
-                    let device =
-                        hwdevices::get_device_by_index(DeviceClass::Keyboard, index).unwrap();
+                    if let Some(device) = hwdevices::find_device_by_handle(*handle as DeviceHandle)
+                    {
+                        match device.read().get_device_class() {
+                            DeviceClass::Keyboard => {
+                                events::process_keyboard_event(&event, device.clone())
+                                    .unwrap_or_else(|e| {
+                                        device_has_failed = true;
 
-                    events::process_keyboard_event(&event, device.clone())
-                        .unwrap_or_else(|e| {
-                            device_has_failed = true;
+                                        ratelimited::error!(
+                                            "Could not process an input event: {}. Trying to close the device...",
+                                            e
+                                        );
 
-                            // let make = hwdevices::get_device_make(
-                            //     device.get_usb_vid(),
-                            //     device.get_usb_pid(),
-                            // )
-                            // .unwrap_or_else(|| "<unknown>");
-                            // let model = hwdevices::get_device_model(
-                            //     device.get_usb_vid(),
-                            //     device.get_usb_pid(),
-                            // )
-                            // .unwrap_or_else(|| "<unknown>");
+                                        device
+                                            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                            .and_then(|mut device| {
+                                                device.close_all().map_err(|e| {
+                                                    ratelimited::error!("An error occurred while closing the device: {e}")
+                                                })
+                                                .ok()
+                                            });
+                                    });
+                            }
 
-                            ratelimited::error!(
-                                "Could not process a keyboard event: {}. Trying to close the device now...",
-                                e
-                            );
+                            DeviceClass::Mouse => {
+                                events::process_mouse_event(&event, device.clone()).unwrap_or_else(
+                                    |e| {
+                                        device_has_failed = true;
 
-                            device.write()
-                                .close_all()
-                                .map_err(|e| ratelimited::error!("An error occurred while closing the device: {e}"))
-                                .ok();
-                        });
+                                        ratelimited::error!(
+                        "Could not process an input event: {}. Trying to close the device...",
+                        e
+                    );
+
+                                        device
+                                            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                            .and_then(|mut device| {
+                                                device.close_all().map_err(|e| {
+                ratelimited::error!("An error occurred while closing the device: {e}")
+                })
+                .ok()
+                                            });
+                                    },
+                                );
+                            }
+
+                            DeviceClass::Misc => events::process_misc_event(&event, device.clone())
+                                .unwrap_or_else(|e| {
+                                    device_has_failed = true;
+
+                                    ratelimited::error!(
+                "Could not process an input event: {}. Trying to close the device...",
+                e
+              );
+
+                                    device
+                                        .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                        .and_then(|mut device| {
+                                            device.close_all().map_err(|e| {
+                ratelimited::error!("An error occurred while closing the device: {e}")
+                })
+                .ok()
+                                        });
+                                }),
+
+                            _ => {
+                                ratelimited::error!("Unknown device class");
+                            }
+                        }
+                    } else {
+                        ratelimited::error!("Could not find a device by its handle");
+                    }
                 } else {
                     device_has_failed = true;
 
-                    if let Some(device) =
-                        hwdevices::get_device_by_index(DeviceClass::Keyboard, index)
+                    if let Some(device) = hwdevices::find_device_by_handle(*handle as DeviceHandle)
                     {
                         ratelimited::error!(
-                            "Could not process a keyboard event from: {}",
+                            "Could not process an input event: {}",
                             event.as_ref().unwrap_err()
                         );
 
@@ -864,74 +887,13 @@ fn run_main_loop(
                 }
 
                 if device_has_failed {
-                    failed_kbd_rxs.write().insert(index);
+                    failed_event_rxs.write().insert(handle);
                 }
             };
 
-            sel = sel.recv(rx.1, mapper);
-        }
-
-        #[cfg(not(target_os = "windows"))]
-        let failed_mouse_rxs = Arc::new(RwLock::new(HashSet::new()));
-
-        #[cfg(not(target_os = "windows"))]
-        for (index, rx) in mouse_rxs_clone.iter().enumerate() {
-            let failed_mouse_rxs = failed_mouse_rxs.clone();
-
-            let mapper = move |event| {
-                if let Ok(Some(event)) = event {
-                    let device = hwdevices::get_device_by_index(DeviceClass::Mouse, index).unwrap();
-
-                    events::process_mouse_event(&event, device.clone())
-                        .unwrap_or_else(|e| {
-                            device_has_failed = true;
-
-                            // let make = hwdevices::get_device_make(
-                            //     device.get_usb_vid(),
-                            //     device.get_usb_pid(),
-                            // )
-                            // .unwrap_or_else(|| "<unknown>");
-                            // let model = hwdevices::get_device_model(
-                            //     device.get_usb_vid(),
-                            //     device.get_usb_pid(),
-                            // )
-                            // .unwrap_or_else(|| "<unknown>");
-
-                            ratelimited::error!("Could not process a mouse event from: {}. Trying to close the device now...", e);
-
-                            device.write()
-                                .close_all()
-                                .map_err(|e| ratelimited::error!("An error occurred while closing the device: {e}"))
-                                .ok();
-                        });
-                } else {
-                    device_has_failed = true;
-
-                    ratelimited::error!(
-                        "Could not process a mouse event from: {}",
-                        event.as_ref().unwrap_err()
-                    );
-
-                    if let Some(device) = hwdevices::get_device_by_index(DeviceClass::Mouse, index)
-                    {
-                        device
-                            .write()
-                            .close_all()
-                            .map_err(|e| {
-                                ratelimited::error!(
-                                    "An error occurred while closing the device: {e}"
-                                )
-                            })
-                            .ok();
-                    }
-                }
-
-                if device_has_failed {
-                    failed_mouse_rxs.write().insert(index);
-                }
-            };
-
-            sel = sel.recv(rx.1, mapper);
+            if let Some(rx) = rx {
+                sel = sel.recv(rx, mapper);
+            }
         }
 
         // update timekeeping and state
@@ -1141,9 +1103,9 @@ fn run_main_loop(
                 /* do nothing  */
 
                 // if e.type_id() == (HwDeviceError::NoOpResult {}).type_id() {
-                //     error!("Could not process a timer event: {}", e);
+                //   error!("Could not process a timer event: {}", e);
                 // } else {
-                //     trace!("Result is a NoOp");
+                //   trace!("Result is a NoOp");
                 // }
             }
 
@@ -1178,49 +1140,35 @@ fn run_main_loop(
 
         // remove all failed devices
         #[cfg(not(target_os = "windows"))]
-        for idx in failed_kbd_rxs.read().iter() {
-            warn!("Removing failed keyboard device with index {idx}");
-            // kbd_rxs.remove(*idx);
+        for handle in failed_event_rxs.read().iter() {
+            ratelimited::warn!("Removing failed device with handle {handle}");
+            // event_rxs.remove(*idx);
 
-            if let Some(device) = hwdevices::get_device_by_index(DeviceClass::Keyboard, *idx) {
-                let _ = device
-                    .write()
-                    .fail()
-                    .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
-            } else {
-                ratelimited::error!("Device does not exist");
-            }
-        }
-
-        #[cfg(not(target_os = "windows"))]
-        for idx in failed_mouse_rxs.read().iter() {
-            warn!("Removing failed mouse device with index {idx}");
-            // mouse_rxs.remove(*idx);
-
-            if let Some(device) = hwdevices::get_device_by_index(DeviceClass::Mouse, *idx) {
-                let _ = device
-                    .write()
-                    .fail()
-                    .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
-            } else {
-                ratelimited::error!("Device does not exist");
-            }
-        }
-
-        /* #[cfg(not(target_os = "windows"))]
-        for idx in failed_misc_rxs.read().iter() {
-            warn!("Removing failed misc device with index {idx}");
-            // mouse_rxs.remove(*idx);
-
-            if let Some(device) = hwdevices::get_device_by_index(DeviceClass::Misc, *idx) {
+            if let Some(device) = hwdevices::find_device_by_handle_mut(*(*handle) as DeviceHandle) {
+                // NOTE: We may deadlock here, so be careful
                 device
-                    .lock()
-                    .fail()
-                    .map_err(|_e| ratelimited::error!("Could not mark the device as failed"));
+                    .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                    .and_then(|mut device| {
+                        device.fail().unwrap_or_else(|e| {
+                            error!("Could not mark a device as failed: {}", e);
+                        });
+
+                        // we need to terminate and then re-enter the main loop to update all global state
+                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                        Some(device)
+                    })
+                    .or_else(|| {
+                        ratelimited::error!("Could not mark the device as failed");
+
+                        None
+                    });
             } else {
                 ratelimited::error!("Device does not exist");
             }
-        } */
+
+            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+        }
 
         // terminate the main loop (and later re-enter it) on device failure
         // in most cases eruption should better be restarted
@@ -1230,10 +1178,8 @@ fn run_main_loop(
         }
 
         #[cfg(not(target_os = "windows"))]
-        if device_has_failed
-            || (result.is_err() && !timedout)
-            || !failed_kbd_rxs.read().is_empty()
-            || !failed_mouse_rxs.read().is_empty()
+        if device_has_failed || (result.is_err() && !timedout)
+        /* || !failed_event_rxs.read().is_empty() */
         {
             return Err(MainError::DeviceFailed {}.into());
         }
@@ -1248,20 +1194,26 @@ fn run_main_loop(
 
             // poll HID events on all available devices
             for (_handle, device) in crate::DEVICES.read().iter() {
-                match device.read().get_device_class() {
-                    DeviceClass::Keyboard => events::process_keyboard_hid_events(device.clone())
+                match device.try_read_for(Duration::from_millis(20)) {
+                    Some(dev) => match dev.get_device_class() {
+                        DeviceClass::Keyboard => events::process_keyboard_hid_events(
+                            device.clone(),
+                        )
                         .unwrap_or_else(|e| {
                             ratelimited::error!("Could not process a keyboard HID event: {}", e)
                         }),
 
-                    DeviceClass::Mouse => events::process_mouse_hid_events(device.clone())
-                        .unwrap_or_else(|e| {
-                            ratelimited::error!("Could not process a mouse HID event: {}", e)
-                        }),
+                        DeviceClass::Mouse => events::process_mouse_hid_events(device.clone())
+                            .unwrap_or_else(|e| {
+                                ratelimited::error!("Could not process a mouse HID event: {}", e)
+                            }),
 
-                    _ => {
-                        // ignore HID events on all other devices
-                    }
+                        _ => {
+                            // ignore HID events on all other devices
+                        }
+                    },
+
+                    _ => { /* do nothing */ }
                 }
             }
         }
@@ -1373,15 +1325,7 @@ pub fn remove_failed_devices() -> Result<bool> {
 
     for (handle, device) in crate::DEVICES.read().iter() {
         if device.read().has_failed()? {
-            info!("Unplugging the failed device: {handle}...");
-
-            // cfg_if::cfg_if! {
-            //     if #[cfg(not(target_os = "windows"))] {
-            //         let mut devices_rx = crate::KEYBOARD_DEVICES_RX.lock();
-            //         assert!(devices_rx.len() > index);
-            //         devices_rx.remove(index);
-            //     }
-            // }
+            info!("Unplugging failed device {handle}...");
 
             let usb_id = (device.read().get_usb_vid(), device.read().get_usb_pid());
 
@@ -1549,8 +1493,8 @@ mod thread_util {
 }
 
 /// open the control and LED devices
-pub fn init_device(device: hwdevices::Device) {
-    info!("Opening device...");
+pub fn init_device(device: hwdevices::Device) -> Result<()> {
+    info!("Opening the device...");
 
     let make = hwdevices::get_device_make(device.read().get_usb_vid(), device.read().get_usb_pid())
         .unwrap_or("<unknown>");
@@ -1562,34 +1506,40 @@ pub fn init_device(device: hwdevices::Device) {
         let hidapi = crate::HIDAPI.read();
         let hidapi = hidapi.as_ref().unwrap();
 
-        device.write().open(&hidapi).unwrap_or_else(|e| {
+        device.write().open(&hidapi).map_err(|e| {
             error!("Error opening the device '{make} {model}': {}", e);
             error!(
-            "This could be a permission problem, or maybe the device is locked by another process?"
-        );
-        });
+    "This could be a permission problem, or maybe the device is locked by another process?"
+    );
+
+            e
+        })?;
     }
 
     // send initialization handshake
     info!("Initializing device...");
-    device
-        .write()
-        .send_init_sequence()
-        .unwrap_or_else(|e| error!("Could not initialize the device '{make} {model}': {}", e));
+    device.write().send_init_sequence().map_err(|e| {
+        error!("Could not initialize the device '{make} {model}': {}", e);
+        e
+    })?;
 
     // set LEDs to a known good initial state
     info!("Configuring LEDs...");
-    device.write().set_led_init_pattern().unwrap_or_else(|e| {
+    device.write().set_led_init_pattern().map_err(|e| {
         error!(
             "Could not initialize LEDs of the device '{make} {model}': {}",
             e
-        )
-    });
+        );
+
+        e
+    })?;
 
     info!(
         "Firmware revision: '{make} {model}': {}",
         device.read().get_firmware_revision()
     );
+
+    Ok(())
 }
 
 /// Main program entrypoint
@@ -1640,11 +1590,11 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .install()?;
         } else {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .display_env_section(false)
             .install()?;
         }
@@ -1788,8 +1738,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     state::load_color_schemes()
         .unwrap_or_else(|e| warn!("Could not restore previously saved color-schemes: {}", e));
 
-    // enable the mouse
-    let enable_mouse = config.get::<bool>("global.enable_mouse").unwrap_or(true);
+    // enable the mouse?
+    // let enable_mouse = config.get::<bool>("global.enable_mouse").unwrap_or(true);
 
     // create the one and only hidapi instance
     match hidapi::HidApi::new() {
@@ -1820,94 +1770,68 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                     let (usb_vid, usb_pid) =
                         (device.read().get_usb_vid(), device.read().get_usb_pid());
 
-                    let device_class = device.read().get_device_class();
-                    match device_class {
-                        DeviceClass::Keyboard => {
-                            init_device(device.clone());
+                    if init_device(device.clone()).is_ok() {
+                        info!("Device initialized successfully");
 
-                            cfg_if::cfg_if! {
+                        match device.read().get_device_class() {
+                            DeviceClass::Keyboard | DeviceClass::Mouse => {
+                                cfg_if::cfg_if! {
                                 if #[cfg(not(target_os = "windows"))] {
-                                    // spawn a thread to handle keyboard input
-                                    info!("Spawning device input thread...");
+                                  // spawn a thread to handle keyboard input
+                                  info!("Spawning input events thread...");
 
-                                    let (kbd_tx, kbd_rx) = bounded(8);
-                                    threads::spawn_device_input_thread(
-                                        kbd_tx,
+                                  let (event_tx, event_rx) = bounded(32);
+                                  if let Err(e) = threads::spawn_evdev_input_thread(
+                                    event_tx,
+                                    handle,
+                                    usb_vid,
+                                    usb_pid,
+                                  ) {
+                                    error!("Could not spawn the input events thread: {e}");
+
+                                    crate::EVENT_RX.write().insert(handle, None);
+                                  } else {
+                                    crate::EVENT_RX.write().insert(handle, Some(event_rx));
+                                  }
+                                }
+                                }
+                            }
+
+                            DeviceClass::Misc => {
+                                if device.read().as_misc_device().unwrap().has_input_device() {
+                                    cfg_if::cfg_if! {
+                                    if #[cfg(not(target_os = "windows"))] {
+                                      // spawn a thread to handle keyboard input
+                                      info!("Spawning input events thread...");
+
+                                      let (event_tx, event_rx) = bounded(8);
+                                      if let Err(e) = threads::spawn_evdev_input_thread(
+                                        event_tx,
                                         handle,
                                         usb_vid,
                                         usb_pid,
-                                    )
-                                    .unwrap_or_else(|e| {
-                                        error!("Could not spawn a thread: {}", e);
-                                        panic!()
-                                    });
+                                      ) {
+                                        error!("Could not spawn the input events thread: {e}");
 
-                                    crate::KEYBOARD_DEVICES_RX.write().insert(handle, kbd_rx);
-                                }
-                            }
-                        }
-
-                        DeviceClass::Mouse => {
-                            if enable_mouse {
-                                init_device(device.clone());
-
-                                cfg_if::cfg_if! {
-                                    if #[cfg(not(target_os = "windows"))] {
-                                        // spawn a thread to handle mouse input
-                                        info!("Spawning device input thread...");
-
-                                        let (mouse_tx, mouse_rx) = bounded(8);
-                                        threads::spawn_device_input_thread(
-                                            mouse_tx,
-                                            handle,
-                                            usb_vid,
-                                            usb_pid,
-                                        )
-                                        .unwrap_or_else(|e| {
-                                            error!("Could not spawn a thread: {}", e);
-                                            panic!()
-                                        });
-
-                                        crate::MOUSE_DEVICES_RX.write().insert(handle, mouse_rx);
+                                        crate::EVENT_RX.write().insert(handle, None);
+                                      } else {
+                                        crate::EVENT_RX.write().insert(handle, Some(event_rx));
+                                      }
+                                    }
                                     }
                                 }
                             }
-                        }
 
-                        DeviceClass::Misc => {
-                            init_device(device.clone());
-
-                            cfg_if::cfg_if! {
-                                if #[cfg(not(target_os = "windows"))] {
-                                    // spawn a thread to handle device input
-                                    info!("Spawning device input thread...");
-
-                                    let (misc_tx, misc_rx) = bounded(8);
-                                    threads::spawn_device_input_thread(
-                                        misc_tx,
-                                        handle,
-                                        usb_vid,
-                                        usb_pid,
-                                    )
-                                    .unwrap_or_else(|e| {
-                                        error!("Could not spawn a thread: {}", e);
-                                        panic!()
-                                    });
-
-                                    crate::MISC_DEVICES_RX.write().insert(handle, misc_rx);
-                                }
+                            _ => {
+                                error!("Unsupported device class");
                             }
                         }
 
-                        _ => {
-                            error!("Invalid device class");
-                        }
+                        // load and initialize global runtime state (late init)
+                        info!("Loading saved device state...");
+                        state::init_runtime_state(device.clone())
+                            .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
                     }
-
-                    // load and initialize global runtime state (late init)
-                    info!("Loading saved device state...");
-                    state::init_runtime_state(device.clone())
-                        .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
                 });
 
                 info!("Device enumeration completed");
@@ -1961,6 +1885,10 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
                 info!("Startup completed");
 
+                let mut startup_completed = STARTUP_COMPLETED_CONDITION.0.lock();
+                *startup_completed = true;
+                STARTUP_COMPLETED_CONDITION.1.notify_all();
+
                 'OUTER_LOOP: loop {
                     info!("Entering the main loop now...");
 
@@ -2012,7 +1940,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
                     let result = UPCALL_COMPLETED_ON_QUIT.1.wait_for(
                         &mut pending,
-                        Duration::from_millis(constants::SHORT_TIMEOUT_MILLIS),
+                        Duration::from_millis(constants::TIMEOUT_MILLIS_SHORT),
                     );
 
                     if result.timed_out() {

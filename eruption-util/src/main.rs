@@ -361,7 +361,7 @@ fn spawn_keyboard_input_thread(
 
                     Err(e) => {
                         if e.raw_os_error().unwrap() == libc::ENODEV {
-                            error!("Fatal: Keyboard device went away: {}", e);
+                            error!("Fatal: Keyboard device disappeared: {}", e);
 
                             QUIT.store(true, Ordering::SeqCst);
 
@@ -390,10 +390,10 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     // let filter = tracing_subscriber::EnvFilter::from_default_env();
     // let journald_layer = tracing_journald::layer()?.with_filter(filter);
 
-    // let filter = tracing_subscriber::EnvFilter::from_default_env();
-    // let format_layer = tracing_subscriber::fmt::layer()
-    //     .compact()
-    //     .with_filter(filter);
+    let filter = tracing_subscriber::EnvFilter::from_default_env();
+    let format_layer = tracing_subscriber::fmt::layer()
+        .compact()
+        .with_filter(filter);
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "debug-async")] {
@@ -412,18 +412,14 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 .init();
         } else {
             // initialize logging
-            // use tracing_subscriber::prelude::*;
-            // use tracing_subscriber::util::SubscriberInitExt;
+            use tracing_subscriber::prelude::*;
+            use tracing_subscriber::util::SubscriberInitExt;
 
-            // let console_layer = console_subscriber::ConsoleLayer::builder()
-            //     .with_default_env()
-            //     .spawn();
-
-            //  tracing_subscriber::registry()
-            //      // .with(journald_layer)
-            //       .with(console_layer)
-            //      // .with(format_layer)
-            //      .init();
+             tracing_subscriber::registry()
+                 // .with(journald_layer)
+                 // .with(console_layer)
+                 .with(format_layer)
+                 .init();
         }
     };
 
@@ -438,11 +434,11 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .install()?;
         } else {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .display_env_section(false)
             .install()?;
         }

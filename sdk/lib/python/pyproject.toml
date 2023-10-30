@@ -40,5 +40,5 @@ keywords = ["eruption", "linux", "led", "driver", "sdk"]
 dependencies = ["protobuf <= 3.20"]
 
 [project.urls]
-"Homepage" = "https://github.com/X3n0m0rph59/eruption"
-"Bug Tracker" = "https://github.com/X3n0m0rph59/eruption/issues"
+"Homepage" = "https://github.com/eruption-project/eruption"
+"Bug Tracker" = "https://github.com/eruption-project/eruption/issues"

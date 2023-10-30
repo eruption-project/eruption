@@ -78,6 +78,8 @@ mod linux {
     // ****************************************************************************
 }
 
+use std::time::Duration;
+
 #[cfg(not(target_os = "windows"))]
 pub use linux::*;
 
@@ -160,11 +162,20 @@ pub const DEVICE_SETTLE_DELAY: u64 = 250;
 /// It is recommended to use a prime number value here
 pub const SENSOR_UPDATE_TICKS: u64 = TARGET_FPS_LIMIT / 2;
 
+/// Timeout used for trying to acquire a thread synchronization primitive
+pub const LOCK_CONTENDED_WAIT_MILLIS_SHORT: Duration = Duration::from_millis(11);
+
+/// Timeout used for trying to acquire a thread synchronization primitive
+pub const LOCK_CONTENDED_WAIT_MILLIS: Duration = Duration::from_millis(19);
+
+/// Timeout used for trying to acquire a thread synchronization primitive
+pub const LOCK_CONTENDED_WAIT_MILLIS_LONG: Duration = Duration::from_millis(37);
+
 /// Generic timeout value for fast operations
-pub const SHORT_TIMEOUT_MILLIS: u64 = 500;
+pub const TIMEOUT_MILLIS_SHORT: u64 = 500;
 
 /// Generic timeout value for slow operations
-pub const LONG_TIMEOUT_MILLIS: u64 = 1000;
+pub const TIMEOUT_MILLIS_LONG: u64 = 1000;
 
 /// Timeout value to use for the D-Bus event loop
 pub const DBUS_WAIT_MILLIS: u32 = 250;

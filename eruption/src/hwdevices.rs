@@ -31,6 +31,7 @@ use evdev_rs::enums::EV_KEY;
 use eyre::eyre;
 use hidapi::HidApi;
 use lazy_static::lazy_static;
+use libc::wchar_t;
 use mlua::prelude::*;
 use parking_lot::RwLock;
 use serde::{self, Deserialize};
@@ -69,6 +70,9 @@ pub enum MaturityLevel {
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
 
+pub struct Interface(i32);
+pub struct UsagePage(i32);
+
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
@@ -78,73 +82,73 @@ lazy_static! {
         // Wooting
 
         // Wooting Two HE (ARM) series
-        KeyboardDriver::register("Wooting", "Two HE (ARM)",  0x31e3, 0x1230, &keyboards::wooting_two_he_arm::bind_hiddev, MaturityLevel::Testing),
+        KeyboardDriver::register("Wooting", "Two HE (ARM)",  0x31e3, 0x1230,&[(Interface(0x00), UsagePage(0x00))], &keyboards::wooting_two_he_arm::bind_hiddev, MaturityLevel::Testing),
 
         // ROCCAT
 
         // Vulcan 100/12x/Pro (TKL) series
-        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &keyboards::roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
-        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a, &keyboards::roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
+        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098,&[(Interface(0x00), UsagePage(0x00))], &keyboards::roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
+        KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x307a,&[(Interface(0x00), UsagePage(0x00))], &keyboards::roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7, &keyboards::roccat_vulcan_pro::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("ROCCAT", "Vulcan Pro",     0x1e7d, 0x30f7,&[(Interface(0x00), UsagePage(0x00))], &keyboards::roccat_vulcan_pro::bind_hiddev, MaturityLevel::Experimental),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee, &keyboards::roccat_vulcan_tkl::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("ROCCAT", "Vulcan TKL",     0x1e7d, 0x2fee,&[(Interface(0x00), UsagePage(0x00))], &keyboards::roccat_vulcan_tkl::bind_hiddev, MaturityLevel::Experimental),
 
-        KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &keyboards::roccat_vulcan_pro_tkl::bind_hiddev, MaturityLevel::Testing),
+        KeyboardDriver::register("ROCCAT", "Vulcan Pro TKL", 0x1e7d, 0x311a, &[(Interface(0x01), UsagePage(0x01)), (Interface(0x03), UsagePage(0xff00))], &keyboards::roccat_vulcan_pro_tkl::bind_hiddev, MaturityLevel::Testing),
 
-        KeyboardDriver::register("ROCCAT", "Magma",          0x1e7d, 0x3124, &keyboards::roccat_magma::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("ROCCAT", "Magma",          0x1e7d, 0x3124,&[(Interface(0x00), UsagePage(0x00))], &keyboards::roccat_magma::bind_hiddev, MaturityLevel::Experimental),
 
-        KeyboardDriver::register("ROCCAT", "Pyro",           0x1e7d, 0x314C, &keyboards::roccat_pyro::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("ROCCAT", "Pyro",           0x1e7d, 0x314C,&[(Interface(0x00), UsagePage(0x00))], &keyboards::roccat_pyro::bind_hiddev, MaturityLevel::Experimental),
 
         // CORSAIR
 
         // Corsair STRAFE Gaming Keyboard
-        KeyboardDriver::register("Corsair", "Corsair STRAFE Gaming Keyboard", 0x1b1c, 0x1b15, &keyboards::corsair_strafe::bind_hiddev, MaturityLevel::Experimental),
+        KeyboardDriver::register("Corsair", "Corsair STRAFE Gaming Keyboard", 0x1b1c, 0x1b15,&[(Interface(0x00), UsagePage(0x00))], &keyboards::corsair_strafe::bind_hiddev, MaturityLevel::Experimental),
 
 
         // Supported mice
 
         // ROCCAT
-        MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27, &mice::roccat_kone_aimo::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Aimo",         0x1e7d, 0x2e27,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kone_aimo::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Aimo Remastered", 0x1e7d, 0x2e2c, &mice::roccat_kone_aimo_remastered::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Aimo Remastered", 0x1e7d, 0x2e2c,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kone_aimo_remastered::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone XTD Mouse",    0x1e7d, 0x2e22, &mice::roccat_kone_xtd::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone XTD Mouse",    0x1e7d, 0x2e22,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kone_xtd::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &mice::roccat_kone_pure_ultra::bind_hiddev, MaturityLevel::Stable),
+        MouseDriver::register("ROCCAT", "Kone Pure Ultra",   0x1e7d, 0x2dd2, &[(Interface(0x02), UsagePage(0x01))], &mice::roccat_kone_pure_ultra::bind_hiddev, MaturityLevel::Stable),
 
-        MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1, &mice::roccat_burst_pro::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Burst Pro",         0x1e7d, 0x2de1,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_burst_pro::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kone XP",           0x1e7d, 0x2c8b, &mice::roccat_kone_xp::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone XP",           0x1e7d, 0x2c8b,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kone_xp::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Pro",          0x1e7d, 0x2c88, &mice::roccat_kone_pro::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kone Pro",          0x1e7d, 0x2c88,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kone_pro::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kone Pro Air Dongle", 0x1e7d, 0x2c8e, &mice::roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kone Pro Air",        0x1e7d, 0x2c92, &mice::roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kone Pro Air Dongle", 0x1e7d, 0x2c8e,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kone Pro Air",        0x1e7d, 0x2c92,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kone_pro_air::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kain 100 AIMO",     0x1e7d, 0x2d00, &mice::roccat_kain_100::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Kain 100 AIMO",     0x1e7d, 0x2d00,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kain_100::bind_hiddev, MaturityLevel::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d5f, &mice::roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d60, &mice::roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d5f,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kain 200 AIMO",     0x1e7d, 0x2d60,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kain_2xx::bind_hiddev, MaturityLevel::Testing),
         // MouseDriver::register("ROCCAT", "Kain 202 AIMO",     0x1e7d, 0x2d60, &roccat_kain_2xx::bind_hiddev, Status::Experimental),
 
-        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1, &mice::roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3, &mice::roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf1,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova AIMO",         0x1e7d, 0x2cf3,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kova_aimo::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee, &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef, &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
-        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0, &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cee,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cef,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
+        MouseDriver::register("ROCCAT", "Kova 2016",         0x1e7d, 0x2cf0,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_kova_2016::bind_hiddev, MaturityLevel::Testing),
 
-        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c, &mice::roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
-        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d, &mice::roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7c,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
+        MouseDriver::register("ROCCAT", "Nyth",              0x1e7d, 0x2e7d,&[(Interface(0x00), UsagePage(0x00))], &mice::roccat_nyth::bind_hiddev, MaturityLevel::Experimental),
 
 
         // Supported miscellaneous devices
 
         // ROCCAT/Turtle Beach
-        MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37, &misc::roccat_elo_71_air::bind_hiddev, MaturityLevel::Testing),
+        MiscDriver::register("ROCCAT/Turtle Beach", "Elo 7.1 Air", 0x1e7d, 0x3a37,&[(Interface(0x00), UsagePage(0x00))], &misc::roccat_elo_71_air::bind_hiddev, MaturityLevel::Testing),
 
-        MiscDriver::register("ROCCAT", "Aimo Pad Wide", 0x1e7d, 0x343b, &misc::roccat_aimo_pad::bind_hiddev, MaturityLevel::Stable),
+        MiscDriver::register("ROCCAT", "Aimo Pad Wide", 0x1e7d, 0x343b, &[(Interface(0x00), UsagePage(0x01))], &misc::roccat_aimo_pad::bind_hiddev, MaturityLevel::Stable),
 
 
         // Misc Serial devices
@@ -214,7 +218,7 @@ pub trait DriverMetadataExt {
         &self,
         hidapi: &HidApi,
         usb_id: (u16, u16),
-        serial: &str,
+        serial: &[wchar_t],
     ) -> Result<Box<dyn DeviceExt + Sync + Send>>;
 
     fn as_any(&self) -> &(dyn Any);
@@ -233,7 +237,9 @@ pub struct KeyboardDriver<'a> {
     pub usb_vid: u16,
     pub usb_pid: u16,
 
-    pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<Box<dyn DeviceExt + Sync + Send>>
+    pub endpoints: &'a [(Interface, UsagePage)],
+
+    pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &[wchar_t]) -> Result<Box<dyn DeviceExt + Sync + Send>>
              + Sync
              + Send),
 
@@ -246,7 +252,8 @@ impl KeyboardDriver<'static> {
         device_name: &'static str,
         usb_vid: u16,
         usb_pid: u16,
-        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &str) -> Result<Box<dyn DeviceExt + Sync + Send>>
+        endpoints: &'static [(Interface, UsagePage)],
+        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &[wchar_t]) -> Result<Box<dyn DeviceExt + Sync + Send>>
                       + Sync
                       + Send),
         status: MaturityLevel,
@@ -257,6 +264,7 @@ impl KeyboardDriver<'static> {
             device_class: DeviceClass::Keyboard,
             usb_vid,
             usb_pid,
+            endpoints,
             bind_fn,
             status,
         })
@@ -296,7 +304,7 @@ impl DriverMetadataExt for KeyboardDriver<'static> {
         &self,
         hidapi: &HidApi,
         usb_id: (u16, u16),
-        serial: &str,
+        serial: &[wchar_t],
     ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
         (self.bind_fn)(&hidapi, usb_id.0, usb_id.1, serial)
     }
@@ -311,7 +319,9 @@ pub struct MouseDriver<'a> {
     pub usb_vid: u16,
     pub usb_pid: u16,
 
-    pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<Box<dyn DeviceExt + Sync + Send>>
+    pub endpoints: &'a [(Interface, UsagePage)],
+
+    pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &[wchar_t]) -> Result<Box<dyn DeviceExt + Sync + Send>>
              + Sync
              + Send),
 
@@ -324,7 +334,8 @@ impl MouseDriver<'static> {
         device_name: &'static str,
         usb_vid: u16,
         usb_pid: u16,
-        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &str) -> Result<Box<dyn DeviceExt + Sync + Send>>
+        endpoints: &'static [(Interface, UsagePage)],
+        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &[wchar_t]) -> Result<Box<dyn DeviceExt + Sync + Send>>
                       + Sync
                       + Send),
         status: MaturityLevel,
@@ -335,6 +346,7 @@ impl MouseDriver<'static> {
             device_class: DeviceClass::Mouse,
             usb_vid,
             usb_pid,
+            endpoints,
             bind_fn,
             status,
         })
@@ -374,7 +386,7 @@ impl DriverMetadataExt for MouseDriver<'static> {
         &self,
         hidapi: &HidApi,
         usb_id: (u16, u16),
-        serial: &str,
+        serial: &[wchar_t],
     ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
         (self.bind_fn)(hidapi, usb_id.0, usb_id.1, serial)
     }
@@ -389,7 +401,9 @@ pub struct MiscDriver<'a> {
     pub usb_vid: u16,
     pub usb_pid: u16,
 
-    pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &str) -> Result<Box<dyn DeviceExt + Sync + Send>>
+    pub endpoints: &'a [(Interface, UsagePage)],
+
+    pub bind_fn: &'a (dyn Fn(&HidApi, u16, u16, &[wchar_t]) -> Result<Box<dyn DeviceExt + Sync + Send>>
              + Sync
              + Send),
 
@@ -403,7 +417,8 @@ impl MiscDriver<'static> {
         device_name: &'static str,
         usb_vid: u16,
         usb_pid: u16,
-        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &str) -> Result<Box<dyn DeviceExt + Sync + Send>>
+        endpoints: &'static [(Interface, UsagePage)],
+        bind_fn: &'static (dyn Fn(&HidApi, u16, u16, &[wchar_t]) -> Result<Box<dyn DeviceExt + Sync + Send>>
                       + Sync
                       + Send),
         status: MaturityLevel,
@@ -414,6 +429,7 @@ impl MiscDriver<'static> {
             device_class: DeviceClass::Misc,
             usb_vid,
             usb_pid,
+            endpoints,
             bind_fn,
             status,
         })
@@ -453,7 +469,7 @@ impl DriverMetadataExt for MiscDriver<'static> {
         &self,
         hidapi: &HidApi,
         usb_id: (u16, u16),
-        serial: &str,
+        serial: &[wchar_t],
     ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
         (self.bind_fn)(hidapi, usb_id.0, usb_id.1, serial)
     }
@@ -524,7 +540,7 @@ impl DriverMetadataExt for MiscSerialDriver<'static> {
         &self,
         _hidapi: &HidApi,
         _usb_id: (u16, u16),
-        _serial: &str,
+        _serial: &[wchar_t],
     ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
         Err(HwDeviceError::OpNotSupported {}.into())
     }
@@ -915,8 +931,8 @@ pub trait DeviceZoneAllocationExt {
 
 /// Generic device trait
 pub trait DeviceExt: DeviceInfoExt + DeviceZoneAllocationExt {
-    /// Returns the USB path/ID of the device
-    fn get_usb_path(&self) -> String;
+    /// Returns the path(s) of the bound (sub-) device(s)
+    fn get_dev_paths(&self) -> Vec<String>;
 
     /// Returns the USB vendor ID of the device
     fn get_usb_vid(&self) -> u16;
@@ -1219,10 +1235,16 @@ pub fn probe_devices() -> Result<Vec<Device>> {
         }
     }
 
-    let mut bound_devices = vec![];
+    let mut bound_devices = Vec::new();
 
-    let hidapi = crate::HIDAPI.read();
-    let hidapi = hidapi.as_ref().unwrap();
+    for (_handle, device) in crate::DEVICES.read().iter() {
+        bound_devices.extend(device.read().get_dev_paths());
+    }
+
+    let mut hidapi = crate::HIDAPI.write();
+    let hidapi = hidapi.as_mut().unwrap();
+
+    hidapi.refresh_devices()?;
 
     for device_info in hidapi.device_list() {
         if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
@@ -1230,52 +1252,64 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                 driver.get_usb_vid() == device_info.vendor_id()
                     && driver.get_usb_pid() == device_info.product_id()
             }) {
-                debug!(
-                    "Found supported device: 0x{:x}:0x{:x} iface: {}:{:x} - {} {}",
-                    device_info.vendor_id(),
-                    device_info.product_id(),
-                    device_info.interface_number(),
-                    device_info.usage_page(),
-                    device_info
-                        .manufacturer_string()
-                        .unwrap_or("<unknown>")
-                        .to_string(),
-                    device_info
-                        .product_string()
-                        .unwrap_or("<unknown>")
-                        .to_string(),
-                );
+                // info!(
+                //     "Found supported device: 0x{:x}:0x{:x} iface: {}:{:x} - {} {}",
+                //     device_info.vendor_id(),
+                //     device_info.product_id(),
+                //     device_info.interface_number(),
+                //     device_info.usage_page(),
+                //     device_info
+                //         .manufacturer_string()
+                //         .unwrap_or("<unknown>")
+                //         .to_string(),
+                //     device_info
+                //         .product_string()
+                //         .unwrap_or("<unknown>")
+                //         .to_string(),
+                // );
 
-                let serial = device_info.serial_number().unwrap_or("");
-                // let path = device_info.path().to_string_lossy().to_string();
+                let serial = device_info.serial_number_raw().unwrap_or(&[]);
+                let path = device_info.path().to_string_lossy().into_owned();
 
-                if !bound_devices.contains(&(
-                    device_info.vendor_id(),
-                    device_info.product_id(),
-                    serial,
-                )) {
+                let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
+
+                if driver.get_maturity_level() <= driver_maturity_level {
                     match driver.get_device_class() {
                         DeviceClass::Keyboard | DeviceClass::Mouse | DeviceClass::Misc => {
-                            let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
+                            if let Ok(device) = driver.bind(
+                                hidapi,
+                                (device_info.vendor_id(), device_info.product_id()),
+                                serial,
+                            ) {
+                                if !bound_devices
+                                    .iter()
+                                    .any(|d| device.get_dev_paths().contains(d))
+                                {
+                                    info!(
+                                        "Found supported device: 0x{:x}:0x{:x} iface: {}:{:x} - {} {}",
+                                        device_info.vendor_id(),
+                                        device_info.product_id(),
+                                        device_info.interface_number(),
+                                        device_info.usage_page(),
+                                        device_info
+                                            .manufacturer_string()
+                                            .unwrap_or("<unknown>")
+                                            .to_string(),
+                                        device_info
+                                            .product_string()
+                                            .unwrap_or("<unknown>")
+                                            .to_string(),
+                                    );
 
-                            if driver.get_maturity_level() <= driver_maturity_level {
-                                if let Ok(device) = driver.bind(
-                                    hidapi,
-                                    (device_info.vendor_id(), device_info.product_id()),
-                                    serial,
-                                ) {
+                                    bound_devices.extend(device.get_dev_paths());
                                     devices.push(Arc::new(RwLock::new(device)));
-                                    bound_devices.push((
-                                        driver.get_usb_vid(),
-                                        driver.get_usb_pid(),
-                                        serial,
-                                    ));
                                 } else {
-                                    error!("Failed to bind the device driver");
+                                    debug!(
+                                        "Skipping this endpoint since the device '{path}' is already bound by us"
+                                    );
                                 }
                             } else {
-                                warn!("Not binding the device driver because it would require a lesser code maturity level");
-                                warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf");
+                                error!("Failed to bind the device driver");
                             }
                         }
 
@@ -1283,6 +1317,9 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                             error!("Failed to bind the device driver, unsupported device class");
                         }
                     }
+                } else {
+                    warn!("Not binding the device driver because it would require a lesser code maturity level");
+                    warn!("To enable this device driver, please change the 'driver_maturity_level' setting in eruption.conf");
                 }
             } else {
                 // found an unsupported device
@@ -1302,14 +1339,10 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                         .to_string(),
                 );
 
-                let serial = device_info.serial_number().unwrap_or("");
+                let serial = device_info.serial_number_raw().unwrap_or(&[]);
                 // let path = device_info.path().to_string_lossy().to_string();
 
-                if !bound_devices.contains(&(
-                    device_info.vendor_id(),
-                    device_info.product_id(),
-                    serial,
-                )) {
+                if !bound_devices.contains(&device_info.path().to_string_lossy().into_owned()) {
                     match get_usb_device_class(device_info.vendor_id(), device_info.product_id()) {
                         Ok(DeviceClass::Keyboard) => {
                             if let Ok(device) = generic_keyboard::bind_hiddev(
@@ -1318,12 +1351,9 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                                 device_info.product_id(),
                                 serial,
                             ) {
+                                bound_devices
+                                    .push(device_info.path().to_string_lossy().into_owned());
                                 devices.push(Arc::new(RwLock::new(device)));
-                                bound_devices.push((
-                                    device_info.vendor_id(),
-                                    device_info.product_id(),
-                                    serial,
-                                ));
                             } else {
                                 error!("Failed to bind the device driver");
                             }
@@ -1336,35 +1366,27 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                                 device_info.product_id(),
                                 serial,
                             ) {
+                                bound_devices
+                                    .push(device_info.path().to_string_lossy().into_owned());
                                 devices.push(Arc::new(RwLock::new(device)));
-                                bound_devices.push((
-                                    device_info.vendor_id(),
-                                    device_info.product_id(),
-                                    serial,
-                                ));
                             } else {
                                 error!("Failed to bind the device driver");
                             }
                         }
 
                         Ok(DeviceClass::Misc) => {
-                            // Do nothing
-
                             /* if let Ok(device) = generic_misc::bind_hiddev(
                                 hidapi,
                                 device_info.vendor_id(),
                                 device_info.product_id(),
                                 serial,
                             ) {
-                                devices.push(Arc::new(Mutex::new(device)));
-                                bound_devices.push((
-                                    device_info.vendor_id(),
-                                    device_info.product_id(),
-                                    serial,
-                                ));
+                                bound_devices
+                                    .push(device_info.path().to_string_lossy().into_owned());
+                                devices.push(Arc::new(RwLock::new(device)));
                             } else {
                                 error!("Failed to bind the device driver");
-                            }*/
+                            } */
                         }
 
                         Err(e) => {
@@ -1474,7 +1496,7 @@ pub fn get_input_dev_from_udev(usb_vid: u16, usb_pid: u16) -> Result<String> {
 
                         if retry_counter <= 0 {
                             // give up the search
-                            error!("Requested device could not be found");
+                            error!("The requested device could not be found");
 
                             break Err(HwDeviceError::NoDevicesFound {}.into());
                         } else {
@@ -1675,13 +1697,13 @@ pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<(&'static str, &'st
 
 #[allow(dead_code)]
 #[inline]
-pub fn get_device_from_handle(handle: DeviceHandle) -> Option<Device> {
+pub fn find_device_by_handle(handle: DeviceHandle) -> Option<Device> {
     crate::DEVICES.read().get(&handle).cloned()
 }
 
 #[allow(dead_code)]
 #[inline]
-pub fn get_device_from_handle_mut(handle: DeviceHandle) -> Option<Device> {
+pub fn find_device_by_handle_mut(handle: DeviceHandle) -> Option<Device> {
     crate::DEVICES.read().get(&handle).cloned()
 }
 

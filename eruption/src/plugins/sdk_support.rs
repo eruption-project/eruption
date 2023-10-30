@@ -53,7 +53,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 use std::{fs, thread};
-use tracing::{debug, error, info, trace};
+use tracing::{debug, error, info, trace, warn};
 
 use crate::{
     hwdevices::RGBA,
@@ -98,7 +98,7 @@ lazy_static! {
         Arc::new(RwLock::new(None));
 }
 
-use crate::threads::{spawn_device_input_thread, DbusApiEvent};
+use crate::threads::DbusApiEvent;
 use bincode::{Decode, Encode};
 use flume::bounded;
 
@@ -108,6 +108,7 @@ unsafe fn any_as_u8_slice<T: Sized>(p: &T) -> &[u8] {
 
 #[derive(Debug, Default, Clone, Encode, Decode)]
 pub struct HotplugInfo {
+    pub devpath: Option<PathBuf>,
     pub usb_vid: u16,
     pub usb_pid: u16,
 }
@@ -118,8 +119,8 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
-    use crate::{hwdevices::DeviceClass, init_device};
+pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
+    use crate::{state, threads};
 
     if crate::QUIT.load(Ordering::SeqCst) {
         info!("Ignoring device hotplug event since Eruption is shutting down");
@@ -127,197 +128,66 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
         // enumerate devices
         info!("Enumerating connected devices...");
 
-        if let Ok(mut devices) = hwdevices::probe_devices() {
-            // initialize keyboard devices
-            for (index, device) in devices.iter_mut().enumerate() {
-                if !crate::DEVICES.read().iter().any(|(_handle, d)| {
-                    let d = d.read();
-                    let device = device.read();
+        if let Ok(devices) = hwdevices::probe_devices() {
+            if let Some(device) = devices.iter().find(|device| {
+                device.read().get_dev_paths().contains(
+                    &hotplug_info
+                        .devpath
+                        .clone()
+                        .unwrap_or_else(|| PathBuf::new())
+                        .to_string_lossy()
+                        .to_string(),
+                )
+            }) {
+                // we found the hot-plug candidate device
+                let handle = crate::DEVICES.read().len();
 
-                    d.get_device_class() == DeviceClass::Keyboard
-                        && d.get_usb_vid() == device.get_usb_vid()
-                        && d.get_usb_pid() == device.get_usb_pid()
-                }) {
-                    info!("Initializing the hotplugged keyboard device...");
+                info!("Initializing the plugged device...");
 
-                    init_device(device.clone());
+                crate::init_device(device.clone())?;
+                info!("Device initialized successfully");
 
-                    // place a request to re-enter the main loop, this will drop all global locks
-                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
+                let (usb_vid, usb_pid) = (device.read().get_usb_vid(), device.read().get_usb_pid());
 
-                    let dev = device.read();
+                // spawn a thread to handle Linux evdev input
+                info!("Spawning input events thread...");
 
-                    let usb_vid = dev.get_usb_vid();
-                    let usb_pid = dev.get_usb_pid();
+                let (event_tx, event_rx) = bounded(8);
+                if let Err(e) =
+                    threads::spawn_evdev_input_thread(event_tx, handle, usb_vid, usb_pid)
+                {
+                    error!("Could not spawn the input events thread: {e}");
 
-                    // spawn a thread to handle keyboard input
-                    info!("Spawning keyboard input thread...");
-
-                    let (kbd_tx, kbd_rx) = bounded(8);
-                    spawn_device_input_thread(kbd_tx.clone(), index, usb_vid, usb_pid)
-                        .unwrap_or_else(|e| {
-                            error!("Could not spawn a thread: {}", e);
-                            panic!()
-                        });
-
-                    crate::KEYBOARD_DEVICES_RX.write().insert(index, kbd_rx);
-                    crate::DEVICES.write().insert(index, device.clone());
-
-                    debug!("Sending device hotplug notification...");
-
-                    let dbus_api_tx = crate::DBUS_API_TX.read();
-                    let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
-
-                    dbus_api_tx
-                        .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
-                        .unwrap_or_else(|e| {
-                            error!("Could not send a pending dbus API event: {}", e)
-                        });
+                    crate::EVENT_RX.write().insert(handle, None);
+                    crate::DEVICES.write().insert(handle, device.clone());
                 } else {
-                    info!("Skipped initialization of a keyboard device");
+                    crate::EVENT_RX.write().insert(handle, Some(event_rx));
+                    crate::DEVICES.write().insert(handle, device.clone());
                 }
+
+                // load and initialize global runtime state (late init)
+                info!("Loading saved device state...");
+                state::init_runtime_state(device.clone())
+                    .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+
+                debug!("Sending device hotplug notification...");
+
+                let dbus_api_tx = crate::DBUS_API_TX.read();
+                let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
+
+                dbus_api_tx
+                    .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
+                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+            } else {
+                warn!(
+                    "The device '{}' disappeared during processing of the hotplug event",
+                    hotplug_info
+                        .devpath
+                        .clone()
+                        .unwrap_or_else(|| PathBuf::new())
+                        .to_string_lossy()
+                );
             }
-
-            // initialize mouse devices
-            for (index, device) in devices.iter_mut().enumerate() {
-                let enable_mouse = (*crate::CONFIG.read())
-                    .as_ref()
-                    .unwrap()
-                    .get::<bool>("global.enable_mouse")
-                    .unwrap_or(true);
-
-                // enable mouse input
-                if enable_mouse {
-                    if !crate::DEVICES.read().iter().any(|(_handle, d)| {
-                        let d = d.read();
-                        let device = device.read();
-
-                        d.get_device_class() == DeviceClass::Mouse
-                            && d.get_usb_vid() == device.get_usb_vid()
-                            && d.get_usb_pid() == device.get_usb_pid()
-                    }) {
-                        info!("Initializing the hotplugged mouse device...");
-
-                        init_device(device.clone());
-
-                        // place a request to re-enter the main loop, this will drop all global locks
-                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                        thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
-
-                        let dev = device.read();
-
-                        let usb_vid = dev.get_usb_vid();
-                        let usb_pid = dev.get_usb_pid();
-
-                        let (mouse_tx, mouse_rx) = bounded(8);
-
-                        // spawn a thread to handle mouse input
-                        info!("Spawning mouse input thread...");
-
-                        spawn_device_input_thread(mouse_tx.clone(), index, usb_vid, usb_pid)
-                            .unwrap_or_else(|e| {
-                                error!("Could not spawn a thread: {}", e);
-                                panic!()
-                            });
-
-                        crate::MOUSE_DEVICES_RX.write().insert(index, mouse_rx);
-                        crate::DEVICES.write().insert(index, device.clone());
-
-                        debug!("Sending device hotplug notification...");
-
-                        let dbus_api_tx = crate::DBUS_API_TX.read();
-                        if let Some(dbus_api_tx) = dbus_api_tx.as_ref() {
-                            dbus_api_tx
-                                .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
-                                .unwrap_or_else(|e| {
-                                    error!("Could not send a pending dbus API event: {}", e)
-                                });
-                        } else {
-                            error!("Could not send a pending dbus API event: dbus API channel is not available");
-                        }
-                    } else {
-                        info!("Skipped initialization of a mouse device");
-                    }
-                } else {
-                    info!("Found mouse device, but mouse support is DISABLED by configuration");
-                }
-            }
-
-            // initialize misc devices
-            for (index, device) in devices.iter_mut().enumerate() {
-                if !crate::DEVICES.read().iter().any(|(_handle, d)| {
-                    let d = d.read();
-                    let device = device.read();
-
-                    d.get_device_class() == DeviceClass::Misc
-                        && d.get_usb_vid() == device.get_usb_vid()
-                        && d.get_usb_pid() == device.get_usb_pid()
-                }) {
-                    info!("Initializing the hotplugged misc device...");
-
-                    init_device(device.clone());
-
-                    // place a request to re-enter the main loop, this will drop all global locks
-                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                    thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_MILLIS));
-
-                    let dev = device.read();
-                    let dev = dev.as_misc_device().unwrap();
-
-                    if dev.has_input_device() {
-                        let usb_vid = dev.get_usb_vid();
-                        let usb_pid = dev.get_usb_pid();
-
-                        // spawn a thread to handle input
-                        info!("Spawning misc device input thread...");
-
-                        let (misc_tx, misc_rx) = bounded(8);
-                        spawn_device_input_thread(misc_tx.clone(), index, usb_vid, usb_pid)
-                            .unwrap_or_else(|e| {
-                                error!("Could not spawn a thread: {}", e);
-                                panic!()
-                            });
-
-                        crate::MISC_DEVICES_RX.write().insert(index, misc_rx);
-
-                        debug!("Sending device hotplug notification...");
-
-                        let dbus_api_tx = crate::DBUS_API_TX.read();
-                        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
-
-                        dbus_api_tx
-                            .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending dbus API event: {}", e)
-                            });
-                    } else {
-                        let usb_vid = dev.get_usb_vid();
-                        let usb_pid = dev.get_usb_pid();
-
-                        // insert an unused rx
-                        let (_misc_tx, misc_rx) = bounded(8);
-                        crate::MISC_DEVICES_RX.write().insert(index, misc_rx);
-
-                        debug!("Sending device hotplug notification...");
-
-                        let dbus_api_tx = crate::DBUS_API_TX.read();
-                        let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
-
-                        dbus_api_tx
-                            .send(DbusApiEvent::DeviceHotplug((usb_vid, usb_pid), false))
-                            .unwrap_or_else(|e| {
-                                error!("Could not send a pending dbus API event: {}", e)
-                            });
-                    }
-
-                    crate::DEVICES.write().insert(index, device.clone());
-                } else {
-                    info!("Skipped initialization of a misc device");
-                }
-            }
-
-            info!("Device enumeration completed");
         }
     }
 
@@ -452,12 +322,12 @@ impl SdkSupportPlugin {
 
                 match listener.accept() {
                     Ok((socket, sockaddr)) => {
-                        let peer_addr = match sockaddr.as_pathname() {
+                        let _peer_addr = match sockaddr.as_pathname() {
                             Some(path) => path.to_string_lossy().to_string(),
                             None => String::from("unknown"),
                         };
 
-                        debug!("Eruption SDK client connected from: {peer_addr}");
+                        debug!("Eruption SDK client connected");
 
                         // socket.set_nodelay(true)?; // not supported on AF_UNIX on Linux
                         socket.set_send_buffer_size(constants::NET_BUFFER_CAPACITY)?;
@@ -810,12 +680,14 @@ impl SdkSupportPlugin {
                                                             )?
                                                             .0;
 
-                                                        info!("Hotplug event received, trying to claim newly added devices now...");
+                                                        info!("Hotplug event received, trying to claim the plugged device now...");
 
                                                         // remove disconnected or failed devices
                                                         // crate::remove_failed_devices()?;
 
-                                                        claim_hotplugged_devices(&hotplug_info)?;
+                                                        claim_hotplugged_device(&hotplug_info).unwrap_or_else(|e| {
+                                                            error!("Could not initialize the plugged device: {e}");
+                                                        });
 
                                                         // this is required for hotplug to work correctly in case we didn't transfer
                                                         // data to the device for an extended period of time
@@ -855,7 +727,9 @@ impl SdkSupportPlugin {
 
                                                         info!("Resume event received, trying to reinitialize all devices now...");
 
-                                                        resume_from_suspend()?;
+                                                        resume_from_suspend().unwrap_or_else(|e| {
+                                                            error!("Could not resume at least one device from suspend: {e}");
+                                                        });
 
                                                         // this is required for hotplug to work correctly in case we didn't transfer
                                                         // data to the device for an extended period of time

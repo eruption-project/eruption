@@ -36,7 +36,6 @@ use std::fs;
 use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
-use std::time::Duration;
 use std::vec::Vec;
 use tracing::*;
 
@@ -480,7 +479,7 @@ fn realize_color_map() -> Result<RunningScriptResult> {
     if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
         LOCAL_LED_MAP.with(|foreground| {
             LED_MAP
-                .try_write_for(Duration::from_millis(25))
+                .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
                 .and_then(|mut led_map| {
                     led_map
                         .chunks_exact_mut(constants::CANVAS_SIZE)

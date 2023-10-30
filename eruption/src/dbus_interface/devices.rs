@@ -25,6 +25,7 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use tracing::*;
 
+use crate::constants;
 use crate::{
     hwdevices::{DeviceClass, DeviceHandle},
     scripting::script,
@@ -290,7 +291,9 @@ fn is_device_enabled(m: &MethodInfo) -> MethodResult {
 
 fn apply_device_specific_configuration(handle: u64, param: &str, value: &str) -> Result<()> {
     if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
-        let mut device = device.write();
+        let mut device = device
+            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+            .ok_or_else(|| DbusApiError::LockingFailed {})?;
 
         match device.get_device_class() {
             DeviceClass::Keyboard => {

@@ -5,7 +5,7 @@
 ![Stars](https://img.shields.io/github/stars/X3n0m0rph59/eruption?style=flat-square)
 ![Stars](https://img.shields.io/crates/l/eruption-sdk?style=flat-square)
 
-This crate provides an interface to the [Eruption Realtime RGB LED Driver](https://github.com/X3n0m0rph59/eruption) for Linux
+This crate provides an interface to the [Eruption Realtime RGB LED Driver](https://github.com/eruption-project/eruption) for Linux
 
 ## Table of Contents
 
@@ -100,4 +100,4 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Support
 
-Support for the Eruption SDK is available on [GitHub](https://github.com/X3n0m0rph59/eruption/issues)
+Support for the Eruption SDK is available on [GitHub](https://github.com/eruption-project/eruption/issues)

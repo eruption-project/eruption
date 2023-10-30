@@ -22,7 +22,7 @@
 
 <policyconfig>
   <vendor>The Eruption Development Team</vendor>
-  <vendor_url>https://github.com/X3n0m0rph59/eruption</vendor_url>
+  <vendor_url>https://github.com/eruption-project/eruption</vendor_url>
   <icon_name>keyboard</icon_name>
 
   <!-- Monitor the Eruption daemons state -->

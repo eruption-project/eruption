@@ -22,6 +22,7 @@
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
+use libc::wchar_t;
 use ndarray::{s, ArrayView2};
 use parking_lot::Mutex;
 use resize::Pixel::RGB8;
@@ -57,19 +58,19 @@ pub fn bind_hiddev(
     hidapi: &HidApi,
     usb_vid: u16,
     usb_pid: u16,
-    serial: &str,
+    serial: &[wchar_t],
 ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or("") == serial
+            && device.serial_number_raw().unwrap_or(&[]) == serial
             && device.interface_number() == CTRL_INTERFACE
     });
 
     let led_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or("") == serial
+            && device.serial_number_raw().unwrap_or(&[]) == serial
             && device.interface_number() == LED_INTERFACE
     });
 
@@ -128,7 +129,7 @@ pub struct RoccatVulcan1xx {
 impl RoccatVulcan1xx {
     /// Binds the driver to the supplied HID devices
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo, led_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Vulcan 100/12x AIMO");
+        debug!("Bound driver: ROCCAT Vulcan 100/12x AIMO");
 
         Self {
             is_initialized: false,
@@ -562,14 +563,23 @@ impl DeviceZoneAllocationExt for RoccatVulcan1xx {
 }
 
 impl DeviceExt for RoccatVulcan1xx {
-    fn get_usb_path(&self) -> String {
-        self.led_hiddev_info
-            .clone()
-            .unwrap()
-            .path()
-            .to_str()
-            .unwrap()
-            .to_string()
+    fn get_dev_paths(&self) -> Vec<String> {
+        vec![
+            self.ctrl_hiddev_info
+                .clone()
+                .unwrap()
+                .path()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            self.led_hiddev_info
+                .clone()
+                .unwrap()
+                .path()
+                .to_str()
+                .unwrap()
+                .to_string(),
+        ]
     }
 
     fn get_usb_vid(&self) -> u16 {

@@ -23,6 +23,7 @@ use bitvec::prelude::*;
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
+use libc::wchar_t;
 use parking_lot::Mutex;
 use std::{any::Any, collections::HashMap, mem::size_of, sync::Arc};
 use tracing::*;
@@ -49,12 +50,12 @@ pub fn bind_hiddev(
     hidapi: &HidApi,
     usb_vid: u16,
     usb_pid: u16,
-    serial: &str,
+    serial: &[wchar_t],
 ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     let ctrl_dev = hidapi.device_list().find(|&device| {
         device.vendor_id() == usb_vid
             && device.product_id() == usb_pid
-            && device.serial_number().unwrap_or("") == serial
+            && device.serial_number_raw().unwrap_or(&[]) == serial
             && device.interface_number() == SUB_DEVICE
     });
 
@@ -101,7 +102,7 @@ pub struct RoccatKoneXtd {
 impl RoccatKoneXtd {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Kone XTD Mouse");
+        debug!("Bound driver: ROCCAT Kone XTD Mouse");
 
         Self {
             is_initialized: false,
@@ -392,14 +393,15 @@ impl DeviceZoneAllocationExt for RoccatKoneXtd {
 }
 
 impl DeviceExt for RoccatKoneXtd {
-    fn get_usb_path(&self) -> String {
-        self.ctrl_hiddev_info
+    fn get_dev_paths(&self) -> Vec<String> {
+        vec![self
+            .ctrl_hiddev_info
             .clone()
             .unwrap()
             .path()
             .to_str()
             .unwrap()
-            .to_string()
+            .to_string()]
     }
 
     fn get_usb_vid(&self) -> u16 {

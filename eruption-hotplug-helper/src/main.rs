@@ -22,10 +22,7 @@
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use eruption_sdk::{
-    connection::{Connection, ConnectionType},
-    hardware::HotplugInfo,
-};
+use eruption_sdk::connection::{Connection, ConnectionType};
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -34,6 +31,7 @@ use is_terminal::IsTerminal;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
+use std::path::PathBuf;
 // use colored::*;
 use std::{
     env,
@@ -113,7 +111,7 @@ pub struct Options {
 #[derive(Debug, clap::Parser)]
 pub enum Subcommands {
     #[clap(about(HOTPLUG_ABOUT.as_str()))]
-    Hotplug,
+    Hotplug { devpath: Option<PathBuf> },
 
     #[clap(about(RESUME_ABOUT.as_str()))]
     Resume,
@@ -268,11 +266,11 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .install()?;
         } else {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .display_env_section(false)
             .install()?;
         }
@@ -290,11 +288,11 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     let opts = Options::parse();
     match opts.command {
-        Subcommands::Hotplug => {
+        Subcommands::Hotplug { devpath } => {
             tracing::info!("A hotplug event has been triggered, notifying the Eruption daemon...");
 
             // sleep until udev has settled
-            tracing::info!("Waiting for the devices to settle...");
+            /* tracing::info!("Waiting for the devices to settle...");
 
             let status = Command::new("/bin/udevadm")
                 .arg("settle")
@@ -308,7 +306,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 thread::sleep(Duration::from_millis(3500));
             } else {
                 tracing::info!("Done, all devices have settled");
-            }
+            } */
 
             tracing::info!("Connecting to the Eruption daemon...");
 
@@ -320,11 +318,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
                     tracing::info!("Notifying the Eruption daemon about the hotplug event...");
 
-                    // TODO: fully implement this
-                    let hotplug_info = HotplugInfo {
-                        usb_vid: 0,
-                        usb_pid: 0,
-                    };
+                    let hotplug_info = util::get_hotplug_info(devpath.as_ref())?;
                     connection.notify_device_hotplug(&hotplug_info)?;
 
                     connection.disconnect()?;

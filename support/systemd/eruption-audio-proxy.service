@@ -18,7 +18,7 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 [Unit]
-Description=Audio proxy daemon for Eruption
+Description=Audio Proxy for Eruption
 Documentation=man:eruption-audio-proxy(1) man:audio-proxy.conf(5) man:eruptionctl(1)
 Requires=sound.target
 PartOf=graphical-session.target

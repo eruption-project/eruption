@@ -36,10 +36,13 @@ impl Default for Hardware {
 }
 */
 
+use std::path::PathBuf;
+
 use bincode::{Decode, Encode};
 
 #[derive(Debug, Default, Clone, Encode, Decode)]
 pub struct HotplugInfo {
+    pub devpath: Option<PathBuf>,
     pub usb_vid: u16,
     pub usb_pid: u16,
 }

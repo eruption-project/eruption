@@ -21,7 +21,7 @@
 
 ## Experimental Features
 
-- Mouse support was added in version `0.1.10`. It can be enabled in `eruption.conf` by setting `"grab_mouse = true"` in section `[global]`. This will enable support for mouse events and Easy Shift+ mouse button macros.
+- Mouse support was added in version `0.1.10`. ~~It can be enabled in `eruption.conf` by setting `"grab_mouse = true"` in section `[global]`~~. This will enable support for mouse events and Easy Shift+ mouse button macros.
 
 - Eruption `0.1.12` somewhat relaxed the mouse grabbing mode. It now is possible for Eruption to process mouse events without grabbing the mouse exclusively. Injection of mouse events wont work in that mode though. This feature has been added to support setups, where another software should be granted exclusive access to the mouse device.
 
@@ -50,10 +50,6 @@ script_dirs = ["/usr/share/eruption/scripts/"]
 # keyboard_variant = "ANSI"
 keyboard_variant = "ISO"
 
-# Mouse handling
-enable_mouse = true
-grab_mouse = true
-
 # "Away from keyboard" handling
 afk_profile = "/var/lib/eruption/profiles/rainbow-wave.profile"
 afk_timeout_secs = 0
@@ -80,7 +76,7 @@ _keyboard_variant_ = Switch between sub-variants of your device. (Only partially
 
 _enable_mouse_ = Enable support for mouse events. This will allow Eruption to react on mouse events.
 
-_grab_mouse_ = Enable support for the injection of mouse events. This will allow Eruption to extend the Easy Shift+ macros to the mouse. Since the mouse is grabbed exclusively, other software will be prohibited from using the hardware mouse. Set this to `false` if you want Eruption to co-exist with other software, that needs to listen to mouse events, such as 3rd party device drivers.
+~~_grab_mouse_ = Enable support for the injection of mouse events. This will allow Eruption to extend the Easy Shift+ macros to the mouse. Since the mouse is grabbed exclusively, other software will be prohibited from using the hardware mouse. Set this to `false` if you want Eruption to co-exist with other software, that needs to listen to mouse events, such as 3rd party device drivers.~~
 
 ### Profiles
 
@@ -135,7 +131,7 @@ will be taken from the script's `.manifest` file.
 
 > You may want to install the GNOME Shell extension
 > [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-> or visit the [Github page](https://github.com/X3n0m0rph59/eruption-profile-switcher)
+> or visit the [Github page](https://github.com/eruption-project/eruption-profile-switcher)
 
 You may switch the currently active slot to `profile1.profile` with the following command:
 

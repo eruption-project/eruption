@@ -26,6 +26,7 @@ use crate::hwdevices::{DeviceClass, DeviceStatus};
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::HidApi;
+use libc::wchar_t;
 
 use tracing::*;
 
@@ -38,7 +39,7 @@ pub fn bind_hiddev(
     _hidapi: &HidApi,
     usb_vid: u16,
     usb_pid: u16,
-    _serial: &str,
+    _serial: &[wchar_t],
 ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     Ok(Box::new(GenericMouse::bind(usb_vid, usb_pid)))
 }
@@ -55,7 +56,7 @@ pub struct GenericMouse {
 impl GenericMouse {
     /// Binds the driver to the supplied HID devices
     pub fn bind(usb_vid: u16, usb_pid: u16) -> Self {
-        info!("Bound driver: Generic Mouse Device");
+        debug!("Bound driver: Generic Mouse Device");
 
         Self {
             usb_vid,
@@ -109,8 +110,8 @@ impl DeviceZoneAllocationExt for GenericMouse {
 }
 
 impl DeviceExt for GenericMouse {
-    fn get_usb_path(&self) -> String {
-        "<unsupported>".to_string()
+    fn get_dev_paths(&self) -> Vec<String> {
+        vec![]
     }
 
     fn get_usb_vid(&self) -> u16 {

@@ -23,6 +23,7 @@ use bitvec::prelude::*;
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use hidapi::{HidApi, HidDevice};
+use libc::wchar_t;
 use parking_lot::Mutex;
 use std::time::Duration;
 use tracing::*;
@@ -47,7 +48,7 @@ pub fn bind_hiddev(
     hidapi: &HidApi,
     usb_vid: u16,
     usb_pid: u16,
-    serial: &str,
+    serial: &[wchar_t],
 ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
     let ctrl_dev;
     let led_dev;
@@ -57,14 +58,14 @@ pub fn bind_hiddev(
         ctrl_dev = hidapi.device_list().find(|&device| {
             device.vendor_id() == usb_vid
                 && device.product_id() == usb_pid
-                && device.serial_number().unwrap_or("") == serial
+                && device.serial_number_raw().unwrap_or(&[]) == serial
                 && device.interface_number() == 1
         });
 
         led_dev = hidapi.device_list().find(|&device| {
             device.vendor_id() == usb_vid
                 && device.product_id() == usb_pid
-                && device.serial_number().unwrap_or("") == serial
+                && device.serial_number_raw().unwrap_or(&[]) == serial
                 && device.interface_number() == 2
         });
     } else {
@@ -72,14 +73,14 @@ pub fn bind_hiddev(
         ctrl_dev = hidapi.device_list().find(|&device| {
             device.vendor_id() == usb_vid
                 && device.product_id() == usb_pid
-                && device.serial_number().unwrap_or("") == serial
+                && device.serial_number_raw().unwrap_or(&[]) == serial
                 && device.interface_number() == 2
         });
 
         led_dev = hidapi.device_list().find(|&device| {
             device.vendor_id() == usb_vid
                 && device.product_id() == usb_pid
-                && device.serial_number().unwrap_or("") == serial
+                && device.serial_number_raw().unwrap_or(&[]) == serial
                 && device.interface_number() == 1
         });
     }
@@ -137,7 +138,7 @@ pub struct RoccatKoneProAir {
 impl RoccatKoneProAir {
     /// Binds the driver to the supplied HID device
     pub fn bind(ctrl_dev: &hidapi::DeviceInfo, led_dev: &hidapi::DeviceInfo) -> Self {
-        info!("Bound driver: ROCCAT Kone Pro Air");
+        debug!("Bound driver: ROCCAT Kone Pro Air");
 
         Self {
             is_initialized: false,
@@ -556,14 +557,23 @@ impl DeviceZoneAllocationExt for RoccatKoneProAir {
 }
 
 impl DeviceExt for RoccatKoneProAir {
-    fn get_usb_path(&self) -> String {
-        self.ctrl_hiddev_info
-            .clone()
-            .unwrap()
-            .path()
-            .to_str()
-            .unwrap()
-            .to_string()
+    fn get_dev_paths(&self) -> Vec<String> {
+        vec![
+            self.ctrl_hiddev_info
+                .clone()
+                .unwrap()
+                .path()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            self.led_hiddev_info
+                .clone()
+                .unwrap()
+                .path()
+                .to_str()
+                .unwrap()
+                .to_string(),
+        ]
     }
 
     fn get_usb_vid(&self) -> u16 {

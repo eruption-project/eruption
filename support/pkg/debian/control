@@ -28,7 +28,7 @@ Build-Depends: debhelper (>= 11),
 		acl (>= 2.2.53-6)
 Standards-Version: 4.1.3
 Homepage: https://eruption-project.org
-Vcs-Git: https://github.com/X3n0m0rph59/eruption.git
+Vcs-Git: https://github.com/eruption-project/eruption.git
 
 Package: eruption
 Architecture: any

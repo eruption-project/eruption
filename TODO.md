@@ -3,7 +3,7 @@
 ## Roadmap
 
 - Widen the scope of the project: Add support for more hardware devices
-  Please find the list of most requested hardware here: <https://github.com/X3n0m0rph59/eruption/issues>
+  Please find the list of most requested hardware here: <https://github.com/eruption-project/eruption/issues>
 - Update the `develop` branch, merge `unified-canvas` as soon as it is ready
 
 ### TODO before merging the `unified-canvas` branch into the `develop` branch
@@ -41,7 +41,6 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
-- Update all manpages
 - keyboard and misc gui pages: make battery/signal-strength controls the same as on mice page
 - Improve 2D-primitives drawing/rasterization API
 - Improve hardware acceleration with Vulkan/WebGPU (GPGPU)

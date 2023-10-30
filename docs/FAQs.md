@@ -19,7 +19,7 @@ MSRV (Minimum supported Rust version) `Rust 1.69`
 
 ### Q: What can I do to help get new hardware supported
 
-Please find more information in the [Eruption Wiki](https://github.com/X3n0m0rph59/eruption/wiki)
+Please find more information in the [Eruption Wiki](https://github.com/eruption-project/eruption/wiki)
 
 ### Q: My device is listed as `supported`, but Eruption does not bind a driver to it
 

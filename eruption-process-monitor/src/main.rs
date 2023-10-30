@@ -1149,11 +1149,11 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .install()?;
         } else {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .display_env_section(false)
             .install()?;
         }

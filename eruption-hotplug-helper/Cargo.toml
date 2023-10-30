@@ -19,7 +19,7 @@
 
 [package]
 name = "eruption-hotplug-helper"
-version = "0.1.5"
+version = "0.2.0"
 authors = [
   "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
   "The Eruption Development Team",
@@ -27,7 +27,7 @@ authors = [
 edition = "2021"
 rust-version = "1.69"
 description = "A utility used to notify Eruption about device hotplug events"
-repository = "https://github.com/X3n0m0rph59/eruption.git"
+repository = "https://github.com/eruption-project/eruption.git"
 homepage = "https://eruption-project.org"
 keywords = ["eruption", "linux", "led", "driver"]
 categories = ["hardware-support"]
@@ -71,6 +71,7 @@ i18n-embed-fl = "0.7.0"
 rust-embed = { version = "8.0.0", features = ["compression"] }
 unic-langid = "0.9.1"
 lockfile = "0.4.0"
+udev = "0.8.0"
 icecream = "0.1.0"
 eruption-sdk = { path = "../sdk/lib/rust/eruption-rs" }
 

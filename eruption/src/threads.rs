@@ -132,7 +132,7 @@ pub fn spawn_dbus_api_thread(dbus_tx: Sender<Message>) -> plugins::Result<Sender
 
 /// Spawns a device events thread and executes it's main loop
 #[cfg(not(target_os = "windows"))]
-pub fn spawn_device_input_thread(
+pub fn spawn_evdev_input_thread(
     tx: Sender<Option<evdev_rs::InputEvent>>,
     handle: DeviceHandle,
     usb_vid: u16,
@@ -148,6 +148,13 @@ pub fn spawn_device_input_thread(
         .spawn(move || -> Result<()> {
             #[cfg(feature = "profiling")]
             coz::thread_init();
+
+            // wait for Eruption to be started-up completely so that all devices are up and running.
+            // Otherwise we would fail the devices before they are even fully initialized
+            let mut started = crate::STARTUP_COMPLETED_CONDITION.0.lock();
+            while !*started {
+                crate::STARTUP_COMPLETED_CONDITION.1.wait(&mut started);
+            }
 
             let evdev_device = match hwdevices::get_input_dev_from_udev(usb_vid, usb_pid) {
                 Ok(filename) => match File::open(filename.clone()) {
@@ -182,9 +189,12 @@ pub fn spawn_device_input_thread(
                     },
 
                     Err(_e) => return Err(EvdevError::EvdevError {}.into()),
-                },
+                }
 
-                Err(_e) => return Err(EvdevError::UdevError {}.into()),
+                Err(_e) => {
+                    // device does not have an associated evdev device!?
+                    return Err(EvdevError::UdevError {}.into());
+                }
             };
 
             let mut fail = false;
@@ -195,319 +205,314 @@ pub fn spawn_device_input_thread(
                     break Ok(());
                 }
 
-                let device = hwdevices::get_device_from_handle_mut(handle).unwrap();
+                if let Some(device) = hwdevices::find_device_by_handle_mut(handle) {
+                    if device.read().has_failed()? {
+                        warn!("Terminating evdev input thread due to a failed device");
 
-                if device.read().has_failed()? {
-                    warn!("Terminating evdev input thread due to a failed device");
+                        // we need to terminate and then re-enter the main loop to update all global state
+                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
-                    // we need to terminate and then re-enter the main loop to update all global state
-                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                    break Ok(());
-                }
-
-                let device_class = device.read().get_device_class();
-
-                match device_class {
-                    DeviceClass::Keyboard => {
-                        match evdev_device.next_event(
-                            evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING,
-                        ) {
-                            Ok(k) => {
-                                trace!("Key event: {:?}", k.1);
-
-                                // reset "to be dropped" flag
-                                macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
-
-                                // update our internal representation of the keyboard state
-                                if let EventCode::EV_KEY(ref code) = k.1.event_code {
-                                    let is_pressed = k.1.value > 0;
-                                    let index =
-                                        device.read().as_keyboard_device().unwrap().ev_key_to_key_index(*code) as usize;
-
-                                    if let Some(mut v) =
-                                        crate::KEY_STATES.write().get_mut(index)
-                                    {
-                                        *v = is_pressed;
-                                    } else {
-                                        ratelimited::error!("Could not update key states");
-                                    }
-                                }
-
-                                tx.send(Some(k.1)).unwrap_or_else(|e| {
-                                    ratelimited::error!(
-                                        "Could not send a keyboard event to the main thread: {}",
-                                        e
-                                    );
-
-                                    // mark the device as failed
-                                    device.write()
-                                        .fail()
-                                        .map_err(|_e| {
-                                            ratelimited::error!(
-                                    "An error occurred while trying to mark the device as failed"
-                                )
-                                        })
-                                        .ok();
-
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                                    fail = true;
-                                });
-
-                                // update AFK timer
-                                *crate::LAST_INPUT_TIME.write() = Instant::now();
-                            }
-
-                            Err(e) => {
-                                if e.raw_os_error().unwrap() == libc::ENODEV {
-                                    warn!("Keyboard device went away: {}", e);
-
-                                    device.write()
-                                        .close_all()
-                                        .map_err(|_e| {
-                                            ratelimited::error!(
-                                                "An error occurred while closing the device"
-                                            )
-                                        })
-                                        .ok();
-
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                                    return Err(EvdevError::EvdevEventError {}.into());
-                                } else {
-                                    error!("Could not peek an evdev event: {}", e);
-
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                                    return Err(EvdevError::EvdevEventError {}.into());
-                                }
-                            }
-                        }
+                        break Ok(());
                     }
 
-                    DeviceClass::Mouse => {
-                        match evdev_device.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING) {
-                            Ok(k) => {
-                                // trace!("Mouse event: {:?}", k.1);
+                    let device_class = device.read().get_device_class();
+                    match device_class {
+                        DeviceClass::Keyboard => {
+                            match evdev_device.next_event(
+                                evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING,
+                            ) {
+                                Ok(k) => {
+                                    trace!("Key event: {:?}", k.1);
 
-                                // reset "to be dropped" flag
-                                macros::DROP_CURRENT_MOUSE_INPUT.store(false, Ordering::SeqCst);
+                                    // reset "to be dropped" flag
+                                    macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
 
-                                // update our internal representation of the device state
-                                if let EventCode::EV_SYN(code) = k.1.clone().event_code {
-                                    if code == EV_SYN::SYN_DROPPED {
-                                        warn!("Device: {handle} dropped some events, resyncing...");
-                                        evdev_device.next_event(evdev_rs::ReadFlag::SYNC)?;
-                                    } else {
-                                        // directly mirror SYN events to reduce input lag
-                                        if crate::GRAB_MOUSE.load(Ordering::SeqCst) {
-                                            macros::UINPUT_TX
-                                                .read()
-                                                .as_ref()
-                                                .unwrap()
-                                                .send(macros::Message::MirrorMouseEventImmediate(
-                                                    k.1.clone(),
-                                                ))
-                                                .unwrap_or_else(|e| {
-                                                    ratelimited::error!(
-                                                                "Could not send a pending mouse event: {}",
-                                                                e
-                                                            )
-                                                });
+                                    // update our internal representation of the keyboard state
+                                    if let EventCode::EV_KEY(ref code) = k.1.event_code {
+                                        let is_pressed = k.1.value > 0;
+                                        let index =
+                                            device.read().as_keyboard_device().unwrap().ev_key_to_key_index(*code) as usize;
+
+                                        if let Some(mut v) =
+                                            crate::KEY_STATES.write().get_mut(index)
+                                        {
+                                            *v = is_pressed;
+                                        } else {
+                                            ratelimited::error!("Could not update key states");
                                         }
                                     }
-                                } else if let EventCode::EV_KEY(code) =
-                                    k.1.clone().event_code
-                                {
-                                    let is_pressed = k.1.value > 0;
-                                    match device.read().as_mouse_device().unwrap().ev_key_to_button_index(code) {
-                                        Ok(index) => {
-                                            if let Some(mut v) =
-                                                crate::BUTTON_STATES.write().get_mut(index as usize)
-                                            {
-                                                *v = is_pressed;
-                                            } else {
-                                                ratelimited::error!("Could not update mouse-button states");
-                                            }
-                                        }
 
-                                        Err(e) => {
-                                            tracing::warn!("Mouse event for '{code:?}' not processed: {e}")
-                                        }
-                                    }
-                                } else if let EventCode::EV_REL(code) =
-                                    k.1.clone().event_code
-                                {
-                                    // ignore mouse wheel related events here
-                                    if code != EV_REL::REL_WHEEL
-                                        && code != EV_REL::REL_HWHEEL
-                                        && code != EV_REL::REL_WHEEL_HI_RES
-                                        && code != EV_REL::REL_HWHEEL_HI_RES
-                                    {
-                                        // immediately mirror pointer motion events to reduce input-lag.
-                                        // This currently prohibits further manipulation of pointer motion events
-                                        if crate::GRAB_MOUSE.load(Ordering::SeqCst) {
-                                            macros::UINPUT_TX
-                                                .read()
-                                                .as_ref()
-                                                .unwrap()
-                                                .send(macros::Message::MirrorMouseEventImmediate(
-                                                    k.1.clone(),
-                                                ))
-                                                .unwrap_or_else(|e| {
-                                                    ratelimited::error!(
-                                                                "Could not send a pending mouse event: {}",
-                                                                e
-                                                            )
-                                                });
-                                        }
-                                    }
-                                }
-
-                                tx.send(Some(k.1)).unwrap_or_else(|e| {
-                                    ratelimited::error!(
-                                                "Could not send a mouse event to the main thread: {}",
-                                                e
-                                            );
-
-                                    // mark the device as failed
-                                    device.write()
-                                        .fail()
-                                        .map_err(|_e| {
-                                            ratelimited::error!(
-                                                    "An error occurred while trying to mark the device as failed"
-                                                )
-                                        })
-                                        .ok();
-
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                                    fail = true;
-                                });
-
-                                // update AFK timer
-                                *crate::LAST_INPUT_TIME.write() = Instant::now();
-                            }
-
-                            Err(e) => {
-                                if e.raw_os_error().unwrap() == libc::ENODEV {
-                                    warn!("Mouse device went away: {}", e);
-
-
-                                    device.write()
-                                        .close_all()
-                                        .map_err(|_e| {
-                                            ratelimited::error!(
-                                                        "An error occurred while closing the device"
-                                                    )
-                                        })
-                                        .ok();
-
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                                    return Err(EvdevError::EvdevEventError {}.into());
-                                } else {
-                                    error!("Could not peek an evdev event: {}", e);
-
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                                    return Err(EvdevError::EvdevEventError {}.into());
-                                }
-                            }
-                        }
-                    }
-
-                    DeviceClass::Misc => {
-                        match evdev_device.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING) {
-                            Ok(k) => {
-                                trace!("Misc input event: {:?}", k.1);
-
-                                // reset "to be dropped" flag
-                                // macros::DROP_CURRENT_MISC_INPUT.store(false, Ordering::SeqCst);
-
-                                // directly mirror pointer motion events to reduce input lag.
-                                // This currently prohibits further manipulation of pointer motion events
-                                macros::UINPUT_TX
-                                    .read()
-                                    .as_ref()
-                                    .unwrap()
-                                    .send(macros::Message::MirrorKey(k.1.clone()))
-                                    .unwrap_or_else(|e| {
+                                    tx.send(Some(k.1)).unwrap_or_else(|e| {
                                         ratelimited::error!(
-                                                "Could not send a pending misc device input event: {}",
-                                                e
-                                            )
-                                    });
-
-                                tx.send(Some(k.1)).unwrap_or_else(|e| {
-                                    ratelimited::error!(
-                                            "Could not send a misc device input event to the main thread: {}",
+                                            "Could not send a keyboard event to the main thread: {}",
                                             e
                                         );
 
-                                    // mark the device as failed
-                                    device.write()
-                                        .fail()
-                                        .map_err(|_e| {
-                                            ratelimited::error!(
-                                                "An error occurred while trying to mark the device as failed"
-                                            )
-                                        })
-                                        .ok();
+                                        // mark the device as failed
+                                       device
+                                            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                            .and_then(|mut device| {
+                                        device.fail().map_err(|e| {
+                                                    ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
+                                                })
+                                                .ok()
+                                            });
 
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
-                                    fail = true;
-                                });
+                                        fail = true;
+                                    });
 
-                                // update AFK timer
-                                *crate::LAST_INPUT_TIME.write() = Instant::now();
-                            }
+                                    // update AFK timer
+                                    *crate::LAST_INPUT_TIME.write() = Instant::now();
+                                }
 
-                            Err(e) => {
-                                if e.raw_os_error().unwrap() == libc::ENODEV {
-                                    warn!("Misc device went away: {}", e);
+                                Err(e) => {
+                                    if e.raw_os_error().unwrap() == libc::ENODEV {
+                                        warn!("Keyboard device disappeared: {}", e);
 
+                                        device
+                                        .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                        .and_then(|mut device| {
+                                    device.close_all().map_err(|e| {
+                                                ratelimited::error!("An error occurred while closing the device: {e}")
+                                            })
+                                            .ok()
+                                        });
 
-                                    device.write()                                        .close_all()
-                                        .map_err(|_e| {
-                                            ratelimited::error!(
-                                                    "An error occurred while closing the device"
-                                                )
-                                        })
-                                        .ok();
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                                        return Err(EvdevError::EvdevEventError {}.into());
+                                    } else {
+                                        error!("Could not peek an evdev event: {}", e);
 
-                                    return Err(EvdevError::EvdevEventError {}.into());
-                                } else {
-                                    error!("Could not peek evdev event: {}", e);
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
-                                    // we need to terminate and then re-enter the main loop to update all global state
-                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                                    return Err(EvdevError::EvdevEventError {}.into());
+                                        return Err(EvdevError::EvdevEventError {}.into());
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    _ => {
-                        tracing::error!("Invalid device class");
+                        DeviceClass::Mouse => {
+                            match evdev_device.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING) {
+                                Ok(k) => {
+                                    // trace!("Mouse event: {:?}", k.1);
+
+                                    // reset "to be dropped" flag
+                                    macros::DROP_CURRENT_MOUSE_INPUT.store(false, Ordering::SeqCst);
+
+                                    // update our internal representation of the device state
+                                    if let EventCode::EV_SYN(code) = k.1.clone().event_code {
+                                        if code == EV_SYN::SYN_DROPPED {
+                                            warn!("Device {handle} dropped some events, resyncing...");
+                                            evdev_device.next_event(evdev_rs::ReadFlag::SYNC)?;
+                                        } else {
+                                            // directly mirror SYN events to reduce input lag
+                                  macros::UINPUT_TX
+                                                .read()
+                                                .as_ref()
+                                                .unwrap()
+                                                .send(macros::Message::MirrorMouseEventImmediate(
+                                                    k.1.clone(),
+                                                ))
+                                                .unwrap_or_else(|e| {
+                                                    ratelimited::error!(
+                                                                "Could not send a pending mouse event: {}",
+                                                                e
+                                                            )
+                                                });
+                                        }
+                                    } else if let EventCode::EV_KEY(code) =
+                                        k.1.clone().event_code
+                                    {
+                                        let is_pressed = k.1.value > 0;
+                                        match device.read().as_mouse_device().unwrap().ev_key_to_button_index(code) {
+                                            Ok(index) => {
+                                                if let Some(mut v) =
+                                                    crate::BUTTON_STATES.write().get_mut(index as usize)
+                                                {
+                                                    *v = is_pressed;
+                                                } else {
+                                                    ratelimited::error!("Could not update mouse-button states");
+                                                }
+                                            }
+
+                                            Err(e) => {
+                                                tracing::warn!("Mouse event for '{code:?}' not processed: {e}")
+                                            }
+                                        }
+                                    } else if let EventCode::EV_REL(code) =
+                                        k.1.clone().event_code
+                                    {
+                                        // ignore mouse wheel related events here
+                                        if code != EV_REL::REL_WHEEL
+                                            && code != EV_REL::REL_HWHEEL
+                                            && code != EV_REL::REL_WHEEL_HI_RES
+                                            && code != EV_REL::REL_HWHEEL_HI_RES
+                                        {
+                                            // immediately mirror pointer motion events to reduce input-lag.
+                                            // This currently prohibits further manipulation of pointer motion events
+                                  macros::UINPUT_TX
+                                                .read()
+                                                .as_ref()
+                                                .unwrap()
+                                                .send(macros::Message::MirrorMouseEventImmediate(
+                                                    k.1.clone(),
+                                                ))
+                                                .unwrap_or_else(|e| {
+                                                    ratelimited::error!(
+                                                                "Could not send a pending mouse event: {}",
+                                                                e
+                                                            )
+                                                });
+                                        }
+                                    }
+
+                                    tx.send(Some(k.1)).unwrap_or_else(|e| {
+                                        ratelimited::error!(
+                                                    "Could not send a mouse event to the main thread: {}",
+                                                    e
+                                                );
+
+                                        // mark the device as failed
+                                       device
+                                            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                            .and_then(|mut device| {
+                                        device.fail().map_err(|e| {
+                                                    ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
+                                                })
+                                                .ok()
+                                            });
+
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                                        fail = true;
+                                    });
+
+                                    // update AFK timer
+                                    *crate::LAST_INPUT_TIME.write() = Instant::now();
+                                }
+
+                                Err(e) => {
+                                    if e.raw_os_error().unwrap() == libc::ENODEV {
+                                        warn!("Mouse device disappeared: {}", e);
+
+                                     device
+                                        .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                        .and_then(|mut device| {
+                                    device.close_all().map_err(|e| {
+                                                ratelimited::error!("An error occurred while closing the device: {e}")
+                                            })
+                                            .ok()
+                                        });
+
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                                        return Err(EvdevError::EvdevEventError {}.into());
+                                    } else {
+                                        error!("Could not peek an evdev event: {}", e);
+
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                                        return Err(EvdevError::EvdevEventError {}.into());
+                                    }
+                                }
+                            }
+                        }
+
+                        DeviceClass::Misc => {
+                            match evdev_device.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING) {
+                                Ok(k) => {
+                                    trace!("Misc input event: {:?}", k.1);
+
+                                    // reset "to be dropped" flag
+                                    // macros::DROP_CURRENT_MISC_INPUT.store(false, Ordering::SeqCst);
+
+                                    // directly mirror pointer motion events to reduce input lag.
+                                    // This currently prohibits further manipulation of pointer motion events
+                                    macros::UINPUT_TX
+                                        .read()
+                                        .as_ref()
+                                        .unwrap()
+                                        .send(macros::Message::MirrorKey(k.1.clone()))
+                                        .unwrap_or_else(|e| {
+                                            ratelimited::error!(
+                                                    "Could not send a pending misc device input event: {}",
+                                                    e
+                                                )
+                                        });
+
+                                    tx.send(Some(k.1)).unwrap_or_else(|e| {
+                                        ratelimited::error!(
+                                                "Could not send a misc device input event to the main thread: {}",
+                                                e
+                                            );
+
+                                        // mark the device as failed
+                                       device
+                                            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                            .and_then(|mut device| {
+                                        device.fail().map_err(|e| {
+                                                    ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
+                                                })
+                                                .ok()
+                                            });
+
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                                        fail = true;
+                                    });
+
+                                    // update AFK timer
+                                    *crate::LAST_INPUT_TIME.write() = Instant::now();
+                                }
+
+                                Err(e) => {
+                                    if e.raw_os_error().unwrap() == libc::ENODEV {
+                                        warn!("Misc device disappeared: {}", e);
+
+                                     device
+                                        .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                                        .and_then(|mut device| {
+                                    device.close_all().map_err(|e| {
+                                                ratelimited::error!("An error occurred while closing the device: {e}")
+                                            })
+                                            .ok()
+                                        });
+
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                                        return Err(EvdevError::EvdevEventError {}.into());
+                                    } else {
+                                        error!("Could not peek evdev event: {}", e);
+
+                                        // we need to terminate and then re-enter the main loop to update all global state
+                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                                        return Err(EvdevError::EvdevEventError {}.into());
+                                    }
+                                }
+                            }
+                        }
+
+                        _ => {
+                            tracing::error!("Invalid device class");
+                        }
                     }
-                }
+            } else {
+                ratelimited::error!("Could not find the device using its handle");
             }
         }
-    )?;
+    })?;
 
     Ok(())
 }
@@ -766,21 +771,24 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             if !drop_frame {
                                 crate::DEVICES.read().par_iter().for_each(|(_handle, device)| {
                                     // NOTE: We may deadlock here, so be careful
-                                    if let Some(mut dev) = device.try_write_for(Duration::from_millis(25)) {
+                                    if let Some(mut dev) = device.try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS_SHORT) {
                                         if let Ok(is_initialized) = dev.is_initialized() {
                                             if is_initialized {
-                                                    if let Err(e) = dev.send_led_map(&script::LED_MAP.read()) {
-                                                        ratelimited::error!("Error sending LED map to a device: {}", e);
+                                                if let Err(e) = dev.send_led_map(&script::LED_MAP.read()) {
+                                                    ratelimited::error!("Error sending LED map to a device: {}", e);
 
-                                                        ratelimited::warn!("Trying to unplug the failed device");
-                                                        // let _ = device.write().fail();
+                                                    ratelimited::warn!("Trying to unplug the failed device...");
 
-                                                        // we need to terminate and then re-enter the main loop to update all global state
-                                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-                                                    }
+                                                    dev.fail().unwrap_or_else(|e| {
+                                                        error!("Could not mark a device as failed: {}", e);
+                                                    });
 
+                                                    // we need to terminate and then re-enter the main loop to update all global state
+                                                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                                                }
                                             } else {
-                                                ratelimited::warn!("Skipping uninitialized device");
+                                                ratelimited::warn!("Skipping rendering to an uninitialized device");
                                             }
                                         } else {
                                             warn!("Could not query device status");
@@ -794,9 +802,9 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                 script::LAST_RENDERED_LED_MAP
                                     .write()
                                     .copy_from_slice(&script::LED_MAP.read());
-                            }
 
                             fps_counter += 1;
+                            }
                         }
 
                         // calculate and log fps each second

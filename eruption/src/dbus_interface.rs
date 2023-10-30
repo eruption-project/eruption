@@ -74,6 +74,9 @@ pub enum DbusApiError {
 
     #[error("Invalid parameter")]
     InvalidParameter {},
+
+    #[error("Update of parameter value failed due to a synchronization error")]
+    LockingFailed {},
     // #[error("Operation not supported")]
     // OpNotSupported {},
 }

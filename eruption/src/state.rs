@@ -217,7 +217,15 @@ pub fn init_runtime_state(device: hwdevices::Device) -> Result<()> {
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        device.write().set_brightness(brightness)?;
+        device
+            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+            .and_then(|mut device| {
+                device.set_brightness(brightness).unwrap_or_else(|e| {
+                    error!("Could not set brightness: {e}");
+                });
+
+                Some(device)
+            });
     }
 
     Ok(())
