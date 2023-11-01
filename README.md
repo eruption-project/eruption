@@ -195,6 +195,7 @@ systemctl --user enable --now eruption-process-monitor.service
 
 sudo systemctl enable --now eruption.service
 ```
+Additionally, [Chaotic-AUR](https://aur.chaotic.cx) is providing pre-compiled binaries for those who don't want to go through the compilation process with every update.
 
 ### Fedora based
 
