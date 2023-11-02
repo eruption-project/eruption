@@ -56,7 +56,10 @@ libc = "0.2.149"
 tempfile = "3.8.1"
 rayon = "1.8.0"
 jwalk = "0.8.1"
-parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = [
+  "deadlock_detection",
+  "hardware-lock-elision",
+] }
 tokio = { version = "1.33.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.40"
 tracing-journald = "0.3.0"

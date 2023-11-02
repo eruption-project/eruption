@@ -48,7 +48,10 @@ colored = "2.0.4"
 comfy-table = "7.1.0"
 libc = "0.2.149"
 nix = { version = "0.27.1", features = ["fs"] }
-parking_lot = { version = "0.12.1", features = ["deadlock_detection"] }
+parking_lot = { version = "0.12.1", features = [
+  "deadlock_detection",
+  "hardware-lock-elision",
+] }
 tokio = { version = "1.33.0", features = ["full", "tracing", "test-util"] }
 tracing = "0.1.40"
 tracing-journald = "0.3.0"
