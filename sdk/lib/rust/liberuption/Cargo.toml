@@ -42,7 +42,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 cfg-if = "1.0.0"
-thiserror = "1.0.48"
+thiserror = "1.0.50"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 lazy_static = "1.4.0"
@@ -54,7 +54,7 @@ icecream = "0.1.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
-thiserror = "1.0.48"
+thiserror = "1.0.50"
 
 [build-dependencies]
 cbindgen = "0.26.0"
