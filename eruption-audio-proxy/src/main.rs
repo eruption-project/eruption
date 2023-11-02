@@ -34,7 +34,7 @@ use std::{env, thread};
 use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
-use flume::{unbounded, Receiver};
+use flume::{bounded, Receiver};
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -541,7 +541,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             info!("Starting up...");
 
             // register ctrl-c handler
-            let (ctrl_c_tx, ctrl_c_rx) = unbounded();
+            let (ctrl_c_tx, ctrl_c_rx) = bounded(32);
             ctrlc::set_handler(move || {
                 QUIT.store(true, Ordering::SeqCst);
 

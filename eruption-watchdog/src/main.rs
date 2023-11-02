@@ -32,7 +32,7 @@ use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 // use colored::*;
-use flume::unbounded;
+use flume::bounded;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{
     env,
@@ -207,7 +207,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // register ctrl-c handler
-    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, _ctrl_c_rx) = bounded(32);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 

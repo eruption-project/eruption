@@ -50,7 +50,7 @@ use config::Config;
 use dbus::blocking::stdintf::org_freedesktop_dbus::PropertiesPropertiesChanged;
 use dbus::blocking::Connection;
 use dbus_client::{profile, slot};
-use flume::{unbounded, Receiver, Sender};
+use flume::{bounded, Receiver, Sender};
 use hotwatch::EventKind;
 use hotwatch::{
     blocking::{Flow, Hotwatch},
@@ -744,7 +744,7 @@ pub enum DbusApiEvent {
 
 /// Spawns the D-Bus API thread and executes it's main loop
 fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sender<DbusApiEvent>> {
-    let (dbus_api_tx, dbus_api_rx) = unbounded();
+    let (dbus_api_tx, dbus_api_rx) = bounded(32);
 
     thread::Builder::new()
         .name("dbus-interface".into())
@@ -1099,7 +1099,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     );
 
     // register ctrl-c handler
-    let (ctrl_c_tx, ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, ctrl_c_rx) = bounded(32);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
@@ -1155,19 +1155,19 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             util::create_dir(&rules_dir)?;
             util::create_rules_file_if_not_exists(&rules_file)?;
 
-            let (dbusevents_tx, dbusevents_rx) = unbounded();
+            let (dbusevents_tx, dbusevents_rx) = bounded(32);
             spawn_dbus_thread(dbusevents_tx)?;
 
             // initialize the D-Bus API
-            let (dbus_tx, _dbus_rx) = unbounded();
+            let (dbus_tx, _dbus_rx) = bounded(32);
             let dbus_api_tx = spawn_dbus_api_thread(dbus_tx)?;
 
-            let (fsevents_tx, fsevents_rx) = unbounded();
+            let (fsevents_tx, fsevents_rx) = bounded(32);
             register_filesystem_watcher(fsevents_tx, rules_file)?;
 
             // configure plugins
             #[cfg(feature = "sensor-procmon")]
-            let (sysevents_tx, sysevents_rx) = unbounded();
+            let (sysevents_tx, sysevents_rx) = bounded(32);
 
             #[cfg(feature = "sensor-procmon")]
             if let Some(mut s) = sensors::find_sensor_by_id("process") {
@@ -1180,7 +1180,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             #[cfg(feature = "sensor-wayland")]
-            let (wayland_tx, wayland_rx) = unbounded();
+            let (wayland_tx, wayland_rx) = bounded(32);
 
             #[cfg(feature = "sensor-wayland")]
             if let Some(mut s) = sensors::find_sensor_by_id("wayland") {

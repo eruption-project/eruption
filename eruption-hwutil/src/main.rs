@@ -24,7 +24,7 @@ use clap::Parser;
 use clap_complete::Shell;
 use colored::*;
 use config::Config;
-use flume::unbounded;
+use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -275,7 +275,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     // register ctrl-c handler
-    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, _ctrl_c_rx) = bounded(32);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 

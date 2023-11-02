@@ -20,7 +20,7 @@
 */
 
 use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, UninitDevice};
-use flume::{unbounded, Sender};
+use flume::{bounded, Sender};
 use lazy_static::lazy_static;
 use mlua::prelude::*;
 use parking_lot::RwLock;
@@ -567,7 +567,7 @@ impl MacrosPlugin {
     }
 
     fn spawn_uinput_thread() -> Result<()> {
-        let (uinput_tx, uinput_rx) = unbounded();
+        let (uinput_tx, uinput_rx) = bounded(32);
 
         thread::Builder::new()
             .name("uinput".into())

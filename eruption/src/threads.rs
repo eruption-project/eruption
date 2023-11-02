@@ -21,7 +21,7 @@
 
 use evdev_rs::enums::EV_SYN;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
-use flume::{unbounded, Receiver, Sender};
+use flume::{bounded, Receiver, Sender};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::path::Path;
@@ -52,7 +52,7 @@ pub enum DbusApiEvent {
 
 /// Spawns the D-Bus API thread and executes it's main loop
 pub fn spawn_dbus_api_thread(dbus_tx: Sender<Message>) -> plugins::Result<Sender<DbusApiEvent>> {
-    let (dbus_api_tx, dbus_api_rx) = unbounded();
+    let (dbus_api_tx, dbus_api_rx) = bounded(32);
 
     thread::Builder::new()
         .name("dbus-interface".into())

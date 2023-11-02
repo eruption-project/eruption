@@ -24,7 +24,7 @@ use clap::Parser;
 use clap_complete::Shell;
 use colored::*;
 use evdev_rs::{Device, DeviceWrapper, GrabMode};
-use flume::{unbounded, Sender};
+use flume::{bounded, Sender};
 use hwdevices::{EvdevError, HwDevice, KeyboardHidEvent, RGBA};
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -410,7 +410,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     // register ctrl-c handler
-    let (ctrl_c_tx, ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, ctrl_c_rx) = bounded(32);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
@@ -522,7 +522,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 println!("done");
                                 println!();
 
-                                let (kbd_tx, kbd_rx) = unbounded();
+                                let (kbd_tx, kbd_rx) = bounded(32);
                                 info!("Spawning evdev input thread...");
                                 spawn_keyboard_input_thread(
                                     hwdev.clone(),
@@ -697,7 +697,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 println!("done");
                                 println!();
 
-                                let (kbd_tx, kbd_rx) = unbounded();
+                                let (kbd_tx, kbd_rx) = bounded(32);
                                 info!("Spawning evdev input thread...");
                                 spawn_keyboard_input_thread(
                                     hwdev.clone(),
@@ -836,7 +836,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 println!("done");
                                 println!();
 
-                                let (kbd_tx, kbd_rx) = unbounded();
+                                let (kbd_tx, kbd_rx) = bounded(32);
                                 info!("Spawning evdev input thread...");
                                 spawn_keyboard_input_thread(
                                     hwdev.clone(),
@@ -1047,7 +1047,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 println!("done");
                                 println!();
 
-                                let (kbd_tx, kbd_rx) = unbounded();
+                                let (kbd_tx, kbd_rx) = bounded(32);
                                 info!("Spawning evdev input thread...");
                                 spawn_keyboard_input_thread(
                                     hwdev.clone(),
@@ -1264,7 +1264,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 println!("done");
                                 println!();
 
-                                let (kbd_tx, kbd_rx) = unbounded();
+                                let (kbd_tx, kbd_rx) = bounded(32);
                                 info!("Spawning evdev input thread...");
                                 spawn_keyboard_input_thread(
                                     hwdev.clone(),

@@ -23,7 +23,7 @@ use clap::Parser;
 use config::Config;
 use eframe::{NativeOptions, Theme};
 use egui::{Context, Vec2};
-use flume::unbounded;
+use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -387,7 +387,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     if !QUIT.load(Ordering::SeqCst) {
         // spawn our event loop
-        let (events_tx, _events_rx) = unbounded();
+        let (events_tx, _events_rx) = bounded(32);
         threads::spawn_events_thread(events_tx)?;
 
         // build and map main window
@@ -420,7 +420,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 // fn register_sigint_handler() {
 //     // register ctrl-c handler
-//     let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+//     let (ctrl_c_tx, _ctrl_c_rx) = bounded(32);
 //     ctrlc::set_handler(move || {
 //         QUIT.store(true, Ordering::SeqCst);
 

@@ -24,7 +24,7 @@ use crate::{
     spawn_keyboard_input_thread, spawn_misc_input_thread, spawn_mouse_input_thread, DbusApiEvent,
     SwitchProfileResult, SDK_SUPPORT_ACTIVE,
 };
-use flume::unbounded;
+use flume::bounded;
 use lazy_static::lazy_static;
 use mlua::prelude::*;
 use nix::poll::{poll, PollFd, PollFlags};
@@ -113,7 +113,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                     // spawn a thread to handle keyboard input
                     info!("Spawning keyboard input thread...");
 
-                    let (kbd_tx, kbd_rx) = unbounded();
+                    let (kbd_tx, kbd_rx) = bounded(32);
                     spawn_keyboard_input_thread(
                         kbd_tx.clone(),
                         device.clone(),
@@ -167,8 +167,8 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         let usb_vid = device.read().get_usb_vid();
                         let usb_pid = device.read().get_usb_pid();
 
-                        let (mouse_tx, mouse_rx) = unbounded();
-                        // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
+                        let (mouse_tx, mouse_rx) = bounded(32);
+                        // let (mouse_secondary_tx, _mouse_secondary_rx) = bounded(32);
 
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
@@ -243,7 +243,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         // spawn a thread to handle keyboard input
                         info!("Spawning misc device input thread...");
 
-                        let (misc_tx, misc_rx) = unbounded();
+                        let (misc_tx, misc_rx) = bounded(32);
                         spawn_misc_input_thread(
                             misc_tx.clone(),
                             device.clone(),
@@ -273,7 +273,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
                         let usb_pid = device.read().get_usb_pid();
 
                         // insert an unused rx
-                        let (_misc_tx, misc_rx) = unbounded();
+                        let (_misc_tx, misc_rx) = bounded(32);
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
 
                         debug!("Sending device hotplug notification...");

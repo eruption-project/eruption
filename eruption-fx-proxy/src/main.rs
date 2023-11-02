@@ -23,7 +23,7 @@ use clap::CommandFactory;
 use clap::Parser;
 use clap_complete::Shell;
 
-use flume::unbounded;
+use flume::bounded;
 use flume::Receiver;
 use flume::Sender;
 use i18n_embed::{
@@ -172,7 +172,7 @@ pub enum DbusApiEvent {}
 
 /// Spawns the D-Bus API thread and executes it's main loop
 fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sender<DbusApiEvent>> {
-    let (dbus_api_tx, dbus_api_rx) = unbounded();
+    let (dbus_api_tx, dbus_api_rx) = bounded(32);
 
     thread::Builder::new()
         .name("dbus-interface".into())
@@ -310,7 +310,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             info!("Starting up...");
 
             // register ctrl-c handler
-            let (ctrl_c_tx, ctrl_c_rx) = unbounded();
+            let (ctrl_c_tx, ctrl_c_rx) = bounded(32);
             ctrlc::set_handler(move || {
                 QUIT.store(true, Ordering::SeqCst);
 
@@ -321,7 +321,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
             // initialize the D-Bus API
-            let (dbus_tx, _dbus_rx) = unbounded();
+            let (dbus_tx, _dbus_rx) = bounded(32);
             let _dbus_api_tx = spawn_dbus_api_thread(dbus_tx)?;
 
             // register all available screenshot backends

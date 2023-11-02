@@ -28,7 +28,7 @@ use comfy_table::{
     modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL, Cell, ContentArrangement, Table,
 };
 use evdev_rs::enums::{EventCode, EV_KEY};
-use flume::unbounded;
+use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
     DesktopLanguageRequester,
@@ -362,7 +362,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
         .unwrap_or_else(|e| error!("Could not spawn deadlock detector thread: {}", e));
 
     // register ctrl-c handler
-    let (ctrl_c_tx, _ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, _ctrl_c_rx) = bounded(32);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 

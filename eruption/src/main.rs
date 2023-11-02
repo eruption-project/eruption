@@ -21,7 +21,7 @@
 
 use clap::{Arg, Command};
 use config::Config;
-use flume::{select::SelectError, unbounded, Receiver, Selector, Sender};
+use flume::{bounded, select::SelectError, Receiver, Selector, Sender};
 use hotwatch::{
     blocking::{Flow, Hotwatch},
     notify::event::ModifyKind,
@@ -445,7 +445,7 @@ pub fn switch_profile(
 
         // spawn a new set of Lua VMs, with scripts from the failsafe profile
         for (thread_idx, manifest) in profile.manifests.values().enumerate() {
-            let (lua_tx, lua_rx) = unbounded();
+            let (lua_tx, lua_rx) = bounded(32);
             let parameters = &manifest.get_merged_parameters(&profile);
             threads::spawn_lua_thread(thread_idx, lua_rx, &manifest.script_file, parameters)
                 .unwrap_or_else(|e| {
@@ -547,7 +547,7 @@ pub fn switch_profile(
 
                 // now spawn a new set of Lua VMs, with scripts from the new profile
                 for (thread_idx, manifest) in profile.manifests.values().enumerate() {
-                    let (lua_tx, lua_rx) = unbounded();
+                    let (lua_tx, lua_rx) = bounded(32);
                     if let Err(e) = threads::spawn_lua_thread(
                         thread_idx,
                         lua_rx,
@@ -1693,7 +1693,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     );
 
     // register ctrl-c handler
-    let (ctrl_c_tx, ctrl_c_rx) = unbounded();
+    let (ctrl_c_tx, ctrl_c_rx) = bounded(32);
     ctrlc::set_handler(move || {
         QUIT.store(true, Ordering::SeqCst);
 
@@ -1799,7 +1799,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                     // spawn a thread to handle keyboard input
                     info!("Spawning keyboard input thread...");
 
-                    let (kbd_tx, kbd_rx) = unbounded();
+                    let (kbd_tx, kbd_rx) = bounded(32);
                     threads::spawn_keyboard_input_thread(
                         kbd_tx.clone(),
                         device.clone(),
@@ -1825,8 +1825,8 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         let usb_vid = device.read().get_usb_vid();
                         let usb_pid = device.read().get_usb_pid();
 
-                        let (mouse_tx, mouse_rx) = unbounded();
-                        // let (mouse_secondary_tx, _mouse_secondary_rx) = unbounded();
+                        let (mouse_tx, mouse_rx) = bounded(32);
+                        // let (mouse_secondary_tx, _mouse_secondary_rx) = bounded(32);
 
                         // spawn a thread to handle mouse input
                         info!("Spawning mouse input thread...");
@@ -1879,7 +1879,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         // spawn a thread to handle keyboard input
                         info!("Spawning misc device input thread...");
 
-                        let (misc_tx, misc_rx) = unbounded();
+                        let (misc_tx, misc_rx) = bounded(32);
                         threads::spawn_misc_input_thread(
                             misc_tx.clone(),
                             device.clone(),
@@ -1895,7 +1895,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
                     } else {
                         // insert an unused rx
-                        let (_misc_tx, misc_rx) = unbounded();
+                        let (_misc_tx, misc_rx) = bounded(32);
                         crate::MISC_DEVICES_RX.write().push(misc_rx);
                     }
 
@@ -1927,7 +1927,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 // initialize the D-Bus API
                 info!("Initializing D-Bus API...");
-                let (dbus_tx, dbus_rx) = unbounded();
+                let (dbus_tx, dbus_rx) = bounded(32);
                 let dbus_api_tx = threads::spawn_dbus_api_thread(dbus_tx).unwrap_or_else(|e| {
                     error!("Could not spawn a thread: {}", e);
                     panic!()
@@ -1935,13 +1935,13 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 *DBUS_API_TX.lock() = Some(dbus_api_tx.clone());
 
-                let (fsevents_tx, fsevents_rx) = unbounded();
+                let (fsevents_tx, fsevents_rx) = bounded(32);
                 register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))
                     .unwrap_or_else(|e| error!("Could not register file changes watcher: {}", e));
 
                 // initialize the device I/O thread
                 info!("Initializing device I/O thread...");
-                let (dev_io_tx, dev_io_rx) = unbounded();
+                let (dev_io_tx, dev_io_rx) = bounded(32);
                 threads::spawn_device_io_thread(dev_io_rx).unwrap_or_else(|e| {
                     error!("Could not spawn the render thread: {}", e);
                     panic!()

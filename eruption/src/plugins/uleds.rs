@@ -75,7 +75,7 @@ impl UledsPlugin {
     }
 
     pub fn spawn_uleds_thread() -> Result<()> {
-        // let (uleds_tx, uleds_rx) = unbounded();
+        // let (uleds_tx, uleds_rx) = bounded(32);
 
         thread::Builder::new()
             .name("uleds".into())
