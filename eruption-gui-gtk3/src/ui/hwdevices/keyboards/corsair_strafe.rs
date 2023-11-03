@@ -77,7 +77,7 @@ impl Keyboard for CorsairStrafe {
         context.set_source_pixbuf(pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
-        let led_colors = crate::COLOR_MAP.lock();
+        let led_colors = crate::CANVAS.read();
 
         let layout = pangocairo::create_layout(context);
         FONT_DESC.with(|f| -> Result<()> {

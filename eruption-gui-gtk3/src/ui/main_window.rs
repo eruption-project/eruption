@@ -1233,7 +1233,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                 || page == Pages::Mice as usize
                 || page == Pages::Misc as usize
             {
-                crate::update_color_map().map_err(|e| {
+                crate::update_canvas().map_err(|e| {
                     crate::LOST_CONNECTION.store(true, Ordering::SeqCst);
 
                     ratelimited::error!("Could not update the color map: {e}");

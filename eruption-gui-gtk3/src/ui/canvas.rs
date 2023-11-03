@@ -1020,7 +1020,7 @@ fn render_canvas(
 
     let scale_factor = 1.0; // width / (constants::CANVAS_WIDTH as f64 * 15.0);
 
-    let led_map = crate::COLOR_MAP.lock();
+    let led_map = crate::CANVAS.read();
 
     let canvas = ArrayView2::from_shape(
         (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),

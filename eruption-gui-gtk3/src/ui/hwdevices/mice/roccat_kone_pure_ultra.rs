@@ -61,7 +61,7 @@ impl Mouse for RoccatKonePureUltra {
         let width = da.allocated_width() as f64;
         let height = da.allocated_height() as f64;
 
-        let led_colors = crate::COLOR_MAP.lock();
+        let led_colors = crate::CANVAS.read();
 
         let pixbuf = &self.pixbuf;
 

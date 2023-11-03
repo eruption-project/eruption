@@ -90,7 +90,7 @@ impl Keyboard for WootingTwoHeArm {
         context.set_source_pixbuf(pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
-        let led_colors = crate::COLOR_MAP.lock();
+        let led_colors = crate::CANVAS.read();
 
         if let Some(allocated_zone) = ZONES.read().iter().find(|&z| z.device == Some(self.device)) {
             let canvas = ArrayView2::from_shape(

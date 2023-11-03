@@ -63,7 +63,7 @@ impl MiscDevice for RoccatElo71Air {
         let width = da.allocated_width() as f64;
         let height = da.allocated_height() as f64;
 
-        let led_colors = crate::COLOR_MAP.lock();
+        let led_colors = crate::CANVAS.read();
 
         let scale_factor = (height / pixbuf.height() as f64) * 0.975;
 

@@ -25,9 +25,9 @@
 
 .client {
   padding: 12px;
-  /* background-image: -gtk-gradient(linear, 0 0, 1 1,
+  background-image: -gtk-gradient(linear, 0 0, 1 1,
       color-stop(0, rgb(49, 49, 49)),
-      color-stop(1, rgb(23, 23, 23))); */
+      color-stop(1, rgb(23, 23, 23)));
 }
 
 .icon {

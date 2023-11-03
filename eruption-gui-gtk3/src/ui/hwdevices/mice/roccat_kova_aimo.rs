@@ -65,7 +65,7 @@ impl Mouse for RoccatKovaAimo {
         // context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
         // context.paint()?;
 
-        let led_colors = crate::COLOR_MAP.lock();
+        let led_colors = crate::CANVAS.read();
 
         // paint all cells in the "mouse zone" of the canvas
         for i in 144..(144 + 36) {

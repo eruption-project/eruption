@@ -157,7 +157,7 @@ lazy_static! {
     pub static ref CONNECTION: Arc<Mutex<Option<Connection>>> = Arc::new(Mutex::new(None));
 
     /// Current LED color map
-    pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
+    pub static ref CANVAS: Arc<RwLock<Vec<RGBA>>> = Arc::new(RwLock::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
 
     /// Device status
     pub static ref DEVICE_STATUS: Arc<RwLock<HashMap<u64, DeviceStatus>>> = Arc::new(RwLock::new(HashMap::new()));
@@ -245,8 +245,8 @@ Copyright (c) 2019-2023, The Eruption Development Team
     );
 }
 
-/// Update the global color map vector
-pub fn update_color_map() -> Result<()> {
+/// Update the global canvas
+pub fn update_canvas() -> Result<()> {
     if let Some(connection) = crate::CONNECTION.lock().as_ref() {
         if let Ok(canvas) = connection.get_canvas() {
             let mut colors = Vec::with_capacity(constants::CANVAS_SIZE);
@@ -261,8 +261,8 @@ pub fn update_color_map() -> Result<()> {
                 colors.push(color);
             }
 
-            let mut color_map = crate::COLOR_MAP.lock();
-            *color_map = colors;
+            let mut canvas = crate::CANVAS.write();
+            *canvas = colors;
 
             Ok(())
         } else {
