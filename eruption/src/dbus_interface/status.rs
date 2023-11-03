@@ -97,7 +97,7 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
         .read()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read();
+            let device = device.read_recursive();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Keyboard {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -111,7 +111,7 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
         .read()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read();
+            let device = device.read_recursive();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Mouse {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -125,7 +125,7 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
         .read()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read();
+            let device = device.read_recursive();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Misc {
                 Some((device.get_usb_vid(), device.get_usb_pid()))

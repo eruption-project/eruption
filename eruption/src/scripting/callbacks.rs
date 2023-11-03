@@ -198,7 +198,7 @@ pub(crate) fn get_support_script_files() -> Vec<String> {
     let mut result = Vec::new();
 
     for (_handle, device) in crate::DEVICES.read().iter() {
-        result.push(device.read().get_support_script_file());
+        result.push(device.read_recursive().get_support_script_file());
     }
 
     result
@@ -254,15 +254,19 @@ pub(crate) fn inject_mouse_button(button_index: u32, down: bool) {
 
     #[cfg(not(target_os = "windows"))]
     macros::UINPUT_TX
-        .read()
-        .as_ref()
-        .unwrap()
-        .send(macros::Message::InjectButtonEvent {
-            button: button_index,
-            down,
-        })
-        .unwrap_or_else(|e| {
-            ratelimited::error!("Could not inject a button event: {}", e);
+        .try_read_recursive_for(constants::LOCK_CONTENDED_WAIT_MILLIS_LONG)
+        .and_then(|tx| {
+            tx.as_ref()
+                .unwrap()
+                .send(macros::Message::InjectButtonEvent {
+                    button: button_index,
+                    down,
+                })
+                .unwrap_or_else(|e| {
+                    ratelimited::error!("Could not inject a key event: {}", e);
+                });
+
+            Some(tx)
         });
 }
 
@@ -713,12 +717,16 @@ fn test_rotate() {
 pub(crate) fn get_num_keys() -> usize {
     // TODO: Return the number of keys of a specific device
     let devices = crate::DEVICES.read();
-    let device = devices
-        .iter()
-        .find(|(_handle, device)| device.read().get_device_class() == DeviceClass::Keyboard);
+    let device = devices.iter().find(|(_handle, device)| {
+        device.read_recursive().get_device_class() == DeviceClass::Keyboard
+    });
 
     if let Some((_handle, device)) = device {
-        device.read().as_keyboard_device().unwrap().get_num_keys()
+        device
+            .read_recursive()
+            .as_keyboard_device()
+            .unwrap()
+            .get_num_keys()
     } else {
         constants::MAX_KEYS
     }

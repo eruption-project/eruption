@@ -81,7 +81,7 @@ impl CanvasPlugin {
         let mut result = HashMap::new();
 
         for (handle, device) in crate::DEVICES.read().iter() {
-            result.insert(*handle, device.read().get_allocated_zone());
+            result.insert(*handle, device.read_recursive().get_allocated_zone());
         }
 
         result

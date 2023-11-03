@@ -21,7 +21,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsStr;
-use std::fmt::{Display, Formatter};
+use std::fmt::{self, Display, Formatter};
 use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
@@ -48,10 +48,68 @@ mod keyboards;
 mod mice;
 mod misc;
 
-pub type DeviceHandle = usize;
-
 pub type Device = Arc<RwLock<Box<dyn DeviceExt + Sync + Send>>>;
 pub type MiscSerialDevice = Arc<RwLock<Box<dyn MiscDeviceExt + Sync + Send>>>;
+
+#[derive(Debug, Copy, Clone, Eq, Hash, PartialEq)]
+pub struct DeviceHandle(u64);
+
+impl DeviceHandle {
+    pub fn from(index: u64) -> Self {
+        Self(index)
+    }
+}
+
+impl Into<u64> for DeviceHandle {
+    fn into(self) -> u64 {
+        self.0
+    }
+}
+
+impl Into<usize> for DeviceHandle {
+    fn into(self) -> usize {
+        self.0 as usize
+    }
+}
+
+impl<'lua> IntoLua<'lua> for DeviceHandle {
+    fn into_lua(self, _lua: &'lua Lua) -> LuaResult<LuaValue<'lua>> {
+        Ok(LuaValue::Integer(self.0 as i64))
+    }
+}
+
+impl fmt::Display for DeviceHandle {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        // write!(f, "[{:02}]", self.0)?;
+
+        find_device_by_handle(self)
+            .and_then(|device| {
+                device
+                    .try_read()
+                    .and_then(|device| {
+                        let device_identifier = device.get_support_script_file();
+
+                        let _ = write!(f, "[{:02}:{device_identifier}]", self.0);
+
+                        Some(device)
+                    })
+                    .or_else(|| {
+                        let _ = write!(f, "[{:02}:<unknown device>]", self.0);
+
+                        None
+                    });
+
+                Some(device)
+            })
+            .or_else(|| {
+                let _ = write!(f, "[{:02}:<invalid device>]", self.0);
+
+                None
+            });
+
+        Ok(())
+    }
+}
 
 #[derive(Debug, Clone, Copy, Deserialize, Eq, PartialEq, PartialOrd, Ord)]
 pub enum MaturityLevel {
@@ -1238,7 +1296,7 @@ pub fn probe_devices() -> Result<Vec<Device>> {
     let mut bound_devices = Vec::new();
 
     for (_handle, device) in crate::DEVICES.read().iter() {
-        bound_devices.extend(device.read().get_dev_paths());
+        bound_devices.extend(device.read_recursive().get_dev_paths());
     }
 
     let mut hidapi = crate::HIDAPI.write();
@@ -1697,21 +1755,15 @@ pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<(&'static str, &'st
 
 #[allow(dead_code)]
 #[inline]
-pub fn find_device_by_handle(handle: DeviceHandle) -> Option<Device> {
-    crate::DEVICES.read().get(&handle).cloned()
-}
-
-#[allow(dead_code)]
-#[inline]
-pub fn find_device_by_handle_mut(handle: DeviceHandle) -> Option<Device> {
-    crate::DEVICES.read().get(&handle).cloned()
+pub fn find_device_by_handle(handle: &DeviceHandle) -> Option<Device> {
+    crate::DEVICES.read().get(handle).cloned()
 }
 
 pub fn get_device_by_index(device_class: DeviceClass, index: usize) -> Option<Device> {
     let mut cntr = 0;
 
     for (_handle, device) in crate::DEVICES.read().iter() {
-        if device.read().get_device_class() == device_class {
+        if device.read_recursive().get_device_class() == device_class {
             if index == cntr {
                 return Some(device.clone());
             }

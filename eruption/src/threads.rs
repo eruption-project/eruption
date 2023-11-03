@@ -75,8 +75,10 @@ pub enum DbusApiEvent {
 }
 
 /// Spawns the D-Bus API thread and executes it's main loop
-pub fn spawn_dbus_api_thread(dbus_tx: Sender<Message>) -> plugins::Result<Sender<DbusApiEvent>> {
-    let (dbus_api_tx, dbus_api_rx) = bounded(8);
+pub fn spawn_dbus_event_multiplexer_thread(
+    dbus_tx: Sender<Message>,
+) -> plugins::Result<Sender<DbusApiEvent>> {
+    let (dbus_api_tx, dbus_api_rx) = bounded(32);
 
     thread::Builder::new()
         .name("dbus-interface".into())
@@ -106,6 +108,7 @@ pub fn spawn_dbus_api_thread(dbus_tx: Sender<Message>) -> plugins::Result<Sender
                         DbusApiEvent::BrightnessChanged => dbus.notify_brightness_changed()?,
 
                         DbusApiEvent::HueChanged => dbus.notify_hue_changed()?,
+
                         DbusApiEvent::SaturationChanged => dbus.notify_saturation_changed()?,
                         DbusApiEvent::LightnessChanged => dbus.notify_lightness_changed()?,
 
@@ -130,6 +133,85 @@ pub fn spawn_dbus_api_thread(dbus_tx: Sender<Message>) -> plugins::Result<Sender
     Ok(dbus_api_tx)
 }
 
+/*
+
+/// Spawns the D-Bus API events thread and executes it's main loop
+pub fn spawn_dbus_api_thread(dbus_tx: Sender<Message>) -> plugins::Result<Sender<DbusApiEvent>> {
+    let (dbus_api_tx, dbus_api_rx) = bounded(8);
+
+    thread::Builder::new()
+        .name("dbus-events".into())
+        .spawn(move || -> Result<()> {
+            #[cfg(feature = "profiling")]
+            coz::thread_init();
+
+            let dbus = DbusApi::new(dbus_tx)?;
+
+            loop {
+                // check if we shall terminate the thread
+                if QUIT.load(Ordering::SeqCst) {
+                    break Ok(());
+                }
+
+                dbus.get_next_event_timeout(constants::DBUS_WAIT_MILLIS)
+                    .unwrap_or_else(|e| {
+                        error!("Could not get the next D-Bus event: {}", e);
+
+                        false
+                    });
+            }
+        })?;
+
+    Ok(dbus_api_tx)
+}
+
+/// Spawns the D-Bus API thread and executes it's main loop
+pub fn spawn_dbus_event_multiplexer_thread(
+    dbus_tx: Sender<Message>,
+) -> plugins::Result<Sender<DbusApiEvent>> {
+    let (dbus_api_tx, dbus_api_rx) = bounded(8);
+
+    thread::Builder::new()
+        .name("dbus-multiplex".into())
+        .spawn(move || -> Result<()> {
+            #[cfg(feature = "profiling")]
+            coz::thread_init();
+
+            spawn_dbus_api_thread(dbus_api_tx);
+
+            loop {
+                // check if we shall terminate the thread
+                if QUIT.load(Ordering::SeqCst) {
+                    break Ok(());
+                }
+
+                match dbus_api_rx.recv() {
+                    Ok(result) => match result {
+                        DbusApiEvent::ProfilesChanged => dbus.lock().notify_profiles_changed()?,
+
+                        DbusApiEvent::ActiveProfileChanged => {
+                            dbus.lock().notify_active_profile_changed()?
+                        }
+
+                        DbusApiEvent::ActiveSlotChanged => {
+                            dbus.lock().notify_active_slot_changed()?
+                        }
+
+                        DbusApiEvent::BrightnessChanged => {
+                            dbus.lock().notify_brightness_changed()?
+                        }
+
+                       y
+                    },
+
+                    Err(e) => error!("Could not receive {e}"),
+                };
+            }
+        })?;
+
+    Ok(dbus_api_tx)
+} */
+
 /// Spawns a device events thread and executes it's main loop
 #[cfg(not(target_os = "windows"))]
 pub fn spawn_evdev_input_thread(
@@ -151,10 +233,10 @@ pub fn spawn_evdev_input_thread(
 
             // wait for Eruption to be started-up completely so that all devices are up and running.
             // Otherwise we would fail the devices before they are even fully initialized
-            let mut started = crate::STARTUP_COMPLETED_CONDITION.0.lock();
-            while !*started {
-                crate::STARTUP_COMPLETED_CONDITION.1.wait(&mut started);
-            }
+            // let mut started = crate::STARTUP_COMPLETED_CONDITION.0.lock();
+            // while !*started {
+            //     crate::STARTUP_COMPLETED_CONDITION.1.wait(&mut started);
+            // }
 
             let evdev_device = match hwdevices::get_input_dev_from_udev(usb_vid, usb_pid) {
                 Ok(filename) => match File::open(filename.clone()) {
@@ -205,8 +287,8 @@ pub fn spawn_evdev_input_thread(
                     break Ok(());
                 }
 
-                if let Some(device) = hwdevices::find_device_by_handle_mut(handle) {
-                    if device.read().has_failed()? {
+                if let Some(device) = hwdevices::find_device_by_handle(&handle) {
+                    if device.read_recursive().has_failed()? {
                         warn!("Terminating evdev input thread due to a failed device");
 
                         // we need to terminate and then re-enter the main loop to update all global state
@@ -215,14 +297,14 @@ pub fn spawn_evdev_input_thread(
                         break Ok(());
                     }
 
-                    let device_class = device.read().get_device_class();
+                    let device_class = device.read_recursive().get_device_class();
                     match device_class {
                         DeviceClass::Keyboard => {
                             match evdev_device.next_event(
                                 evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING,
                             ) {
                                 Ok(k) => {
-                                    trace!("Key event: {:?}", k.1);
+                                    debug!("Key event: {:?}", k.1);
 
                                     // reset "to be dropped" flag
                                     macros::DROP_CURRENT_KEY.store(false, Ordering::SeqCst);
@@ -231,7 +313,7 @@ pub fn spawn_evdev_input_thread(
                                     if let EventCode::EV_KEY(ref code) = k.1.event_code {
                                         let is_pressed = k.1.value > 0;
                                         let index =
-                                            device.read().as_keyboard_device().unwrap().ev_key_to_key_index(*code) as usize;
+                                            device.read_recursive().as_keyboard_device().unwrap().ev_key_to_key_index(*code) as usize;
 
                                         if let Some(mut v) =
                                             crate::KEY_STATES.write().get_mut(index)
@@ -313,7 +395,7 @@ pub fn spawn_evdev_input_thread(
                                         } else {
                                             // directly mirror SYN events to reduce input lag
                                   macros::UINPUT_TX
-                                                .read()
+                                                .read_recursive()
                                                 .as_ref()
                                                 .unwrap()
                                                 .send(macros::Message::MirrorMouseEventImmediate(
@@ -330,7 +412,7 @@ pub fn spawn_evdev_input_thread(
                                         k.1.clone().event_code
                                     {
                                         let is_pressed = k.1.value > 0;
-                                        match device.read().as_mouse_device().unwrap().ev_key_to_button_index(code) {
+                                        match device.read_recursive().as_mouse_device().unwrap().ev_key_to_button_index(code) {
                                             Ok(index) => {
                                                 if let Some(mut v) =
                                                     crate::BUTTON_STATES.write().get_mut(index as usize)
@@ -584,7 +666,7 @@ pub fn spawn_lua_thread(
 }
 
 pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
-    let builder = thread::Builder::new().name("dev-io/all".to_owned());
+    let builder = thread::Builder::new().name("dev-io:all".to_owned());
     builder.spawn(move || -> Result<()> {
         #[cfg(feature = "profiling")]
         coz::thread_init();
@@ -607,12 +689,9 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
             match dev_io_rx.recv() {
                 Ok(message) => match message {
                     DeviceAction::RenderNow  => {
-                        // If we are in the process of switching between profiles, we need to postpone rendering
-                        // until the switch has been completed, to avoid getting into inconsistent states
-                        let switching_completed = crate::PROFILE_SWITCHING_COMPLETED_CONDITION.0.lock();
                         let current_frame_generation = script::FRAME_GENERATION_COUNTER.load(Ordering::SeqCst);
 
-                        if *switching_completed && saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
+                        if saved_frame_generation.load(Ordering::SeqCst) < current_frame_generation {
                             // instruct the Lua VMs to realize their color maps, but only if at least one VM
                             // submitted a new color map (performed a frame generation increment)
 
@@ -769,30 +848,31 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                             // send the final (combined) color map to all of the devices
                             if !drop_frame {
-                                crate::DEVICES.read().par_iter().for_each(|(_handle, device)| {
+                                crate::DEVICES.read_recursive().par_iter().for_each(|(handle, device)| {
                                     // NOTE: We may deadlock here, so be careful
                                     if let Some(mut dev) = device.try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS_SHORT) {
                                         if let Ok(is_initialized) = dev.is_initialized() {
                                             if is_initialized {
                                                 if let Err(e) = dev.send_led_map(&script::LED_MAP.read()) {
-                                                    ratelimited::error!("Error sending LED map to a device: {}", e);
+                                                    ratelimited::error!("Error sending LED map to device {handle}: {}", e);
 
                                                     ratelimited::warn!("Trying to unplug the failed device...");
 
                                                     dev.fail().unwrap_or_else(|e| {
-                                                        error!("Could not mark a device as failed: {}", e);
+                                                        error!("Could not mark device {handle} as failed: {}", e);
                                                     });
 
                                                     // we need to terminate and then re-enter the main loop to update all global state
                                                     crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
                                                 }
                                             } else {
-                                                ratelimited::warn!("Skipping rendering to an uninitialized device");
+                                                ratelimited::warn!("Not rendering to the uninitialized device {handle}");
                                             }
                                         } else {
-                                            warn!("Could not query device status");
+                                            warn!("Could not query the state of device {handle}");
                                         }
+                                    } else {
+                                        debug!("Could not get a lock required for rendering to device {handle}");
                                     }
                                 });
 
@@ -803,7 +883,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                     .write()
                                     .copy_from_slice(&script::LED_MAP.read());
 
-                            fps_counter += 1;
+                                fps_counter += 1;
                             }
                         }
 

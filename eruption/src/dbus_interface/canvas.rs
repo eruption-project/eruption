@@ -173,7 +173,7 @@ fn get_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
     let mut cntr = 0;
 
     for (_handle, device) in crate::DEVICES.read().iter() {
-        result.push((cntr, device.read().get_allocated_zone()));
+        result.push((cntr, device.read_recursive().get_allocated_zone()));
 
         cntr += 1;
     }
@@ -186,7 +186,7 @@ fn set_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
 }
 
 fn set_device_zone_allocation(m: &super::MethodInfo) -> MethodResult {
-    let (handle, zone): (u64, (i32, i32, i32, i32, bool)) = m.msg.read2()?;
+    let (index, zone): (u64, (i32, i32, i32, i32, bool)) = m.msg.read2()?;
 
     let zone = Zone::new(zone.0, zone.1, zone.2, zone.3, zone.4);
 
@@ -201,7 +201,7 @@ fn set_device_zone_allocation(m: &super::MethodInfo) -> MethodResult {
     {
         Err(MethodErr::failed("Invalid zone dimensions"))
     } else {
-        if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
+        if let Some(device) = crate::DEVICES.read().get(&DeviceHandle::from(index)) {
             device
                 .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS_LONG)
                 .and_then(|mut device| {

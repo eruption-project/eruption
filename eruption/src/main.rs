@@ -241,47 +241,47 @@ lazy_static! {
 }
 
 lazy_static! {
-  // Eruption start completed and event processing is ready?
-  pub static ref STARTUP_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
-    Arc::new((Mutex::new(false), Condvar::new()));
+    // Eruption start completed and event processing is ready?
+    //   pub static ref STARTUP_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
+    //     Arc::new((Mutex::new(false), Condvar::new()));
 
-  // Color maps of Lua VMs ready?
-  pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    // Color maps of Lua VMs ready?
+    pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  // This is the "switch profile fence" condition variable
-  pub static ref PROFILE_SWITCHING_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
-    Arc::new((Mutex::new(true), Condvar::new()));
+    // This is the "switch profile fence" condition variable
+    pub static ref PROFILE_SWITCHING_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
+        Arc::new((Mutex::new(true), Condvar::new()));
 
-  // All upcalls (event handlers) in Lua VM completed?
-  pub static ref UPCALL_COMPLETED_ON_KEY_DOWN: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    // All upcalls (event handlers) in Lua VM completed?
+    pub static ref UPCALL_COMPLETED_ON_KEY_DOWN: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  pub static ref UPCALL_COMPLETED_ON_KEY_UP: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_KEY_UP: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
-  pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  pub static ref UPCALL_COMPLETED_ON_MOUSE_MOVE: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_MOVE: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  pub static ref UPCALL_COMPLETED_ON_MOUSE_EVENT: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_EVENT: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  pub static ref UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  pub static ref UPCALL_COMPLETED_ON_MOUSE_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_MOUSE_HID_EVENT: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  pub static ref UPCALL_COMPLETED_ON_SYSTEM_EVENT: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_SYSTEM_EVENT: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 
-  pub static ref UPCALL_COMPLETED_ON_QUIT: Arc<(Mutex<usize>, Condvar)> =
-    Arc::new((Mutex::new(0), Condvar::new()));
+    pub static ref UPCALL_COMPLETED_ON_QUIT: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
 }
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -792,9 +792,8 @@ fn run_main_loop(
 
             let mapper = move |event| {
                 if let Ok(Some(event)) = event {
-                    if let Some(device) = hwdevices::find_device_by_handle(*handle as DeviceHandle)
-                    {
-                        match device.read().get_device_class() {
+                    if let Some(device) = hwdevices::find_device_by_handle(handle) {
+                        match device.read_recursive().get_device_class() {
                             DeviceClass::Keyboard => {
                                 events::process_keyboard_event(&event, device.clone())
                                     .unwrap_or_else(|e| {
@@ -822,17 +821,17 @@ fn run_main_loop(
                                         device_has_failed = true;
 
                                         ratelimited::error!(
-                        "Could not process an input event: {}. Trying to close the device...",
-                        e
-                    );
+                                            "Could not process an input event: {}. Trying to close the device...",
+                                            e
+                                        );
 
                                         device
                                             .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
                                             .and_then(|mut device| {
-                                                device.close_all().map_err(|e| {
-                ratelimited::error!("An error occurred while closing the device: {e}")
-                })
-                .ok()
+                                        device.close_all().map_err(|e| {
+                                                    ratelimited::error!("An error occurred while closing the device: {e}")
+                                                })
+                                                .ok()
                                             });
                                     },
                                 );
@@ -843,17 +842,17 @@ fn run_main_loop(
                                     device_has_failed = true;
 
                                     ratelimited::error!(
-                "Could not process an input event: {}. Trying to close the device...",
-                e
-              );
+                                        "Could not process an input event: {}. Trying to close the device...",
+                                        e
+                                    );
 
                                     device
                                         .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
                                         .and_then(|mut device| {
-                                            device.close_all().map_err(|e| {
-                ratelimited::error!("An error occurred while closing the device: {e}")
-                })
-                .ok()
+                                    device.close_all().map_err(|e| {
+                                                ratelimited::error!("An error occurred while closing the device: {e}")
+                                            })
+                                            .ok()
                                         });
                                 }),
 
@@ -867,23 +866,24 @@ fn run_main_loop(
                 } else {
                     device_has_failed = true;
 
-                    if let Some(device) = hwdevices::find_device_by_handle(*handle as DeviceHandle)
+                    ratelimited::error!(
+                        "Could not process an input event: {}",
+                        event.as_ref().unwrap_err()
+                    );
+
+                    /* if let Some(device) = hwdevices::find_device_by_handle(*handle as DeviceHandle)
                     {
-                        ratelimited::error!(
-                            "Could not process an input event: {}",
-                            event.as_ref().unwrap_err()
-                        );
 
                         device
-                            .write()
-                            .close_all()
-                            .map_err(|e| {
-                                ratelimited::error!(
-                                    "An error occurred while closing the device: {e}"
-                                )
-                            })
-                            .ok();
-                    }
+                        .write()
+                        .close_all()
+                        .map_err(|e| {
+                            ratelimited::error!(
+                                "An error occurred while closing the device: {e}"
+                            )
+                        })
+                        .ok();
+                    } */
                 }
 
                 if device_has_failed {
@@ -1142,9 +1142,9 @@ fn run_main_loop(
         #[cfg(not(target_os = "windows"))]
         for handle in failed_event_rxs.read().iter() {
             ratelimited::warn!("Removing failed device with handle {handle}");
-            // event_rxs.remove(*idx);
+            // event_rxs.remove(*handle);
 
-            if let Some(device) = hwdevices::find_device_by_handle_mut(*(*handle) as DeviceHandle) {
+            if let Some(device) = hwdevices::find_device_by_handle(*handle) {
                 // NOTE: We may deadlock here, so be careful
                 device
                     .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
@@ -1193,19 +1193,25 @@ fn run_main_loop(
             delay_time_hid_poll = Instant::now();
 
             // poll HID events on all available devices
-            for (_handle, device) in crate::DEVICES.read().iter() {
-                match device.try_read_for(Duration::from_millis(20)) {
+            for (handle, device) in crate::DEVICES.read().iter() {
+                match device.try_read_for(constants::LOCK_CONTENDED_WAIT_MILLIS) {
                     Some(dev) => match dev.get_device_class() {
                         DeviceClass::Keyboard => events::process_keyboard_hid_events(
                             device.clone(),
                         )
                         .unwrap_or_else(|e| {
-                            ratelimited::error!("Could not process a keyboard HID event: {}", e)
+                            ratelimited::error!(
+                                "Could not process a keyboard HID event for {handle}: {}",
+                                e
+                            )
                         }),
 
                         DeviceClass::Mouse => events::process_mouse_hid_events(device.clone())
                             .unwrap_or_else(|e| {
-                                ratelimited::error!("Could not process a mouse HID event: {}", e)
+                                ratelimited::error!(
+                                    "Could not process a mouse HID event for {handle}: {}",
+                                    e
+                                )
                             }),
 
                         _ => {
@@ -1249,7 +1255,7 @@ fn run_main_loop(
 
             delay_time_render = Instant::now();
 
-            // send timer tick events to the Lua VMs
+            // send render request to the Lua VMs
             for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
                 // if this tx failed previously, then skip it completely
                 if !FAILED_TXS.read().contains(&index) {
@@ -1324,10 +1330,13 @@ pub fn remove_failed_devices() -> Result<bool> {
     let mut result = false;
 
     for (handle, device) in crate::DEVICES.read().iter() {
-        if device.read().has_failed()? {
+        if device.read_recursive().has_failed()? {
             info!("Unplugging failed device {handle}...");
 
-            let usb_id = (device.read().get_usb_vid(), device.read().get_usb_pid());
+            let usb_id = (
+                device.read_recursive().get_usb_vid(),
+                device.read_recursive().get_usb_pid(),
+            );
 
             result = true;
 
@@ -1344,7 +1353,7 @@ pub fn remove_failed_devices() -> Result<bool> {
 
     crate::DEVICES
         .write()
-        .retain(|_handle, device| !device.read().has_failed().unwrap_or(false));
+        .retain(|_handle, device| !device.read_recursive().has_failed().unwrap_or(false));
 
     Ok(result)
 }
@@ -1493,14 +1502,19 @@ mod thread_util {
 }
 
 /// open the control and LED devices
-pub fn init_device(device: hwdevices::Device) -> Result<()> {
+pub fn initialize_device(device: hwdevices::Device) -> Result<()> {
     info!("Opening the device...");
 
-    let make = hwdevices::get_device_make(device.read().get_usb_vid(), device.read().get_usb_pid())
-        .unwrap_or("<unknown>");
-    let model =
-        hwdevices::get_device_model(device.read().get_usb_vid(), device.read().get_usb_pid())
-            .unwrap_or("<unknown>");
+    let make = hwdevices::get_device_make(
+        device.read_recursive().get_usb_vid(),
+        device.read_recursive().get_usb_pid(),
+    )
+    .unwrap_or("<unknown>");
+    let model = hwdevices::get_device_model(
+        device.read_recursive().get_usb_vid(),
+        device.read_recursive().get_usb_pid(),
+    )
+    .unwrap_or("<unknown>");
 
     {
         let hidapi = crate::HIDAPI.read();
@@ -1536,7 +1550,7 @@ pub fn init_device(device: hwdevices::Device) -> Result<()> {
 
     info!(
         "Firmware revision: '{make} {model}': {}",
-        device.read().get_firmware_revision()
+        device.read_recursive().get_firmware_revision()
     );
 
     Ok(())
@@ -1762,25 +1776,29 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
             if let Ok(mut devices) = hwdevices::probe_devices() {
                 // initialize the devices
-                devices.par_iter().enumerate().for_each(|(handle, device)| {
+                devices.par_iter().enumerate().for_each(|(index, device)| {
+                    let handle = DeviceHandle::from(index as u64);
+
                     crate::DEVICES
                         .write()
-                        .insert(handle as DeviceHandle, device.clone());
+                        .insert(DeviceHandle::from(index as u64), device.clone());
 
-                    let (usb_vid, usb_pid) =
-                        (device.read().get_usb_vid(), device.read().get_usb_pid());
+                    let (usb_vid, usb_pid) = (
+                        device.read_recursive().get_usb_vid(),
+                        device.read_recursive().get_usb_pid(),
+                    );
 
-                    if init_device(device.clone()).is_ok() {
+                    if initialize_device(device.clone()).is_ok() {
                         info!("Device initialized successfully");
 
-                        match device.read().get_device_class() {
+                        match device.read_recursive().get_device_class() {
                             DeviceClass::Keyboard | DeviceClass::Mouse => {
                                 cfg_if::cfg_if! {
                                 if #[cfg(not(target_os = "windows"))] {
                                   // spawn a thread to handle keyboard input
                                   info!("Spawning input events thread...");
 
-                                  let (event_tx, event_rx) = bounded(32);
+                                  let (event_tx, event_rx) = bounded(8);
                                   if let Err(e) = threads::spawn_evdev_input_thread(
                                     event_tx,
                                     handle,
@@ -1798,7 +1816,12 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                             }
 
                             DeviceClass::Misc => {
-                                if device.read().as_misc_device().unwrap().has_input_device() {
+                                if device
+                                    .read_recursive()
+                                    .as_misc_device()
+                                    .unwrap()
+                                    .has_input_device()
+                                {
                                     cfg_if::cfg_if! {
                                     if #[cfg(not(target_os = "windows"))] {
                                       // spawn a thread to handle keyboard input
@@ -1860,12 +1883,13 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 });
 
                 // initialize the D-Bus API
-                info!("Initializing D-Bus API...");
+                info!("Initializing D-Bus API events thread...");
                 let (dbus_tx, dbus_rx) = bounded(8);
-                let dbus_api_tx = threads::spawn_dbus_api_thread(dbus_tx).unwrap_or_else(|e| {
-                    error!("Could not spawn a thread: {}", e);
-                    panic!()
-                });
+                let dbus_api_tx = threads::spawn_dbus_event_multiplexer_thread(dbus_tx)
+                    .unwrap_or_else(|e| {
+                        error!("Could not spawn a thread: {}", e);
+                        panic!()
+                    });
 
                 *DBUS_API_TX.write() = Some(dbus_api_tx.clone());
 
@@ -1884,10 +1908,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 *DEV_IO_TX.write() = Some(dev_io_tx);
 
                 info!("Startup completed");
-
-                let mut startup_completed = STARTUP_COMPLETED_CONDITION.0.lock();
-                *startup_completed = true;
-                STARTUP_COMPLETED_CONDITION.1.notify_all();
 
                 'OUTER_LOOP: loop {
                     info!("Entering the main loop now...");

@@ -34,7 +34,6 @@ use nix::unistd::unlink;
 
 use parking_lot::RwLock;
 use prost::Message;
-use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::any::Any;
 use std::io::Cursor;
@@ -120,7 +119,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
 #[cfg(not(target_os = "windows"))]
 pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
-    use crate::{state, threads};
+    use crate::{hwdevices::DeviceHandle, state, threads};
 
     if crate::QUIT.load(Ordering::SeqCst) {
         info!("Ignoring device hotplug event since Eruption is shutting down");
@@ -130,7 +129,7 @@ pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
 
         if let Ok(devices) = hwdevices::probe_devices() {
             if let Some(device) = devices.iter().find(|device| {
-                device.read().get_dev_paths().contains(
+                device.read_recursive().get_dev_paths().contains(
                     &hotplug_info
                         .devpath
                         .clone()
@@ -140,14 +139,18 @@ pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
                 )
             }) {
                 // we found the hot-plug candidate device
-                let handle = crate::DEVICES.read().len();
+                let index = crate::DEVICES.read().len();
+                let handle = DeviceHandle::from(index as u64);
 
                 info!("Initializing the plugged device...");
 
-                crate::init_device(device.clone())?;
+                crate::initialize_device(device.clone())?;
                 info!("Device initialized successfully");
 
-                let (usb_vid, usb_pid) = (device.read().get_usb_vid(), device.read().get_usb_pid());
+                let (usb_vid, usb_pid) = (
+                    device.read_recursive().get_usb_vid(),
+                    device.read_recursive().get_usb_pid(),
+                );
 
                 // spawn a thread to handle Linux evdev input
                 info!("Spawning input events thread...");
@@ -204,13 +207,13 @@ pub fn resume_from_suspend() -> Result<()> {
         // initialize devices
         for (_handle, device) in crate::DEVICES.read().iter() {
             let make = hwdevices::get_device_make(
-                device.read().get_usb_vid(),
-                device.read().get_usb_pid(),
+                device.read_recursive().get_usb_vid(),
+                device.read_recursive().get_usb_pid(),
             )
             .unwrap_or("<unknown>");
             let model = hwdevices::get_device_model(
-                device.read().get_usb_vid(),
-                device.read().get_usb_pid(),
+                device.read_recursive().get_usb_vid(),
+                device.read_recursive().get_usb_pid(),
             )
             .unwrap_or("<unknown>");
 
@@ -593,7 +596,7 @@ impl SdkSupportPlugin {
                                                             let mut local_map = LED_MAP.write();
 
                                                             local_map.copy_from_slice(
-                                                                &payload_map.par_iter().copied().chunks(4)
+                                                                &payload_map.chunks(4)
                                                                     .map(|map| RGBA {
                                                                         r: map[0],
                                                                         g: map[1],

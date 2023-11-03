@@ -134,9 +134,9 @@ impl InterfaceAddend for DevicesInterface {
     }
 }
 
-pub fn get_device_specific_ids(handle: u64) -> Result<(u16, u16)> {
-    if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
-        let device = device.read();
+pub fn get_device_specific_ids(handle: &DeviceHandle) -> Result<(u16, u16)> {
+    if let Some(device) = crate::DEVICES.read().get(handle) {
+        let device = device.read_recursive();
 
         let usb_vid = device.get_usb_vid();
         let usb_pid = device.get_usb_pid();
@@ -156,7 +156,8 @@ fn get_device_status_property(
     let device_status = device_status
         .iter()
         .map(|(k, v)| {
-            let (usb_vid, usb_pid) = get_device_specific_ids(*k).unwrap_or_default();
+            let (usb_vid, usb_pid) =
+                get_device_specific_ids(&DeviceHandle::from(*k)).unwrap_or_default();
 
             DeviceStatus {
                 index: *k,
@@ -230,7 +231,7 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
         .read()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read();
+            let device = device.read_recursive();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Keyboard {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -244,7 +245,7 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
         .read()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read();
+            let device = device.read_recursive();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Mouse {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -258,7 +259,7 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
         .read()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read();
+            let device = device.read_recursive();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Misc {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -289,8 +290,10 @@ fn is_device_enabled(m: &MethodInfo) -> MethodResult {
     Ok(vec![m.msg.method_return().append1(result)])
 }
 
-fn apply_device_specific_configuration(handle: u64, param: &str, value: &str) -> Result<()> {
-    if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
+fn apply_device_specific_configuration(index: u64, param: &str, value: &str) -> Result<()> {
+    let handle = DeviceHandle::from(index);
+
+    if let Some(device) = crate::DEVICES.read().get(&handle) {
         let mut device = device
             .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
             .ok_or_else(|| DbusApiError::LockingFailed {})?;
@@ -396,9 +399,11 @@ fn apply_device_specific_configuration(handle: u64, param: &str, value: &str) ->
     }
 }
 
-fn query_device_specific_configuration(handle: u64, param: &str) -> Result<String> {
-    if let Some(device) = crate::DEVICES.read().get(&(handle as DeviceHandle)) {
-        let device = device.read();
+fn query_device_specific_configuration(index: u64, param: &str) -> Result<String> {
+    let handle = DeviceHandle::from(index);
+
+    if let Some(device) = crate::DEVICES.read().get(&handle) {
+        let device = device.read_recursive();
 
         match device.get_device_class() {
             DeviceClass::Keyboard => {

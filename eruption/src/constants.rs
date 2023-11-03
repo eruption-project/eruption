@@ -201,7 +201,7 @@ pub const MAX_KEYS: usize = 256;
 pub const MAX_MOUSE_BUTTONS: usize = 32;
 
 /// Limit event handler upcalls to 1 per `EVENTS_UPCALL_RATE_LIMIT_MILLIS` milliseconds
-pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 5;
+pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 16;
 
 /// Limit framerate to n frames per second
 pub const TARGET_FPS_LIMIT: u64 = 48;

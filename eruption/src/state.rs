@@ -203,9 +203,13 @@ pub fn init_runtime_state(device: hwdevices::Device) -> Result<()> {
         .unwrap_or(&empty)
         .get_table("device_brightness")
     {
-        let make = format!("0x{:x}", device.read().get_usb_vid());
-        let model = format!("0x{:x}", device.read().get_usb_pid());
-        let serial = device.read().get_serial().unwrap_or("").to_string();
+        let make = format!("0x{:x}", device.read_recursive().get_usb_vid());
+        let model = format!("0x{:x}", device.read_recursive().get_usb_pid());
+        let serial = device
+            .read_recursive()
+            .get_serial()
+            .unwrap_or("")
+            .to_string();
 
         let val = config::Value::new(None, 100);
 
@@ -237,7 +241,7 @@ pub fn save_runtime_state() -> Result<()> {
     let mut device_brightness = HashMap::new();
 
     for (_handle, device) in &*crate::DEVICES.read() {
-        let device = device.read();
+        let device = device.read_recursive();
 
         let make = format!("0x{:x}", device.get_usb_vid());
         let model = format!("0x{:x}", device.get_usb_pid());

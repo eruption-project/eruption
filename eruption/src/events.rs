@@ -36,7 +36,7 @@ use crate::{
 use flume::Sender;
 use lazy_static::lazy_static;
 use parking_lot::RwLock;
-use tracing::{error, info, trace};
+use tracing::{error, info};
 
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -155,9 +155,11 @@ pub fn process_dbus_event(
 /// Process a timer tick event
 pub fn process_timer_event() -> Result<()> {
     for (handle, device) in crate::DEVICES.read().iter() {
-        let device_status = device.read().device_status()?;
+        let device_status = device.read_recursive().device_status()?;
 
-        DEVICE_STATUS.write().insert(*handle as u64, device_status);
+        DEVICE_STATUS
+            .write()
+            .insert(Into::<u64>::into(*handle), device_status);
     }
 
     Ok(())
@@ -169,9 +171,10 @@ pub fn process_keyboard_event(
     raw_event: &evdev_rs::InputEvent,
     device: hwdevices::Device,
 ) -> Result<()> {
-    // assert_eq!(device.read().get_device_class(), DeviceClass::Keyboard);
+    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Keyboard);
 
     // notify all observers of raw events
+
     events::notify_observers(events::Event::RawKeyboardEvent(raw_event.clone())).ok();
 
     if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
@@ -181,8 +184,6 @@ pub fn process_keyboard_event(
             .as_keyboard_device()
             .unwrap()
             .ev_key_to_key_index(*code);
-
-        trace!("Key index: {:#x}", index);
 
         if is_pressed {
             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
@@ -282,18 +283,18 @@ pub fn process_keyboard_event(
             ratelimited::error!("Could not send a pending keyboard event: {}", e);
 
             // NOTE: We may deadlock here, so be careful
-            device
-                .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-                .and_then(|mut device| {
-                    device.fail().unwrap_or_else(|e| {
-                        error!("Could not mark a device as failed: {}", e);
-                    });
-
-                    // we need to terminate and then re-enter the main loop to update all global state
-                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                    None::<()>
+            /* device
+            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+            .and_then(|mut device| {
+                device.fail().unwrap_or_else(|e| {
+                    error!("Could not mark a device as failed: {}", e);
                 });
+
+                // we need to terminate and then re-enter the main loop to update all global state
+                crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                None::<()>
+            }); */
         });
 
     Ok(())
@@ -301,7 +302,7 @@ pub fn process_keyboard_event(
 
 /// Process HID events
 pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
-    // assert_eq!(device.read().get_device_class(), DeviceClass::Keyboard);
+    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Keyboard);
 
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
@@ -511,7 +512,7 @@ pub fn process_mouse_event(
     raw_event: &evdev_rs::InputEvent,
     device: hwdevices::Device,
 ) -> Result<()> {
-    // assert_eq!(device.read().get_device_class(), DeviceClass::Mouse);
+    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Mouse);
 
     // send pending mouse events to the Lua VMs and to the event dispatcher
 
@@ -796,18 +797,18 @@ pub fn process_mouse_event(
                 ratelimited::error!("Could not send a pending mouse event: {}", e);
 
                 // NOTE: We may deadlock here, so be careful
-                device
-                    .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-                    .and_then(|mut device| {
-                        device.fail().unwrap_or_else(|e| {
-                            error!("Could not mark a device as failed: {}", e);
-                        });
-
-                        // we need to terminate and then re-enter the main loop to update all global state
-                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                        None::<()>
+                /* device
+                .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                .and_then(|mut device| {
+                    device.fail().unwrap_or_else(|e| {
+                        error!("Could not mark a device as failed: {}", e);
                     });
+
+                    // we need to terminate and then re-enter the main loop to update all global state
+                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                    None::<()>
+                }); */
             });
     }
 
@@ -816,7 +817,7 @@ pub fn process_mouse_event(
 
 /// Process HID events
 pub fn process_mouse_hid_events(device: hwdevices::Device) -> Result<()> {
-    // assert_eq!(device.read().get_device_class(), DeviceClass::Mouse);
+    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Mouse);
 
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
@@ -903,9 +904,9 @@ pub fn process_mouse_hid_events(device: hwdevices::Device) -> Result<()> {
 #[cfg(not(target_os = "windows"))]
 pub fn process_misc_event(
     raw_event: &evdev_rs::InputEvent,
-    device: hwdevices::Device,
+    _device: hwdevices::Device,
 ) -> Result<()> {
-    // assert_eq!(device.read().get_device_class(), DeviceClass::Misc);
+    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Misc);
 
     // notify all observers of raw events
     events::notify_observers(events::Event::RawMiscEvent(raw_event.clone())).ok();
@@ -917,8 +918,6 @@ pub fn process_misc_event(
             .as_misc_device()
             .unwrap()
             .ev_key_to_key_index(*code);
-
-        trace!("Key index: {:#x}", index);
 
         if is_pressed {
             *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
@@ -1018,18 +1017,18 @@ pub fn process_misc_event(
             ratelimited::error!("Could not send a pending keyboard event: {}", e);
 
             // NOTE: We may deadlock here, so be careful
-            device
-                .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-                .and_then(|mut device| {
-                    device.fail().unwrap_or_else(|e| {
-                        error!("Could not mark a device as failed: {}", e);
-                    });
-
-                    // we need to terminate and then re-enter the main loop to update all global state
-                    crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                    None::<()>
+            /* device
+            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+            .and_then(|mut device| {
+                device.fail().unwrap_or_else(|e| {
+                    error!("Could not mark a device as failed: {}", e);
                 });
+
+                // we need to terminate and then re-enter the main loop to update all global state
+                crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+
+                None::<()>
+            }); */
         });
 
     Ok(())
