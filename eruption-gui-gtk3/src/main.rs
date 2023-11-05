@@ -36,8 +36,8 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
+use tracing_mutex::stdsync::{Mutex, RwLock};
 
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -90,14 +90,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -247,7 +247,7 @@ Copyright (c) 2019-2023, The Eruption Development Team
 
 /// Update the global canvas
 pub fn update_canvas() -> Result<()> {
-    if let Some(connection) = crate::CONNECTION.lock().as_ref() {
+    if let Some(connection) = crate::CONNECTION.lock().unwrap().as_ref() {
         if let Ok(canvas) = connection.get_canvas() {
             let mut colors = Vec::with_capacity(constants::CANVAS_SIZE);
             for i in 0..CANVAS_SIZE {
@@ -261,7 +261,7 @@ pub fn update_canvas() -> Result<()> {
                 colors.push(color);
             }
 
-            let mut canvas = crate::CANVAS.write();
+            let mut canvas = crate::CANVAS.write().unwrap();
             *canvas = colors;
 
             Ok(())
@@ -293,7 +293,7 @@ pub fn switch_to_slot(index: usize) -> Result<()> {
         // tracing::info!("Switching to slot: {}", index);
         util::switch_slot(index)?;
 
-        STATE.write().active_slot = Some(index);
+        STATE.write().unwrap().active_slot = Some(index);
     }
 
     Ok(())
@@ -327,7 +327,7 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
         // );
 
         util::switch_slot(slot_index)?;
-        STATE.write().active_slot = Some(slot_index);
+        STATE.write().unwrap().active_slot = Some(slot_index);
 
         util::switch_profile(&file_name.to_string_lossy())?;
     }
@@ -349,7 +349,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
     if !events::shall_ignore_pending_dbus_event() {
         match *event {
             dbus_client::Message::SlotChanged(slot_index) => {
-                STATE.write().active_slot = Some(slot_index);
+                STATE.write().unwrap().active_slot = Some(slot_index);
 
                 let slot1_radio_button: gtk::RadioButton =
                     builder.object("slot1_radio_button").unwrap();
@@ -457,7 +457,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             dbus_client::Message::ProfileChanged(ref profile) => {
                 events::ignore_next_ui_events(1);
 
-                match STATE.read().active_slot {
+                match STATE.read().unwrap().active_slot {
                     Some(slot) => match slot {
                         0 => {
                             // slot 1
@@ -553,12 +553,12 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                 events::reenable_ui_events();
 
-                STATE.write().active_profile = Some(profile.clone());
+                STATE.write().unwrap().active_profile = Some(profile.clone());
                 ui::profiles::update_profile_state(builder)?;
             }
 
             dbus_client::Message::BrightnessChanged(brightness) => {
-                STATE.write().current_brightness = Some(brightness);
+                STATE.write().unwrap().current_brightness = Some(brightness);
 
                 let brightness_scale: gtk::Scale = builder.object("brightness_scale").unwrap();
 
@@ -572,7 +572,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::HueChanged(hue) => {
-                STATE.write().canvas_hue = Some(hue);
+                STATE.write().unwrap().canvas_hue = Some(hue);
 
                 let hue_scale: gtk::Scale = builder.object("canvas_hue_scale").unwrap();
 
@@ -586,7 +586,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::SaturationChanged(saturation) => {
-                STATE.write().canvas_saturation = Some(saturation);
+                STATE.write().unwrap().canvas_saturation = Some(saturation);
 
                 let saturation_scale: gtk::Scale =
                     builder.object("canvas_saturation_scale").unwrap();
@@ -601,7 +601,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
             }
 
             dbus_client::Message::LightnessChanged(lightness) => {
-                STATE.write().canvas_lightness = Some(lightness);
+                STATE.write().unwrap().canvas_lightness = Some(lightness);
 
                 let lightness_scale: gtk::Scale = builder.object("canvas_lightness_scale").unwrap();
 
@@ -666,7 +666,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
                 // tracing::debug!("A device status update has been received: {status_map:#?}");
 
-                *crate::DEVICE_STATUS.write() = status_map;
+                *crate::DEVICE_STATUS.write().unwrap() = status_map;
             }
         }
     }
@@ -676,7 +676,7 @@ pub fn update_ui_state(builder: &gtk::Builder, event: &dbus_client::Message) -> 
 
 /// initialize global state
 pub fn initialize_global_state_and_connection() {
-    let mut state = STATE.write();
+    let mut state = STATE.write().unwrap();
 
     state.active_slot = util::get_active_slot().ok();
     state.active_profile = util::get_active_profile().ok();
@@ -687,22 +687,22 @@ pub fn initialize_global_state_and_connection() {
             if let Err(e) = connection.connect() {
                 tracing::error!("Could not connect to Eruption daemon: {e}");
 
-                *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+                *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Disconnected;
             } else {
                 let _ = connection
                     .get_server_status()
                     .map_err(|e| tracing::error!("{e}"));
 
-                *crate::CONNECTION.lock() = Some(connection);
+                *crate::CONNECTION.lock().unwrap() = Some(connection);
 
-                *crate::CONNECTION_STATE.write() = ConnectionState::Connected;
+                *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Connected;
             }
         }
 
         Err(e) => {
             tracing::error!("Could not connect to Eruption daemon: {}", e);
 
-            *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+            *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Disconnected;
         }
     }
 }
@@ -754,7 +754,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -811,7 +811,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 error_log::fatal_error(&format!("Could not parse configuration file: {e}"), 4);
             });
 
-        *CONFIG.write() = config.ok();
+        *CONFIG.write().unwrap() = config.ok();
 
         // request default processing of command line arguments
         -1
@@ -826,7 +826,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         gio::resources_register(&res);
 
         // process all errors that occurred in the meantime
-        for error in error_log::ERRORS.read().iter() {
+        for error in error_log::ERRORS.read().unwrap().iter() {
             let message = match error.error_type {
                 ErrorType::Fatal => "A fatal error occurred",
             };
@@ -850,7 +850,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             }
         }
 
-        *crate::CONNECTION_STATE.write() = ConnectionState::Initializing;
+        *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Initializing;
         initialize_global_state_and_connection();
 
         if let Err(e) = ui::main_window::initialize_main_window(app) {

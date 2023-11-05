@@ -23,7 +23,6 @@ use flume::Receiver;
 use lazy_static::lazy_static;
 use mlua::prelude::*;
 use mlua::Function;
-use parking_lot::RwLock;
 use rayon::prelude::IndexedParallelIterator;
 use rayon::prelude::IntoParallelRefIterator;
 use rayon::prelude::IntoParallelRefMutIterator;
@@ -38,6 +37,7 @@ use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
 use std::vec::Vec;
 use tracing::*;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::hwdevices::DeviceClass;
 use crate::{
@@ -326,6 +326,8 @@ fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
 
     let config = crate::CONFIG.read();
+    let config = config.as_ref().unwrap();
+
     let script_dirs = config
         .as_ref()
         .unwrap()
@@ -418,7 +420,7 @@ fn continue_if_ok(
 fn on_quit(call_helper: &mut RunningScriptCallHelper, param: u32) -> Result<RunningScriptResult> {
     let called = call_helper.call(FUNCTION_ON_QUIT, param);
 
-    let mut val = crate::UPCALL_COMPLETED_ON_QUIT.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_QUIT.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_QUIT.1.notify_all();
@@ -479,24 +481,24 @@ fn realize_color_map() -> Result<RunningScriptResult> {
     if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
         LOCAL_LED_MAP.with(|foreground| {
             LED_MAP
-                .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-                .and_then(|mut led_map| {
+                .write()
+                .map(|mut led_map| {
                     led_map
                         .chunks_exact_mut(constants::CANVAS_SIZE)
                         .for_each(|chunks| alpha_blend(&foreground.borrow(), chunks));
 
-                    Some(led_map)
+                    led_map
                 })
-                .or_else(|| {
-                    warn!("Locking error during realization of a LED map");
+                .map_err(|e| {
+                    warn!("Locking error during realization of a LED map: {e}");
 
-                    None
+                    e
                 });
         });
     }
 
     // signal readiness / notify the main thread that we are done
-    let val = *crate::COLOR_MAPS_READY_CONDITION.0.lock();
+    let val = *crate::COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
 
     let val = val.checked_sub(1).unwrap_or({
         // this will happen during switching of profiles
@@ -505,7 +507,7 @@ fn realize_color_map() -> Result<RunningScriptResult> {
         0
     });
 
-    *crate::COLOR_MAPS_READY_CONDITION.0.lock() = val;
+    *crate::COLOR_MAPS_READY_CONDITION.0.lock().unwrap() = val;
 
     crate::COLOR_MAPS_READY_CONDITION.1.notify_all();
 
@@ -518,7 +520,7 @@ fn on_key_down(
 ) -> Result<RunningScriptResult> {
     let called = call_helper.call(FUNCTION_ON_KEY_DOWN, param);
 
-    let mut val = crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
@@ -529,7 +531,7 @@ fn on_key_down(
 fn on_key_up(call_helper: &mut RunningScriptCallHelper, param: u8) -> Result<RunningScriptResult> {
     let called = call_helper.call(FUNCTION_ON_KEY_UP, param);
 
-    let mut val = crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
@@ -553,6 +555,7 @@ fn on_keyboard_hid_event(
                 1,
                 device
                     .read()
+                    .unwrap()
                     .as_keyboard_device()
                     .unwrap()
                     .hid_event_code_to_report(&code) as u32,
@@ -561,6 +564,7 @@ fn on_keyboard_hid_event(
                 2,
                 device
                     .read()
+                    .unwrap()
                     .as_keyboard_device()
                     .unwrap()
                     .hid_event_code_to_report(&code) as u32,
@@ -580,7 +584,10 @@ fn on_keyboard_hid_event(
         call_helper.call(FUNCTION_ON_HID_EVENT, call_args)
     };
 
-    let mut val = crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT
+        .0
+        .lock()
+        .unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.1.notify_all();
@@ -600,7 +607,7 @@ fn on_mouse_hid_event(
     };
     let called = call_helper.call(FUNCTION_ON_MOUSE_HID_EVENT, call_args);
 
-    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.notify_all();
@@ -614,7 +621,10 @@ fn on_mouse_button_down(
 ) -> Result<RunningScriptResult> {
     let called = call_helper.call(FUNCTION_ON_MOUSE_BUTTON_DOWN, param);
 
-    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN
+        .0
+        .lock()
+        .unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.notify_all();
@@ -628,7 +638,7 @@ fn on_mouse_button_up(
 ) -> Result<RunningScriptResult> {
     let called = call_helper.call(FUNCTION_ON_MOUSE_BUTTON_UP, param);
 
-    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.notify_all();
@@ -648,7 +658,7 @@ fn on_mouse_move(
         call_helper.call(FUNCTION_ON_MOUSE_MOVE, (rel_x, rel_y, rel_z))
     };
 
-    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_MOUSE_MOVE.1.notify_all();
@@ -662,7 +672,7 @@ fn on_mouse_wheel_event(
 ) -> Result<RunningScriptResult> {
     let called = call_helper.call(FUNCTION_ON_MOUSE_WHEEL, param);
 
-    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
+    let mut val = crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
     crate::UPCALL_COMPLETED_ON_MOUSE_EVENT.1.notify_all();

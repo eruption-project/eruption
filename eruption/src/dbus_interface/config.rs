@@ -164,14 +164,19 @@ fn ping(m: &MethodInfo) -> MethodResult {
 }
 
 fn get_color_schemes(m: &MethodInfo) -> MethodResult {
-    let color_schemes: Vec<String> = crate::NAMED_COLOR_SCHEMES.read().keys().cloned().collect();
+    let color_schemes: Vec<String> = crate::NAMED_COLOR_SCHEMES
+        .read()
+        .unwrap()
+        .keys()
+        .cloned()
+        .collect();
     Ok(vec![m.msg.method_return().append1(color_schemes)])
 }
 
 fn get_color_scheme(m: &MethodInfo) -> MethodResult {
     let name: String = m.msg.read1()?;
 
-    let color_schemes = crate::NAMED_COLOR_SCHEMES.read();
+    let color_schemes = crate::NAMED_COLOR_SCHEMES.read().unwrap();
     if let Some(color_scheme) = color_schemes.get(&name) {
         let colors = color_scheme
             .colors
@@ -202,7 +207,7 @@ fn set_color_scheme(m: &MethodInfo) -> MethodResult {
     {
         Err(MethodErr::failed("Invalid identifier name"))
     } else {
-        let mut color_schemes = crate::NAMED_COLOR_SCHEMES.write();
+        let mut color_schemes = crate::NAMED_COLOR_SCHEMES.write().unwrap();
         let mut colors = Vec::new();
 
         for chunk in data.chunks(4) {
@@ -227,7 +232,11 @@ fn set_color_scheme(m: &MethodInfo) -> MethodResult {
 fn remove_color_scheme(m: &MethodInfo) -> MethodResult {
     let name: String = m.msg.read1()?;
 
-    let s = crate::NAMED_COLOR_SCHEMES.write().remove(&name).is_some();
+    let s = crate::NAMED_COLOR_SCHEMES
+        .write()
+        .unwrap()
+        .remove(&name)
+        .is_some();
 
     if s {
         crate::REQUEST_PROFILE_RELOAD.store(true, Ordering::SeqCst);

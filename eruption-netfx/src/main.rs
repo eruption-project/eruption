@@ -29,7 +29,6 @@ use i18n_embed::{
 };
 use jwalk::WalkDir;
 use lazy_static::lazy_static;
-use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
 use std::{cmp::Ordering, env, thread};
 use std::{path::PathBuf, sync::Arc};
@@ -37,6 +36,7 @@ use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt};
 use tokio::io::{AsyncReadExt, BufReader};
 use tokio::net::TcpStream;
 use tokio::time::Duration;
+use tracing_mutex::stdsync::{Mutex, RwLock};
 
 mod backends;
 mod constants;
@@ -56,14 +56,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -168,7 +168,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     }
 
     let opts = Options::parse();
-    *crate::OPTIONS.write() = Some(opts.clone());
+    *crate::OPTIONS.write().unwrap() = Some(opts.clone());
 
     match opts.command {
         Subcommands::Ping => {
@@ -373,7 +373,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                                 eprintln!("{}", tr!("image-error", message = e.to_string()))
                             })
                             .map(|commands| {
-                                processed_images.lock().push(commands);
+                                processed_images.lock().unwrap().push(commands);
                             });
                     });
                 }
@@ -384,7 +384,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             }
 
             loop {
-                for commands in processed_images.lock().iter() {
+                for commands in processed_images.lock().unwrap().iter() {
                     // print and send the specified command
                     if opts.verbose > 1 {
                         println!("{}", tr!("sending-data"));
@@ -512,7 +512,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()

@@ -31,7 +31,6 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
 use std::{
     cell::RefCell,
@@ -39,6 +38,7 @@ use std::{
     sync::atomic::{AtomicBool, AtomicU8, Ordering},
 };
 use tracing::error;
+use tracing_mutex::stdsync::{Mutex, RwLock};
 
 use std::env;
 use std::path::Path;
@@ -276,7 +276,7 @@ pub fn switch_to_slot(index: usize) -> Result<()> {
         // info!("Switching to slot: {}", index);
         util::switch_slot(index)?;
 
-        STATE.write().active_slot = Some(index);
+        STATE.write().unwrap().active_slot = Some(index);
     }
 
     Ok(())
@@ -310,7 +310,7 @@ pub fn switch_to_slot_and_profile<P: AsRef<Path>>(slot_index: usize, file_name: 
         // );
 
         util::switch_slot(slot_index)?;
-        STATE.write().active_slot = Some(slot_index);
+        STATE.write().unwrap().active_slot = Some(slot_index);
 
         util::switch_profile(&file_name.to_string_lossy())?;
     }
@@ -407,7 +407,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             "pyroclasm",
             native_options,
             Box::new(|cc| {
-                let mut global_state = STATE.write();
+                let mut global_state = STATE.write().unwrap();
                 global_state.egui_ctx = Some(cc.egui_ctx.clone());
 
                 Box::new(app::Pyroclasm::new(cc))
@@ -456,5 +456,5 @@ fn apply_opts(opts: &Options) {
             process::exit(4);
         });
 
-    *CONFIG.write() = Some(config);
+    *CONFIG.write().unwrap() = Some(config);
 }

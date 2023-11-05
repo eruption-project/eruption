@@ -68,7 +68,7 @@ impl MiscDevice for RoccatAimoPad {
 
         let scale_factor = (height / pixbuf.height() as f64) * 0.9750;
 
-        let led_colors = crate::CANVAS.read();
+        let led_colors = crate::CANVAS.read().unwrap();
 
         // paint all cells of the canvas
         for i in [LED_0, LED_1] {
@@ -93,7 +93,8 @@ impl MiscDevice for RoccatAimoPad {
         _scale_factor: f64,
     ) -> Result<()> {
         let factor =
-            ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
+            ((100.0 - crate::STATE.read().unwrap().current_brightness.unwrap_or(0) as f64) / 100.0)
+                * 0.15;
 
         match cell_index {
             LED_0 => {

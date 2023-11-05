@@ -139,32 +139,32 @@ impl InterfaceAddend for CanvasInterface {
 }
 
 fn get_hue(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
-    i.append(crate::CANVAS_HSL.write().0);
+    i.append(crate::CANVAS_HSL.write().unwrap().0);
     Ok(())
 }
 
 fn set_hue(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult {
-    crate::CANVAS_HSL.write().0 = i.read::<f64>()?;
+    crate::CANVAS_HSL.write().unwrap().0 = i.read::<f64>()?;
     Ok(())
 }
 
 fn get_saturation(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
-    i.append(crate::CANVAS_HSL.write().1);
+    i.append(crate::CANVAS_HSL.write().unwrap().1);
     Ok(())
 }
 
 fn set_saturation(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult {
-    crate::CANVAS_HSL.write().1 = i.read::<f64>()?;
+    crate::CANVAS_HSL.write().unwrap().1 = i.read::<f64>()?;
     Ok(())
 }
 
 fn get_lightness(i: &mut IterAppend, _m: &super::PropertyInfo) -> super::PropertyResult {
-    i.append(crate::CANVAS_HSL.write().2);
+    i.append(crate::CANVAS_HSL.write().unwrap().2);
     Ok(())
 }
 
 fn set_lightness(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult {
-    crate::CANVAS_HSL.write().2 = i.read::<f64>()?;
+    crate::CANVAS_HSL.write().unwrap().2 = i.read::<f64>()?;
     Ok(())
 }
 
@@ -172,8 +172,8 @@ fn get_devices_zone_allocations(m: &super::MethodInfo) -> MethodResult {
     let mut result: Vec<(u64, Zone)> = Vec::new();
     let mut cntr = 0;
 
-    for (_handle, device) in crate::DEVICES.read().iter() {
-        result.push((cntr, device.read_recursive().get_allocated_zone()));
+    for (_handle, device) in crate::DEVICES.read().unwrap().iter() {
+        result.push((cntr, device.read().unwrap().get_allocated_zone()));
 
         cntr += 1;
     }
@@ -200,17 +200,19 @@ fn set_device_zone_allocation(m: &super::MethodInfo) -> MethodResult {
         || zone.y2() > constants::CANVAS_HEIGHT as i32
     {
         Err(MethodErr::failed("Invalid zone dimensions"))
+    } else if let Some(device) = crate::DEVICES
+        .read()
+        .unwrap()
+        .get(&DeviceHandle::from(index))
+    {
+        device
+            .write()
+            .map(|mut device| {
+                device.set_zone_allocation(zone);
+                vec![m.msg.method_return()]
+            })
+            .map_err(|_e| MethodErr::failed("Could not update device settings: {e}"))
     } else {
-        if let Some(device) = crate::DEVICES.read().get(&DeviceHandle::from(index)) {
-            device
-                .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS_LONG)
-                .and_then(|mut device| {
-                    device.set_zone_allocation(zone);
-                    Some(vec![m.msg.method_return()])
-                })
-                .ok_or_else(|| MethodErr::failed("Could not update device settings"))
-        } else {
-            Err(MethodErr::failed("Invalid device handle"))
-        }
+        Err(MethodErr::failed("Invalid device handle"))
     }
 }

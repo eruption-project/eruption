@@ -26,7 +26,7 @@ use crate::macros;
 
 use crate::{
     constants, dbus_interface, events, hwdevices, script, switch_profile, DbusApiEvent,
-    FileSystemEvent, KeyboardHidEvent, MouseHidEvent, ACTIVE_SLOT, DEVICE_STATUS, FAILED_TXS,
+    FileSystemEvent, KeyboardHidEvent, MouseHidEvent, ACTIVE_SLOT, FAILED_TXS,
     KEY_STATES, LUA_TXS, MOUSE_MOTION_BUF, MOUSE_MOVE_EVENT_LAST_DISPATCHED, REQUEST_FAILSAFE_MODE,
     REQUEST_PROFILE_RELOAD, UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT, UPCALL_COMPLETED_ON_KEY_DOWN,
     UPCALL_COMPLETED_ON_KEY_UP, UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN,
@@ -35,8 +35,8 @@ use crate::{
 };
 use flume::Sender;
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
 use tracing::{error, info};
+use tracing_mutex::stdsync::RwLock;
 
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -83,11 +83,14 @@ pub fn register_observer<C>(callback: C)
 where
     C: Fn(&Event) -> Result<bool> + Sync + Send + 'static,
 {
-    INTERNAL_EVENT_OBSERVERS.write().push(Box::from(callback));
+    INTERNAL_EVENT_OBSERVERS
+        .write()
+        .unwrap()
+        .push(Box::from(callback));
 }
 
 pub fn notify_observers(event: Event) -> Result<()> {
-    for callback in INTERNAL_EVENT_OBSERVERS.read().iter() {
+    for callback in INTERNAL_EVENT_OBSERVERS.read().unwrap().iter() {
         callback(&event)?;
     }
 
@@ -152,44 +155,28 @@ pub fn process_dbus_event(
     Ok(())
 }
 
-/// Process a timer tick event
-pub fn process_timer_event() -> Result<()> {
-    for (handle, device) in crate::DEVICES.read().iter() {
-        let device_status = device.read_recursive().device_status()?;
-
-        DEVICE_STATUS
-            .write()
-            .insert(Into::<u64>::into(*handle), device_status);
-    }
-
-    Ok(())
-}
-
 /// Process keyboard events
 #[cfg(not(target_os = "windows"))]
 pub fn process_keyboard_event(
     raw_event: &evdev_rs::InputEvent,
-    device: hwdevices::Device,
+    device: &(dyn hwdevices::DeviceExt + Sync + Send),
 ) -> Result<()> {
-    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Keyboard);
-
     // notify all observers of raw events
-
     events::notify_observers(events::Event::RawKeyboardEvent(raw_event.clone())).ok();
 
     if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
         let is_pressed = raw_event.value > 0;
         let index = device
-            .read()
             .as_keyboard_device()
             .unwrap()
             .ev_key_to_key_index(*code);
 
         if is_pressed {
-            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap() =
+                LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                if !FAILED_TXS.read().contains(&idx) {
+            for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                if !FAILED_TXS.read().unwrap().contains(&idx) {
                     lua_tx
                         .send(script::Message::KeyDown(index))
                         .unwrap_or_else(|e| {
@@ -205,18 +192,21 @@ pub fn process_keyboard_event(
                 // this is required to avoid a deadlock when a Lua script fails
                 // and a key event is pending
                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = 0;
+                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap() = 0;
                     break;
                 }
 
-                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+                let pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap();
 
-                UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
-                    &mut pending,
-                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                );
+                let result = UPCALL_COMPLETED_ON_KEY_DOWN
+                    .1
+                    .wait_timeout(
+                        pending,
+                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                    )
+                    .unwrap();
 
-                if *pending == 0 {
+                if *result.0 == 0 {
                     break;
                 }
             }
@@ -228,10 +218,11 @@ pub fn process_keyboard_event(
                 )
             });
         } else {
-            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+            *UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap() =
+                LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                if !FAILED_TXS.read().contains(&idx) {
+            for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                if !FAILED_TXS.read().unwrap().contains(&idx) {
                     lua_tx
                         .send(script::Message::KeyUp(index))
                         .unwrap_or_else(|e| {
@@ -247,18 +238,21 @@ pub fn process_keyboard_event(
                 // this is required to avoid a deadlock when a Lua script fails
                 // and a key event is pending
                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = 0;
+                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap() = 0;
                     break;
                 }
 
-                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+                let pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap();
 
-                UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
-                    &mut pending,
-                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                );
+                let result = UPCALL_COMPLETED_ON_KEY_UP
+                    .1
+                    .wait_timeout(
+                        pending,
+                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                    )
+                    .unwrap();
 
-                if *pending == 0 {
+                if *result.0 == 0 {
                     break;
                 }
             }
@@ -276,6 +270,7 @@ pub fn process_keyboard_event(
     // called inject_key(..), so that the key won't be reported twice
     macros::UINPUT_TX
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .send(macros::Message::MirrorKey(raw_event.clone()))
@@ -284,7 +279,7 @@ pub fn process_keyboard_event(
 
             // NOTE: We may deadlock here, so be careful
             /* device
-            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+            .write()
             .and_then(|mut device| {
                 device.fail().unwrap_or_else(|e| {
                     error!("Could not mark a device as failed: {}", e);
@@ -302,8 +297,6 @@ pub fn process_keyboard_event(
 
 /// Process HID events
 pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
-    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Keyboard);
-
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
 
@@ -312,6 +305,7 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
     'HID_EVENTS_LOOP: loop {
         match device
             .read()
+            .unwrap()
             .as_keyboard_device()
             .unwrap()
             .get_next_event_timeout(0)
@@ -328,11 +322,11 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
                     },
                 );
 
-                *UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock() =
-                    LUA_TXS.read().len() - FAILED_TXS.read().len();
+                *UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock().unwrap() =
+                    LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-                for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                    if !FAILED_TXS.read().contains(&idx) {
+                for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                    if !FAILED_TXS.read().unwrap().contains(&idx) {
                         lua_tx
                             .send(script::Message::KeyboardHidEvent(result))
                             .unwrap_or_else(|e| {
@@ -348,18 +342,21 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
                     // this is required to avoid a deadlock when a Lua script fails
                     // and a key event is pending
                     if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                        *UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock() = 0;
+                        *UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock().unwrap() = 0;
                         break;
                     }
 
-                    let mut pending = UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock();
+                    let pending = UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.0.lock().unwrap();
 
-                    UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT.1.wait_for(
-                        &mut pending,
-                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                    );
+                    let result = UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT
+                        .1
+                        .wait_timeout(
+                            pending,
+                            Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                        )
+                        .unwrap();
 
-                    if *pending == 0 {
+                    if *result.0 == 0 {
                         break;
                     }
                 }
@@ -369,23 +366,26 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
                     KeyboardHidEvent::KeyDown { code } => {
                         let index = device
                             .read()
+                            .unwrap()
                             .as_keyboard_device()
                             .unwrap()
                             .hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
-                                if let Some(mut v) = KEY_STATES.write().get_mut(index as usize) {
+                                if let Some(mut v) =
+                                    KEY_STATES.write().unwrap().get_mut(index as usize)
+                                {
                                     *v = true;
                                 } else {
                                     ratelimited::error!("Could not update key states");
                                 }
                             }
 
-                            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() =
-                                LUA_TXS.read().len() - FAILED_TXS.read().len();
+                            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap() =
+                                LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-                            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                                if !FAILED_TXS.read().contains(&idx) {
+                            for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                                if !FAILED_TXS.read().unwrap().contains(&idx) {
                                     lua_tx.send(script::Message::KeyDown(index))
                                         .unwrap_or_else(|e| {
                                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
@@ -400,24 +400,27 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
                                 // this is required to avoid a deadlock when a Lua script fails
                                 // and a key event is pending
                                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = 0;
+                                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap() = 0;
                                     break;
                                 }
 
-                                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+                                let pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap();
 
-                                UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
-                                    &mut pending,
-                                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                                );
+                                let result = UPCALL_COMPLETED_ON_KEY_DOWN
+                                    .1
+                                    .wait_timeout(
+                                        pending,
+                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                    )
+                                    .unwrap();
 
-                                if *pending == 0 {
+                                if *result.0 == 0 {
                                     break;
                                 }
                             }
 
                             // update AFK timer
-                            *crate::LAST_INPUT_TIME.write() = Instant::now();
+                            *crate::LAST_INPUT_TIME.write().unwrap() = Instant::now();
 
                             events::notify_observers(events::Event::KeyDown(index)).unwrap_or_else(
                                 |e| error!("Error during notification of observers [keyboard_hid_event]: {}", e),
@@ -428,23 +431,26 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
                     KeyboardHidEvent::KeyUp { code } => {
                         let index = device
                             .read()
+                            .unwrap()
                             .as_keyboard_device()
                             .unwrap()
                             .hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
-                                if let Some(mut v) = KEY_STATES.write().get_mut(index as usize) {
+                                if let Some(mut v) =
+                                    KEY_STATES.write().unwrap().get_mut(index as usize)
+                                {
                                     *v = false;
                                 } else {
                                     ratelimited::error!("Could not update key states");
                                 }
                             }
 
-                            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() =
-                                LUA_TXS.read().len() - FAILED_TXS.read().len();
+                            *UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap() =
+                                LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-                            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                                if !FAILED_TXS.read().contains(&idx) {
+                            for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                                if !FAILED_TXS.read().unwrap().contains(&idx) {
                                     lua_tx.send(script::Message::KeyUp(index)).unwrap_or_else(
                                         |e| {
                                             error!("Could not send a pending keyboard event to a Lua VM: {}", e)
@@ -460,24 +466,27 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
                                 // this is required to avoid a deadlock when a Lua script fails
                                 // and a key event is pending
                                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = 0;
+                                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap() = 0;
                                     break;
                                 }
 
-                                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+                                let pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap();
 
-                                UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
-                                    &mut pending,
-                                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                                );
+                                let result = UPCALL_COMPLETED_ON_KEY_UP
+                                    .1
+                                    .wait_timeout(
+                                        pending,
+                                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                                    )
+                                    .unwrap();
 
-                                if *pending == 0 {
+                                if *result.0 == 0 {
                                     break;
                                 }
                             }
 
                             // update AFK timer
-                            *crate::LAST_INPUT_TIME.write() = Instant::now();
+                            *crate::LAST_INPUT_TIME.write().unwrap() = Instant::now();
 
                             events::notify_observers(events::Event::KeyUp(index)).unwrap_or_else(
                                 |e| error!("Error during notification of observers [keyboard_hid_event]: {}", e),
@@ -510,12 +519,9 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
 #[cfg(not(target_os = "windows"))]
 pub fn process_mouse_event(
     raw_event: &evdev_rs::InputEvent,
-    device: hwdevices::Device,
+    device: &(dyn hwdevices::DeviceExt + Sync + Send),
 ) -> Result<()> {
-    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Mouse);
-
     // send pending mouse events to the Lua VMs and to the event dispatcher
-
     let mut mirror_event = true;
 
     // notify all observers of raw events
@@ -533,50 +539,50 @@ pub fn process_mouse_event(
 
                 // accumulate relative changes
                 let direction = if *code == evdev_rs::enums::EV_REL::REL_X {
-                    MOUSE_MOTION_BUF.write().0 += raw_event.value;
+                    MOUSE_MOTION_BUF.write().unwrap().0 += raw_event.value;
 
                     1
                 } else if *code == evdev_rs::enums::EV_REL::REL_Y {
-                    MOUSE_MOTION_BUF.write().1 += raw_event.value;
+                    MOUSE_MOTION_BUF.write().unwrap().1 += raw_event.value;
 
                     2
                 } else if *code == evdev_rs::enums::EV_REL::REL_Z {
-                    MOUSE_MOTION_BUF.write().2 += raw_event.value;
+                    MOUSE_MOTION_BUF.write().unwrap().2 += raw_event.value;
 
                     3
                 } else {
                     4
                 };
 
-                if *MOUSE_MOTION_BUF.read() != (0, 0, 0)
+                if *MOUSE_MOTION_BUF.read().unwrap() != (0, 0, 0)
                     && MOUSE_MOVE_EVENT_LAST_DISPATCHED
                         .read()
+                        .unwrap()
                         .elapsed()
                         .as_millis()
                         > constants::EVENTS_UPCALL_RATE_LIMIT_MILLIS.into()
                 {
-                    *MOUSE_MOVE_EVENT_LAST_DISPATCHED.write() = Instant::now();
+                    *MOUSE_MOVE_EVENT_LAST_DISPATCHED.write().unwrap() = Instant::now();
 
-                    *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() =
-                        LUA_TXS.read().len() - FAILED_TXS.read().len();
+                    *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock().unwrap() =
+                        LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-                    for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                        if !FAILED_TXS.read().contains(&idx) {
-                            lua_tx
-                                .send(script::Message::MouseMove(
-                                    MOUSE_MOTION_BUF.read().0,
-                                    MOUSE_MOTION_BUF.read().1,
-                                    MOUSE_MOTION_BUF.read().2,
-                                ))
-                                .unwrap_or_else(|e| {
-                                    error!(
-                                        "Could not send a pending mouse event to a Lua VM: {}",
-                                        e
-                                    );
-                                });
+                    for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                        if !FAILED_TXS.read().unwrap().contains(&idx) {
+                            {
+                                let coords = MOUSE_MOTION_BUF.read().unwrap();
+                                lua_tx
+                                    .send(script::Message::MouseMove(coords.0, coords.1, coords.2))
+                                    .unwrap_or_else(|e| {
+                                        error!(
+                                            "Could not send a pending mouse event to a Lua VM: {}",
+                                            e
+                                        );
+                                    });
+                            }
 
                             // reset relative motion buffer, since it has been submitted
-                            *MOUSE_MOTION_BUF.write() = (0, 0, 0);
+                            *MOUSE_MOTION_BUF.write().unwrap() = (0, 0, 0);
                         } else {
                             ratelimited::warn!("Not sending a message to a failed tx");
                         }
@@ -585,15 +591,15 @@ pub fn process_mouse_event(
                     // wait until all Lua VMs completed the event handler
                     /*loop {
                         if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                            *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock() = 0;
+                            *UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock().unwrap() = 0;
                             break;
                         }
 
                         let mut pending =
-                            UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock();
+                            UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock().unwrap();
 
-                        UPCALL_COMPLETED_ON_MOUSE_MOVE.1.wait_for(
-                            &mut pending,
+                        UPCALL_COMPLETED_ON_MOUSE_MOVE.1.wait_timeout(
+                           pending,
                             Duration::from_millis(
                                 constants::TIMEOUT_CONDITION_MILLIS,
                             ),
@@ -641,11 +647,11 @@ pub fn process_mouse_event(
                     direction = 5;
                 }
 
-                *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() =
-                    LUA_TXS.read().len() - FAILED_TXS.read().len();
+                *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock().unwrap() =
+                    LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-                for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                    if !FAILED_TXS.read().contains(&idx) {
+                for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                    if !FAILED_TXS.read().unwrap().contains(&idx) {
                         lua_tx
                             .send(script::Message::MouseWheelEvent(direction))
                             .unwrap_or_else(|e| {
@@ -659,18 +665,21 @@ pub fn process_mouse_event(
                 // wait until all Lua VMs completed the event handler
                 loop {
                     if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                        *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock() = 0;
+                        *UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock().unwrap() = 0;
                         break;
                     }
 
-                    let mut pending = UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock();
+                    let pending = UPCALL_COMPLETED_ON_MOUSE_EVENT.0.lock().unwrap();
 
-                    UPCALL_COMPLETED_ON_MOUSE_EVENT.1.wait_for(
-                        &mut pending,
-                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                    );
+                    let result = UPCALL_COMPLETED_ON_MOUSE_EVENT
+                        .1
+                        .wait_timeout(
+                            pending,
+                            Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                        )
+                        .unwrap();
 
-                    if *pending == 0 {
+                    if *result.0 == 0 {
                         break;
                     }
                 }
@@ -692,18 +701,17 @@ pub fn process_mouse_event(
 
         let is_pressed = raw_event.value > 0;
         let index = device
-            .read()
             .as_mouse_device()
             .unwrap()
             .ev_key_to_button_index(code)
             .unwrap();
 
         if is_pressed {
-            *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() =
-                LUA_TXS.read().len() - FAILED_TXS.read().len();
+            *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock().unwrap() =
+                LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                if !FAILED_TXS.read().contains(&idx) {
+            for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                if !FAILED_TXS.read().unwrap().contains(&idx) {
                     lua_tx
                         .send(script::Message::MouseButtonDown(index))
                         .unwrap_or_else(|e| {
@@ -717,18 +725,21 @@ pub fn process_mouse_event(
             // wait until all Lua VMs completed the event handler
             loop {
                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock() = 0;
+                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock().unwrap() = 0;
                     break;
                 }
 
-                let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock();
+                let pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.0.lock().unwrap();
 
-                UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN.1.wait_for(
-                    &mut pending,
-                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                );
+                let result = UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN
+                    .1
+                    .wait_timeout(
+                        pending,
+                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                    )
+                    .unwrap();
 
-                if *pending == 0 {
+                if *result.0 == 0 {
                     break;
                 }
             }
@@ -740,11 +751,11 @@ pub fn process_mouse_event(
                 )
             });
         } else {
-            *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() =
-                LUA_TXS.read().len() - FAILED_TXS.read().len();
+            *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock().unwrap() =
+                LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                if !FAILED_TXS.read().contains(&idx) {
+            for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                if !FAILED_TXS.read().unwrap().contains(&idx) {
                     lua_tx
                         .send(script::Message::MouseButtonUp(index))
                         .unwrap_or_else(|e| {
@@ -758,18 +769,21 @@ pub fn process_mouse_event(
             // wait until all Lua VMs completed the event handler
             loop {
                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock() = 0;
+                    *UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock().unwrap() = 0;
                     break;
                 }
 
-                let mut pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock();
+                let pending = UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.0.lock().unwrap();
 
-                UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP.1.wait_for(
-                    &mut pending,
-                    Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                );
+                let result = UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP
+                    .1
+                    .wait_timeout(
+                        pending,
+                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                    )
+                    .unwrap();
 
-                if *pending == 0 {
+                if *result.0 == 0 {
                     break;
                 }
             }
@@ -790,6 +804,7 @@ pub fn process_mouse_event(
         // received by the mouse plugin. This is done to reduce input lag
         macros::UINPUT_TX
             .read()
+            .unwrap()
             .as_ref()
             .unwrap()
             .send(macros::Message::MirrorMouseEvent(raw_event.clone()))
@@ -798,7 +813,7 @@ pub fn process_mouse_event(
 
                 // NOTE: We may deadlock here, so be careful
                 /* device
-                .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+                .write()
                 .and_then(|mut device| {
                     device.fail().unwrap_or_else(|e| {
                         error!("Could not mark a device as failed: {}", e);
@@ -816,21 +831,14 @@ pub fn process_mouse_event(
 }
 
 /// Process HID events
-pub fn process_mouse_hid_events(device: hwdevices::Device) -> Result<()> {
-    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Mouse);
-
+pub fn process_mouse_hid_events(device: &(dyn hwdevices::DeviceExt + Sync + Send)) -> Result<()> {
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
 
     let mut event_processed = false;
 
     'HID_EVENTS_LOOP: loop {
-        match device
-            .read()
-            .as_mouse_device()
-            .unwrap()
-            .get_next_event_timeout(0)
-        {
+        match device.as_mouse_device().unwrap().get_next_event_timeout(0) {
             Ok(result) if result != MouseHidEvent::Unknown => {
                 event_processed = true;
 
@@ -843,11 +851,11 @@ pub fn process_mouse_hid_events(device: hwdevices::Device) -> Result<()> {
                     },
                 );
 
-                *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() =
-                    LUA_TXS.read().len() - FAILED_TXS.read().len();
+                *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock().unwrap() =
+                    LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-                for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                    if !FAILED_TXS.read().contains(&idx) {
+                for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                    if !FAILED_TXS.read().unwrap().contains(&idx) {
                         lua_tx
                             .send(script::Message::MouseHidEvent(result))
                             .unwrap_or_else(|e| {
@@ -863,18 +871,21 @@ pub fn process_mouse_hid_events(device: hwdevices::Device) -> Result<()> {
                     // this is required to avoid a deadlock when a Lua script fails
                     // and an event is pending
                     if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                        *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock() = 0;
+                        *UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock().unwrap() = 0;
                         break;
                     }
 
-                    let mut pending = UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock();
+                    let pending = UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.0.lock().unwrap();
 
-                    UPCALL_COMPLETED_ON_MOUSE_HID_EVENT.1.wait_for(
-                        &mut pending,
-                        Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
-                    );
+                    let result = UPCALL_COMPLETED_ON_MOUSE_HID_EVENT
+                        .1
+                        .wait_timeout(
+                            pending,
+                            Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
+                        )
+                        .unwrap();
 
-                    if *pending == 0 {
+                    if *result.0 == 0 {
                         break;
                     }
                 }
@@ -904,9 +915,9 @@ pub fn process_mouse_hid_events(device: hwdevices::Device) -> Result<()> {
 #[cfg(not(target_os = "windows"))]
 pub fn process_misc_event(
     raw_event: &evdev_rs::InputEvent,
-    _device: hwdevices::Device,
+    _device: &(dyn hwdevices::DeviceExt + Sync + Send),
 ) -> Result<()> {
-    // assert_eq!(device.read_recursive().get_device_class(), DeviceClass::Misc);
+    // assert_eq!(device.read().unwrap().get_device_class(), DeviceClass::Misc);
 
     // notify all observers of raw events
     events::notify_observers(events::Event::RawMiscEvent(raw_event.clone())).ok();
@@ -914,16 +925,16 @@ pub fn process_misc_event(
     /* if let evdev_rs::enums::EventCode::EV_KEY(ref code) = raw_event.event_code {
         let is_pressed = raw_event.value > 0;
         let index = device
-            .read()
+            .read().unwrap()
             .as_misc_device()
             .unwrap()
             .ev_key_to_key_index(*code);
 
         if is_pressed {
-            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+            *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap() = LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                if !FAILED_TXS.read().contains(&idx) {
+            for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                if !FAILED_TXS.read().unwrap().contains(&idx) {
                     lua_tx
                         .send(script::Message::KeyDown(index))
                         .unwrap_or_else(|e| {
@@ -939,14 +950,14 @@ pub fn process_misc_event(
                 // this is required to avoid a deadlock when a Lua script fails
                 // and a key event is pending
                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock() = 0;
+                    *UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap() = 0;
                     break;
                 }
 
-                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock();
+                let mut pending = UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap();
 
-                UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_for(
-                    &mut pending,
+                UPCALL_COMPLETED_ON_KEY_DOWN.1.wait_timeout(
+                   pending,
                     Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
                 );
 
@@ -962,10 +973,10 @@ pub fn process_misc_event(
                 )
             });
         } else {
-            *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = LUA_TXS.read().len() - FAILED_TXS.read().len();
+            *UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap() = LUA_TXS.read().unwrap().len() - FAILED_TXS.read().unwrap().len();
 
-            for (idx, lua_tx) in LUA_TXS.read().iter().enumerate() {
-                if !FAILED_TXS.read().contains(&idx) {
+            for (idx, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
+                if !FAILED_TXS.read().unwrap().contains(&idx) {
                     lua_tx
                         .send(script::Message::KeyUp(index))
                         .unwrap_or_else(|e| {
@@ -981,14 +992,14 @@ pub fn process_misc_event(
                 // this is required to avoid a deadlock when a Lua script fails
                 // and a key event is pending
                 if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock() = 0;
+                    *UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap() = 0;
                     break;
                 }
 
-                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock();
+                let mut pending = UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap();
 
-                UPCALL_COMPLETED_ON_KEY_UP.1.wait_for(
-                    &mut pending,
+                UPCALL_COMPLETED_ON_KEY_UP.1.wait_timeout(
+                   pending,
                     Duration::from_millis(constants::TIMEOUT_CONDITION_MILLIS),
                 );
 
@@ -1010,6 +1021,7 @@ pub fn process_misc_event(
     // called inject_key(..), so that the key won't be reported twice
     macros::UINPUT_TX
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .send(macros::Message::MirrorKey(raw_event.clone()))
@@ -1018,7 +1030,7 @@ pub fn process_misc_event(
 
             // NOTE: We may deadlock here, so be careful
             /* device
-            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
+            .write()
             .and_then(|mut device| {
                 device.fail().unwrap_or_else(|e| {
                     error!("Could not mark a device as failed: {}", e);

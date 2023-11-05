@@ -25,13 +25,13 @@ use evdev_rs::{enums::*, DeviceWrapper, InputEvent, TimeVal, UInputDevice, Unini
 use flume::{bounded, Sender};
 use lazy_static::lazy_static;
 use mlua::prelude::*;
-use parking_lot::RwLock;
 use std::cell::RefCell;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::{any::Any, thread};
 use tracing::*;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::plugins::{self, Plugin};
 
@@ -648,7 +648,7 @@ impl MacrosPlugin {
                 }
             })?;
 
-        *UINPUT_TX.write() = Some(uinput_tx);
+        *UINPUT_TX.write().unwrap() = Some(uinput_tx);
 
         Ok(())
     }

@@ -173,8 +173,8 @@ pub mod syntax {
 }
 
 pub mod interpreter {
-    use parking_lot::RwLock;
     use std::{path::Path, sync::Arc};
+    use tracing_mutex::stdsync::RwLock;
 
     use mlua::Lua;
 
@@ -200,12 +200,12 @@ pub mod interpreter {
                 "package.path = package.path .. '{0}/lib/?;{0}/lib/?.lua;{0}/?.lua'",
                 &constants::DEFAULT_SCRIPT_DIR
             );
-            lua_ctx.write().load(&path_spec).exec()?;
+            lua_ctx.write().unwrap().load(&path_spec).exec()?;
 
             let file_name = path.as_ref();
 
             {
-                let lua = lua_ctx.write();
+                let lua = lua_ctx.write().unwrap();
 
                 import_stubs(&lua)?;
 
@@ -267,7 +267,7 @@ pub mod interpreter {
         type Item = LuaFunction;
 
         fn next(&mut self) -> Option<Self::Item> {
-            let lua = self.lua.read();
+            let lua = self.lua.read().unwrap();
             let globals = lua.globals();
 
             if let Ok(funcs) = globals.get::<_, Vec<String>>("funcs") {

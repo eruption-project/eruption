@@ -90,9 +90,14 @@ impl Keyboard for WootingTwoHeArm {
         context.set_source_pixbuf(pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
-        let led_colors = crate::CANVAS.read();
+        let led_colors = crate::CANVAS.read().unwrap();
 
-        if let Some(allocated_zone) = ZONES.read().iter().find(|&z| z.device == Some(self.device)) {
+        if let Some(allocated_zone) = ZONES
+            .read()
+            .unwrap()
+            .iter()
+            .find(|&z| z.device == Some(self.device))
+        {
             let canvas = ArrayView2::from_shape(
                 (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
                 &led_colors,
@@ -221,7 +226,7 @@ impl Keyboard for WootingTwoHeArm {
         if !key_def.is_dummy {
             // compute scaling factor
             // let factor =
-            //     ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
+            //     ((100.0 - crate::STATE.read().unwrap().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
 
             // post-process color
             let source_color = LinSrgba::new(

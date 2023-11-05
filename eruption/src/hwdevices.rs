@@ -33,9 +33,9 @@ use hidapi::HidApi;
 use lazy_static::lazy_static;
 use libc::wchar_t;
 use mlua::prelude::*;
-use parking_lot::RwLock;
 use serde::{self, Deserialize};
 use tracing::*;
+use tracing_mutex::stdsync::RwLock;
 #[cfg(not(target_os = "windows"))]
 use udev::Enumerator;
 
@@ -60,15 +60,15 @@ impl DeviceHandle {
     }
 }
 
-impl Into<u64> for DeviceHandle {
-    fn into(self) -> u64 {
-        self.0
+impl From<DeviceHandle> for u64 {
+    fn from(val: DeviceHandle) -> Self {
+        val.0
     }
 }
 
-impl Into<usize> for DeviceHandle {
-    fn into(self) -> usize {
-        self.0 as usize
+impl From<DeviceHandle> for usize {
+    fn from(val: DeviceHandle) -> Self {
+        val.0 as usize
     }
 }
 
@@ -80,32 +80,32 @@ impl<'lua> IntoLua<'lua> for DeviceHandle {
 
 impl fmt::Display for DeviceHandle {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        // write!(f, "[{:02}]", self.0)?;
+        write!(f, "[{:02}]", self.0)?;
 
-        find_device_by_handle(self)
-            .and_then(|device| {
-                device
-                    .try_read()
-                    .and_then(|device| {
-                        let device_identifier = device.get_support_script_file();
+        /* find_device_by_handle(self)
+        .and_then(|device| {
+            device
+                .try_read()
+                .and_then(|device| {
+                    let device_identifier = device.get_support_script_file();
 
-                        let _ = write!(f, "[{:02}:{device_identifier}]", self.0);
+                    let _ = write!(f, "[{:02}:{device_identifier}]", self.0);
 
-                        Some(device)
-                    })
-                    .or_else(|| {
-                        let _ = write!(f, "[{:02}:<unknown device>]", self.0);
+                    Ok(device)
+                })
+                .or_else(|e| {
+                    let _ = write!(f, "[{:02}:<unknown device>]", self.0);
 
-                        None
-                    });
+                    Err(e)
+                });
 
-                Some(device)
-            })
-            .or_else(|| {
-                let _ = write!(f, "[{:02}:<invalid device>]", self.0);
+            Some(device)
+        })
+        .or_else(|| {
+            let _ = write!(f, "[{:02}:<invalid device>]", self.0);
 
-                None
-            });
+            None
+        }); */
 
         Ok(())
     }
@@ -364,7 +364,7 @@ impl DriverMetadataExt for KeyboardDriver<'static> {
         usb_id: (u16, u16),
         serial: &[wchar_t],
     ) -> Result<Box<dyn DeviceExt + Sync + Send>> {
-        (self.bind_fn)(&hidapi, usb_id.0, usb_id.1, serial)
+        (self.bind_fn)(hidapi, usb_id.0, usb_id.1, serial)
     }
 }
 
@@ -1053,6 +1053,9 @@ pub trait DeviceExt: DeviceInfoExt + DeviceZoneAllocationExt {
     /// Get the device status
     fn device_status(&self) -> Result<DeviceStatus>;
 
+    fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>>;
+    fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>);
+
     fn get_device_class(&self) -> DeviceClass;
 
     fn as_device(&self) -> &(dyn DeviceExt + Send + Sync);
@@ -1197,6 +1200,7 @@ pub trait MiscSerialDeviceExt: SerialDeviceExt {
 /// Returns true if the USB device is blacklisted in the global configuration
 pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
     let config = crate::CONFIG.read();
+    let config = config.as_ref().unwrap();
 
     if let Some(config) = config.as_ref() {
         let devices = config.get_array("devices").unwrap_or_else(|_e| vec![]);
@@ -1231,7 +1235,7 @@ pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
 pub fn get_non_pnp_devices() -> Result<Vec<NonPnPDevice>> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.read();
+    let config = crate::CONFIG.read().unwrap();
 
     if let Some(config) = config.as_ref() {
         let devices = config.get_array("devices").unwrap_or_else(|_e| vec![]);
@@ -1295,18 +1299,18 @@ pub fn probe_devices() -> Result<Vec<Device>> {
 
     let mut bound_devices = Vec::new();
 
-    for (_handle, device) in crate::DEVICES.read().iter() {
-        bound_devices.extend(device.read_recursive().get_dev_paths());
-    }
+    // for (_handle, device) in crate::DEVICES.read().unwrap().iter() {
+    //     bound_devices.extend(device.read().unwrap().get_dev_paths());
+    // }
 
-    let mut hidapi = crate::HIDAPI.write();
+    let mut hidapi = crate::HIDAPI.write().unwrap();
     let hidapi = hidapi.as_mut().unwrap();
 
     hidapi.refresh_devices()?;
 
     for device_info in hidapi.device_list() {
         if !is_device_blacklisted(device_info.vendor_id(), device_info.product_id())? {
-            if let Some(driver) = DRIVERS.read().iter().find(|&driver| {
+            if let Some(driver) = DRIVERS.read().unwrap().iter().find(|&driver| {
                 driver.get_usb_vid() == device_info.vendor_id()
                     && driver.get_usb_pid() == device_info.product_id()
             }) {
@@ -1329,7 +1333,7 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                 let serial = device_info.serial_number_raw().unwrap_or(&[]);
                 let path = device_info.path().to_string_lossy().into_owned();
 
-                let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read();
+                let driver_maturity_level = *crate::DRIVER_MATURITY_LEVEL.read().unwrap();
 
                 if driver.get_maturity_level() <= driver_maturity_level {
                     match driver.get_device_class() {
@@ -1745,7 +1749,7 @@ pub fn get_device_model(usb_vid: u16, usb_pid: u16) -> Option<&'static str> {
 }
 
 pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<(&'static str, &'static str)> {
-    let drivers = DRIVERS.read();
+    let drivers = DRIVERS.read().unwrap();
     let metadata = drivers
         .iter()
         .find(|e| e.get_usb_vid() == usb_vid && e.get_usb_pid() == usb_pid);
@@ -1756,14 +1760,14 @@ pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<(&'static str, &'st
 #[allow(dead_code)]
 #[inline]
 pub fn find_device_by_handle(handle: &DeviceHandle) -> Option<Device> {
-    crate::DEVICES.read().get(handle).cloned()
+    crate::DEVICES.read().unwrap().get(handle).cloned()
 }
 
 pub fn get_device_by_index(device_class: DeviceClass, index: usize) -> Option<Device> {
     let mut cntr = 0;
 
-    for (_handle, device) in crate::DEVICES.read().iter() {
-        if device.read_recursive().get_device_class() == device_class {
+    for (_handle, device) in crate::DEVICES.read().unwrap().iter() {
+        if device.read().unwrap().get_device_class() == device_class {
             if index == cntr {
                 return Some(device.clone());
             }

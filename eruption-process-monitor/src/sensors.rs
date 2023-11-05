@@ -24,8 +24,8 @@ use std::{collections::HashSet, hash::Hash, sync::Arc};
 use async_trait::async_trait;
 use dyn_clonable::*;
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
 use tracing::*;
+use tracing_mutex::stdsync::RwLock;
 
 #[cfg(feature = "sensor-gnome-shellext")]
 mod gnome_shellext;
@@ -224,7 +224,7 @@ where
 {
     info!("{} - {}", sensor.get_name(), sensor.get_description());
 
-    SENSORS.write().push(Box::from(sensor));
+    SENSORS.write().unwrap().push(Box::from(sensor));
 }
 
 /// Register all available sensors
@@ -247,7 +247,7 @@ pub fn register_sensors() -> Result<()> {
     register_sensor(X11Sensor::new());
 
     // initialize all registered sensors
-    for s in SENSORS.write().iter_mut() {
+    for s in SENSORS.write().unwrap().iter_mut() {
         s.initialize()?;
     }
 
@@ -257,7 +257,7 @@ pub fn register_sensors() -> Result<()> {
 /// Find a sensor by its respective id
 #[allow(dead_code)]
 pub fn find_sensor_by_id(id: &str) -> Option<Box<dyn Sensor + Send + Sync + 'static>> {
-    match SENSORS.read().iter().find(|&e| e.get_id() == id) {
+    match SENSORS.read().unwrap().iter().find(|&e| e.get_id() == id) {
         Some(s) => Some(dyn_clone::clone_box(s.as_ref())),
 
         None => None,

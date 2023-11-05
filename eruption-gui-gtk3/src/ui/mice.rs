@@ -224,7 +224,7 @@ pub fn update_levels(template: &gtk::Builder, device: u64) -> Result<()> {
     let mut errors_present = false;
 
     // device status
-    if let Some(device_status) = crate::DEVICE_STATUS.read().get(&device) {
+    if let Some(device_status) = crate::DEVICE_STATUS.read().unwrap().get(&device) {
         if let Some(signal_strength_percent) = device_status.get("signal-strength-percent") {
             let value = signal_strength_percent.parse::<i32>().unwrap_or(0);
 
@@ -275,6 +275,7 @@ pub fn update_levels(template: &gtk::Builder, device: u64) -> Result<()> {
         let status = util::get_device_status(device).unwrap_or_else(|_| HashMap::new());
         crate::DEVICE_STATUS
             .write()
+            .unwrap()
             .insert(device, DeviceStatus(status));
 
         mouse_signal_label.hide();

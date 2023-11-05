@@ -65,7 +65,7 @@ impl Mouse for RoccatKovaAimo {
         // context.set_source_pixbuf(&pixbuf, 0.0, 0.0);
         // context.paint()?;
 
-        let led_colors = crate::CANVAS.read();
+        let led_colors = crate::CANVAS.read().unwrap();
 
         // paint all cells in the "mouse zone" of the canvas
         for i in 144..(144 + 36) {
@@ -100,7 +100,8 @@ impl Mouse for RoccatKovaAimo {
 
         // compute scaling factor
         let factor =
-            ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
+            ((100.0 - crate::STATE.read().unwrap().current_brightness.unwrap_or(0) as f64) / 100.0)
+                * 0.15;
 
         // post-process color
         let color = LinSrgba::new(

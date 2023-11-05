@@ -65,7 +65,7 @@ pub fn get_script_dirs() -> Vec<PathBuf> {
 }
 
 fn get_dirs(config_key: &str, fallback_dir: &str, fallback_description: &str) -> Vec<PathBuf> {
-    let config = crate::CONFIG.read();
+    let config = crate::CONFIG.read().unwrap();
 
     let script_dirs = config
         .as_ref()

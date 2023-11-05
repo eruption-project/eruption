@@ -32,7 +32,7 @@ use gtk::{
 };
 use ndarray::ArrayView2;
 use palette::{FromColor, Lighten, LinSrgba};
-use parking_lot::RwLock;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::timers::TimerMode;
 use crate::zone::Zone;
@@ -171,10 +171,10 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 
             if let Some((model, selection)) = sel.selected() {
                 if let Ok(device) = model.value(&selection, 1).get::<u64>() {
-                    if let Some(e) = ZONES.read().iter().find(|zone| zone.device == Some(device)) {
-                        *SELECTED_ZONE.write() = Some(*e);
+                    if let Some(e) = ZONES.read().unwrap().iter().find(|zone| zone.device == Some(device)) {
+                        *SELECTED_ZONE.write().unwrap() = Some(*e);
                     } else {
-                        *SELECTED_ZONE.write() = None;
+                        *SELECTED_ZONE.write().unwrap() = None;
                     }
                 }
             }
@@ -322,7 +322,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
                 &(!value).to_value(),
             );
 
-            let mut zones = ZONES.write();
+            let mut zones = ZONES.write().unwrap();
             let zone = zones.iter_mut().find(|v| v.device == Some(device_index));
 
             match zone {
@@ -510,7 +510,7 @@ pub fn initialize_canvas_page(builder: &gtk::Builder) -> Result<()> {
 }
 
 pub fn fetch_device_info(_builder: &gtk::Builder) -> Result<()> {
-    let mut device_info = DEVICE_INFO.write();
+    let mut device_info = DEVICE_INFO.write().unwrap();
 
     let devices = dbus_client::get_managed_devices()?;
 
@@ -557,14 +557,14 @@ pub fn fetch_device_info(_builder: &gtk::Builder) -> Result<()> {
 
 pub fn fetch_allocated_zones(_builder: &gtk::Builder) -> Result<()> {
     let zones = crate::dbus_client::get_devices_zone_allocations()?;
-    *ZONES.write() = zones;
+    *ZONES.write().unwrap() = zones;
 
     Ok(())
 }
 
 // pub fn update_allocated_zones(_builder: &gtk::Builder) -> Result<()> {
 //     let zones = crate::dbus_client::get_allocated_zones()?;
-//     *ZONES.write() = zones;
+//     *ZONES.write().unwrap() = zones;
 
 //     Ok(())
 // }
@@ -736,7 +736,7 @@ fn drawing_area_button_press(
                 Some((x, y)) => {
                     let mut hovering_over_a_zone = false;
 
-                    for zone in ZONES.write().iter_mut() {
+                    for zone in ZONES.write().unwrap().iter_mut() {
                         let pixel_width: f64 =
                             (da.allocated_width() as f64 - 400.0) / constants::CANVAS_WIDTH as f64;
                         let pixel_height: f64 =
@@ -765,14 +765,14 @@ fn drawing_area_button_press(
                             let offset_x = cell_x - zone.x;
                             let offset_y = cell_y - zone.y;
 
-                            *OFFSET_COORDINATES.write() = Some((offset_x, offset_y));
+                            *OFFSET_COORDINATES.write().unwrap() = Some((offset_x, offset_y));
 
                             // we are hovering over this zone
-                            *HOVER_ZONE.write() = Some(*zone);
+                            *HOVER_ZONE.write().unwrap() = Some(*zone);
                             hovering_over_a_zone = true;
 
                             // since the primary button is down, save the current zone as the currently selected one
-                            *SELECTED_ZONE.write() = Some(*zone);
+                            *SELECTED_ZONE.write().unwrap() = Some(*zone);
 
                             let devices_treeview: gtk::TreeView =
                                 builder.object("devices_tree_view").unwrap();
@@ -800,12 +800,12 @@ fn drawing_area_button_press(
                     }
 
                     if !hovering_over_a_zone {
-                        *HOVER_ZONE.write() = None;
+                        *HOVER_ZONE.write().unwrap() = None;
 
                         if event.state() & ModifierType::BUTTON1_MASK == ModifierType::BUTTON1_MASK
                         {
                             // primary button is down, move the zone around or resize
-                            *SELECTED_ZONE.write() = None;
+                            *SELECTED_ZONE.write().unwrap() = None;
                         }
                     }
 
@@ -840,7 +840,7 @@ fn drawing_area_leave_notify(
     _da: &gtk::DrawingArea,
     _event: &gdk::EventCrossing,
 ) -> glib::Propagation {
-    *CURSOR_TYPE.write() = None;
+    *CURSOR_TYPE.write().unwrap() = None;
 
     glib::Propagation::Stop
 }
@@ -850,14 +850,14 @@ fn drawing_area_motion_notify(
     event: &gdk::EventMotion,
 ) -> glib::Propagation {
     fn set_cursor(cursor: Option<gdk::CursorType>) {
-        *CURSOR_TYPE.write() = cursor;
+        *CURSOR_TYPE.write().unwrap() = cursor;
     }
 
     match event.coords() {
         Some((x, y)) => {
             let mut hovering_over_a_zone = false;
 
-            for zone in ZONES.write().iter_mut() {
+            for zone in ZONES.write().unwrap().iter_mut() {
                 let pixel_width: f64 =
                     (da.allocated_width() as f64 - 400.0) / constants::CANVAS_WIDTH as f64;
                 let pixel_height: f64 =
@@ -883,7 +883,7 @@ fn drawing_area_motion_notify(
                     && cell_y <= zone.y2()
                 {
                     // we are hovering over this zone
-                    *HOVER_ZONE.write() = Some(*zone);
+                    *HOVER_ZONE.write().unwrap() = Some(*zone);
                     hovering_over_a_zone = true;
 
                     // print!("Hovering over: {}", _device);
@@ -932,8 +932,8 @@ fn drawing_area_motion_notify(
                         // we are not hovering over a sensitive border, but inside the zone
                         set_cursor(Some(gdk::CursorType::Fleur));
 
-                        let offset_x = OFFSET_COORDINATES.read().unwrap_or((0, 0)).0;
-                        let offset_y = OFFSET_COORDINATES.read().unwrap_or((0, 0)).1;
+                        let offset_x = OFFSET_COORDINATES.read().unwrap().unwrap_or((0, 0)).0;
+                        let offset_y = OFFSET_COORDINATES.read().unwrap().unwrap_or((0, 0)).1;
 
                         zone.x = cell_x - offset_x;
                         zone.y = cell_y - offset_y;
@@ -978,17 +978,17 @@ fn drawing_area_motion_notify(
 
             // update state
             let zones = crate::dbus_client::get_devices_zone_allocations().unwrap();
-            *ZONES.write() = zones;
+            *ZONES.write().unwrap() = zones;
 
             da.queue_draw();
 
             if !hovering_over_a_zone {
-                *HOVER_ZONE.write() = None;
+                *HOVER_ZONE.write().unwrap() = None;
                 set_cursor(None);
 
                 // if event.state() & modifiertype::button1_mask == modifiertype::button1_mask {
                 //     // primary button is down, move the zone around or resize
-                //     *selected_zone.write() = none;
+                //     *selected_zone.write().unwrap() = none;
                 // }
             }
 
@@ -996,12 +996,12 @@ fn drawing_area_motion_notify(
         }
 
         _ => {
-            // *HOVER_ZONE.write() = None;
+            // *HOVER_ZONE.write().unwrap() = None;
             // set_cursor(None);
 
             // if event.state() & ModifierType::BUTTON1_MASK == ModifierType::BUTTON1_MASK {
             //     // primary button is down, move the zone around or resize
-            //     *SELECTED_ZONE.write() = None;
+            //     *SELECTED_ZONE.write().unwrap() = None;
             // }
 
             glib::Propagation::Stop
@@ -1020,7 +1020,7 @@ fn render_canvas(
 
     let scale_factor = 1.0; // width / (constants::CANVAS_WIDTH as f64 * 15.0);
 
-    let led_map = crate::CANVAS.read();
+    let led_map = crate::CANVAS.read().unwrap();
 
     let canvas = ArrayView2::from_shape(
         (constants::CANVAS_HEIGHT, constants::CANVAS_WIDTH),
@@ -1038,8 +1038,8 @@ fn render_canvas(
     }
 
     if mode == RenderMode::Zones {
-        let hover_zone = *HOVER_ZONE.read();
-        let selected_zone = *SELECTED_ZONE.read();
+        let hover_zone = *HOVER_ZONE.read().unwrap();
+        let selected_zone = *SELECTED_ZONE.read().unwrap();
 
         let layout = pangocairo::create_layout(context);
         FONT_DESC.with(|f| -> Result<()> {
@@ -1047,7 +1047,7 @@ fn render_canvas(
             layout.set_font_description(Some(&desc));
 
             // draw allocated zones
-            for zone in ZONES.read().iter() {
+            for zone in ZONES.read().unwrap().iter() {
                 let state;
 
                 if selected_zone.is_some() && zone.device == selected_zone.unwrap().device {
@@ -1163,11 +1163,11 @@ fn paint_zone(
     let pixel_width: f64 = width / constants::CANVAS_WIDTH as f64;
     let pixel_height: f64 = height / constants::CANVAS_HEIGHT as f64;
 
-    let zones = ZONES.read();
+    let zones = ZONES.read().unwrap();
     let Zone { enabled, .. } = zones.get(device as usize).copied().unwrap_or_default();
 
     if enabled {
-        let device_info = DEVICE_INFO.read();
+        let device_info = DEVICE_INFO.read().unwrap();
         let make_and_model = device_info.get(&device);
 
         let make = make_and_model

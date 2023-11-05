@@ -22,13 +22,14 @@
 use bitvec::{field::BitField, order::Lsb0, view::BitView};
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
+use flume::Receiver;
 use hidapi::HidApi;
 use libc::wchar_t;
-use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::{any::Any, time::Duration};
 use std::{sync::Arc, thread};
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 
 use crate::{constants, hwdevices};
 
@@ -102,6 +103,8 @@ pub enum DialMode {
 #[derive(Clone)]
 /// Device specific code for the Corsair STRAFE series keyboards
 pub struct CorsairStrafe {
+    pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
+
     pub is_initialized: bool,
 
     // keyboard
@@ -127,6 +130,8 @@ impl CorsairStrafe {
         debug!("Bound driver: Corsair STRAFE Gaming Keyboard");
 
         Self {
+            evdev_rx: None,
+
             is_initialized: false,
 
             is_bound: true,
@@ -158,7 +163,7 @@ impl CorsairStrafe {
     //                 let mut buf: [u8; 256] = [0; 256];
     //                 buf[0] = id;
 
-    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
@@ -186,7 +191,7 @@ impl CorsairStrafe {
     //     } else if !self.is_opened {
     //         Err(HwDeviceError::DeviceNotOpened {}.into())
     //     } else {
-    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //         match id {
@@ -218,7 +223,7 @@ impl CorsairStrafe {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let led_dev = self.led_hiddev.as_ref().lock();
+            let led_dev = self.led_hiddev.as_ref().lock().unwrap();
             let led_dev = led_dev.as_ref().unwrap();
 
             match id {
@@ -360,7 +365,7 @@ impl DeviceInfoExt for CorsairStrafe {
             // let mut buf = [0; size_of::<DeviceInfo>()];
             // buf[0] = 0x0f; // Query device info (HID report 0x0f)
 
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // match ctrl_dev.get_feature_report(&mut buf) {
@@ -446,14 +451,14 @@ impl DeviceExt for CorsairStrafe {
             // trace!("Opening control device...");
 
             // match self.ctrl_hiddev_info.as_ref().unwrap().open_device(&api) {
-            //     Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
+            //     Ok(dev) => *self.ctrl_hiddev.lock().unwrap() = Some(dev),
             //     Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             // };
 
             trace!("Opening LED device...");
 
             match self.led_hiddev_info.as_ref().unwrap().open_device(api) {
-                Ok(dev) => *self.led_hiddev.lock() = Some(dev),
+                Ok(dev) => *self.led_hiddev.lock().unwrap() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
@@ -473,10 +478,10 @@ impl DeviceExt for CorsairStrafe {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             // trace!("Closing control device...");
-            // *self.ctrl_hiddev.lock() = None;
+            // *self.ctrl_hiddev.lock().unwrap() = None;
 
             trace!("Closing LED device...");
-            *self.led_hiddev.lock() = None;
+            *self.led_hiddev.lock().unwrap() = None;
 
             self.is_opened = false;
 
@@ -558,7 +563,7 @@ impl DeviceExt for CorsairStrafe {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // match ctrl_dev.write(&buf) {
@@ -584,7 +589,7 @@ impl DeviceExt for CorsairStrafe {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // let mut buf = Vec::new();
@@ -635,7 +640,7 @@ impl DeviceExt for CorsairStrafe {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            match *self.led_hiddev.lock() {
+            match *self.led_hiddev.lock().unwrap() {
                 Some(ref led_dev) => {
                     if led_map.len() < NUM_KEYS {
                         error!(
@@ -853,6 +858,14 @@ impl DeviceExt for CorsairStrafe {
     fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Sync + Send)> {
         None
     }
+
+    fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
+        &self.evdev_rx
+    }
+
+    fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
+        self.evdev_rx = rx;
+    }
 }
 
 impl KeyboardDeviceExt for CorsairStrafe {
@@ -898,10 +911,10 @@ impl KeyboardDeviceExt for CorsairStrafe {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
 
             // TODO: Implement this
-            let ctrl_dev = self.led_hiddev.as_ref().lock();
+            let ctrl_dev = self.led_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = [0; 8];
@@ -945,16 +958,16 @@ impl KeyboardDeviceExt for CorsairStrafe {
 
                     //     // volume up/down adjustment is initiated by the following sequence
                     //     [0x03, 0x00, 0x0b, 0x26, _] => {
-                    //         *self.dial_mode.lock() = DialMode::Volume;
+                    //         *self.dial_mode.lock().unwrap() = DialMode::Volume;
                     //         KeyboardHidEvent::Unknown
                     //     }
                     //     [0x03, 0x00, 0x0b, 0x27, _] => {
-                    //         *self.dial_mode.lock() = DialMode::Volume;
+                    //         *self.dial_mode.lock().unwrap() = DialMode::Volume;
                     //         KeyboardHidEvent::Unknown
                     //     }
 
                     //     [0x03, 0x00, 0xcc, code, _] => {
-                    //         let result = if *self.dial_mode.lock() == DialMode::Volume {
+                    //         let result = if *self.dial_mode.lock().unwrap() == DialMode::Volume {
                     //             match code {
                     //                 0x01 => KeyboardHidEvent::VolumeUp,
                     //                 0xff => KeyboardHidEvent::VolumeDown,
@@ -971,7 +984,7 @@ impl KeyboardDeviceExt for CorsairStrafe {
                     //         };
 
                     //         // default to brightness
-                    //         *self.dial_mode.lock() = DialMode::Brightness;
+                    //         *self.dial_mode.lock().unwrap() = DialMode::Brightness;
 
                     //         result
                     //     }
@@ -988,13 +1001,13 @@ impl KeyboardDeviceExt for CorsairStrafe {
                         KeyboardHidEvent::KeyDown { code } => {
                             // update our internal representation of the keyboard state
                             let index = self.hid_event_code_to_key_index(&code) as usize;
-                            crate::KEY_STATES.write()[index] = true;
+                            crate::KEY_STATES.write().unwrap()[index] = true;
                         }
 
                         KeyboardHidEvent::KeyUp { code } => {
                             // update our internal representation of the keyboard state
                             let index = self.hid_event_code_to_key_index(&code) as usize;
-                            crate::KEY_STATES.write()[index] = false;
+                            crate::KEY_STATES.write().unwrap()[index] = false;
                         }
 
                         _ => { /* ignore other events */ }

@@ -30,7 +30,7 @@ use std::{
 use glib::Cast;
 use gtk::traits::{ContainerExt, InfoBarExt, LabelExt, WidgetExt};
 use lazy_static::{__Deref, lazy_static};
-use parking_lot::RwLock;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::{
     constants,
@@ -101,7 +101,7 @@ pub fn show(message: &str, notification_type: NotificationType) {
 }
 
 pub fn schedule_close() {
-    *VISIBLE_SINCE.write() = Some(Instant::now());
+    *VISIBLE_SINCE.write().unwrap() = Some(Instant::now());
 }
 
 pub(crate) fn set_notification_area(area: &gtk::InfoBar) {
@@ -114,7 +114,7 @@ pub(crate) fn set_notification_area(area: &gtk::InfoBar) {
         TimerMode::Periodic,
         500,
         move || {
-            let mut instant = VISIBLE_SINCE.write();
+            let mut instant = VISIBLE_SINCE.write().unwrap();
 
             if let Some(i) = *instant {
                 if i.elapsed() >= Duration::from_millis(constants::NOTIFICATION_TIME_MILLIS) {

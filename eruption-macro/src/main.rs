@@ -29,7 +29,6 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 use std::{
     env,
@@ -40,6 +39,7 @@ use std::{
     },
 };
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 
 use crate::lua_introspection::LuaSyntaxIntrospection;
 
@@ -68,14 +68,14 @@ lazy_static! {
 #[macro_export]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -228,39 +228,6 @@ fn print_header() {
     println!();
 }
 
-#[cfg(debug_assertions)]
-mod thread_util {
-    use crate::Result;
-    use parking_lot::deadlock;
-    use std::thread;
-    use std::time::Duration;
-    use tracing::*;
-
-    /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() -> Result<()> {
-        thread::Builder::new()
-            .name("deadlockd".to_owned())
-            .spawn(move || loop {
-                thread::sleep(Duration::from_secs(5));
-                let deadlocks = deadlock::check_deadlock();
-                if !deadlocks.is_empty() {
-                    error!("{} deadlocks detected", deadlocks.len());
-
-                    for (i, threads) in deadlocks.iter().enumerate() {
-                        error!("Deadlock #{}", i);
-
-                        for t in threads {
-                            error!("Thread Id {:#?}", t.thread_id());
-                            error!("{:#?}", t.backtrace());
-                        }
-                    }
-                }
-            })?;
-
-        Ok(())
-    }
-}
-
 /// Main program entrypoint
 pub fn main() -> std::result::Result<(), eyre::Error> {
     // let filter = tracing_subscriber::EnvFilter::from_default_env();
@@ -301,7 +268,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -320,11 +287,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
         print_header();
     }
-
-    // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
 
     // register ctrl-c handler
     let (ctrl_c_tx, _ctrl_c_rx) = bounded(8);

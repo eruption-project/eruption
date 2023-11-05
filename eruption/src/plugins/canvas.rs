@@ -80,8 +80,9 @@ impl CanvasPlugin {
     pub(crate) fn get_devices_zone_allocations() -> HashMap<DeviceHandle, Zone> {
         let mut result = HashMap::new();
 
-        for (handle, device) in crate::DEVICES.read().iter() {
-            result.insert(*handle, device.read_recursive().get_allocated_zone());
+        let devices = crate::DEVICES.read().unwrap();
+        for (handle, device) in devices.iter() {
+            result.insert(*handle, device.read().unwrap().get_allocated_zone());
         }
 
         result

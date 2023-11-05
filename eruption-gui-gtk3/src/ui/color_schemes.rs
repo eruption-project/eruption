@@ -30,7 +30,7 @@ use gtk::{
     TreeViewColumn,
 };
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::{
     dbus_client, notifications,
@@ -180,7 +180,7 @@ pub fn update_color_schemes_view(builder: &gtk::Builder) -> Result<()> {
 // }
 
 fn paint_gradient(cr: &cairo::Context, width: f64, height: f64) -> Result<()> {
-    if let Some(gradient) = SELECTED_COLOR_SCHEME.read().as_ref() {
+    if let Some(gradient) = SELECTED_COLOR_SCHEME.read().unwrap().as_ref() {
         let segment_width = width / 100.0;
 
         for x in 0..width.round() as u32 {
@@ -544,42 +544,42 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
                         // stock-gradients
                         "rainbow-smooth" => {
                             let gradient = colorgrad::rainbow();
-                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+                            *SELECTED_COLOR_SCHEME.write().unwrap() = Some(gradient);
 
                             drawing_area_color_scheme.queue_draw();
                         }
 
                         "sinebow-smooth" => {
                             let gradient = colorgrad::sinebow();
-                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+                            *SELECTED_COLOR_SCHEME.write().unwrap() = Some(gradient);
 
                             drawing_area_color_scheme.queue_draw();
                         }
 
                         "spectral-smooth" => {
                             let gradient = colorgrad::spectral();
-                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+                            *SELECTED_COLOR_SCHEME.write().unwrap() = Some(gradient);
 
                             drawing_area_color_scheme.queue_draw();
                         }
 
                         "rainbow-sharp" => {
                             let gradient = colorgrad::rainbow().sharp(5, 0.15);
-                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+                            *SELECTED_COLOR_SCHEME.write().unwrap() = Some(gradient);
 
                             drawing_area_color_scheme.queue_draw();
                         }
 
                         "sinebow-sharp" => {
                             let gradient = colorgrad::sinebow().sharp(5, 0.15);
-                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+                            *SELECTED_COLOR_SCHEME.write().unwrap() = Some(gradient);
 
                             drawing_area_color_scheme.queue_draw();
                         }
 
                         "spectral-sharp" => {
                             let gradient = colorgrad::spectral().sharp(5, 0.15);
-                            *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+                            *SELECTED_COLOR_SCHEME.write().unwrap() = Some(gradient);
 
                             drawing_area_color_scheme.queue_draw();
                         }
@@ -593,7 +593,8 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
                                     .build()
                                 {
                                     Ok(custom_gradient) => {
-                                        *SELECTED_COLOR_SCHEME.write() = Some(custom_gradient);
+                                        *SELECTED_COLOR_SCHEME.write().unwrap() =
+                                            Some(custom_gradient);
                                         drawing_area_color_scheme.queue_draw();
                                     }
 
@@ -612,7 +613,7 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
 
                             Err(_) => {
                                 let gradient = colorgrad::sinebow();
-                                *SELECTED_COLOR_SCHEME.write() = Some(gradient);
+                                *SELECTED_COLOR_SCHEME.write().unwrap() = Some(gradient);
 
                                 drawing_area_color_scheme.queue_draw();
                             }
@@ -627,7 +628,8 @@ pub fn initialize_color_schemes_page<A: IsA<gtk::Application>>(
                                     .build()
                                 {
                                     Ok(custom_gradient) => {
-                                        *SELECTED_COLOR_SCHEME.write() = Some(custom_gradient);
+                                        *SELECTED_COLOR_SCHEME.write().unwrap() =
+                                            Some(custom_gradient);
                                         drawing_area_color_scheme.queue_draw();
                                     }
 

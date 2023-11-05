@@ -43,7 +43,7 @@ impl Backend for X11Backend {
     fn initialize(&mut self) -> Result<()> {
         self.failed = true;
 
-        // let opts = crate::OPTIONS.read().as_ref().unwrap().clone();
+        // let opts = crate::OPTIONS.read().unwrap().as_ref().unwrap().clone();
 
         self.display = Some(xwrap::Display::open(None).unwrap());
 

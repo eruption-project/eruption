@@ -21,10 +21,10 @@
 
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
-use parking_lot::Mutex;
 use std::time::Duration;
 use std::{sync::Arc, thread};
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 
 use crate::constants;
 
@@ -70,7 +70,7 @@ impl RoccatVulcanTKL {
     //                 let mut buf: [u8; 256] = [0; 256];
     //                 buf[0] = id;
 
-    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
@@ -96,7 +96,7 @@ impl RoccatVulcanTKL {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match id {
@@ -330,7 +330,7 @@ impl RoccatVulcanTKL {
             // let mut buf: [u8; 4] = [0; 4];
             // buf[0] = 0x01;
 
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // match ctrl_dev.get_feature_report(&mut buf) {
@@ -404,7 +404,7 @@ impl DeviceTrait for RoccatVulcanTKL {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.write(buf) {
@@ -423,7 +423,7 @@ impl DeviceTrait for RoccatVulcanTKL {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = Vec::new();
@@ -448,7 +448,7 @@ impl DeviceTrait for RoccatVulcanTKL {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = [0; 8];
@@ -571,7 +571,7 @@ impl DeviceTrait for RoccatVulcanTKL {
         if !self.is_bound {
             Err(HwDeviceError::DeviceNotBound {}.into())
         } else {
-            match *self.led_hiddev.lock() {
+            match *self.led_hiddev.lock().unwrap() {
                 Some(ref led_dev) => {
                     if led_map.len() < NUM_KEYS {
                         error!(

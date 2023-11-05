@@ -35,7 +35,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Update the tuple of managed devices
 pub fn update_managed_devices() -> Result<()> {
-    *MANAGED_DEVICES.write() = dbus_client::get_managed_devices()?;
+    *MANAGED_DEVICES.write().unwrap() = dbus_client::get_managed_devices()?;
 
     Ok(())
 }
@@ -44,7 +44,7 @@ pub fn update_managed_devices() -> Result<()> {
 pub fn update_color_map() -> Result<()> {
     let mut led_colors = dbus_client::get_led_colors()?;
 
-    let mut color_map = crate::COLOR_MAP.lock();
+    let mut color_map = crate::COLOR_MAP.lock().unwrap();
 
     color_map.clear();
     color_map.append(&mut led_colors);
@@ -56,7 +56,7 @@ pub fn update_color_map() -> Result<()> {
 pub fn update_slot_names() -> Result<()> {
     let slot_names = util::get_slot_names()?;
 
-    let mut global_state = crate::STATE.write();
+    let mut global_state = crate::STATE.write().unwrap();
     global_state.slot_names = Some(slot_names);
 
     Ok(())
@@ -66,7 +66,7 @@ pub fn update_slot_names() -> Result<()> {
 pub fn update_active_profile() -> Result<()> {
     let active_profile = util::get_active_profile()?;
 
-    let mut global_state = crate::STATE.write();
+    let mut global_state = crate::STATE.write().unwrap();
     global_state.active_profile = Some(active_profile);
 
     Ok(())
@@ -76,7 +76,7 @@ pub fn update_active_profile() -> Result<()> {
 pub fn update_active_slot() -> Result<()> {
     let active_slot = util::get_active_slot()?;
 
-    let mut global_state = crate::STATE.write();
+    let mut global_state = crate::STATE.write().unwrap();
     global_state.active_slot = Some(active_slot);
 
     Ok(())
@@ -107,7 +107,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
                 if let Ok(event) = dbusevents_rx.recv_timeout(Duration::from_millis(0)) {
                     match event {
                         Message::SlotChanged(slot) => {
-                            let mut global_state = crate::STATE.write();
+                            let mut global_state = crate::STATE.write().unwrap();
                             global_state.active_slot = Some(slot);
 
                             if let Some(ctx) = &global_state.egui_ctx {
@@ -116,7 +116,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
                         }
 
                         Message::SlotNamesChanged(names) => {
-                            let mut global_state = crate::STATE.write();
+                            let mut global_state = crate::STATE.write().unwrap();
                             global_state.slot_names = Some(names);
 
                             if let Some(ctx) = &global_state.egui_ctx {
@@ -125,7 +125,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
                         }
 
                         Message::ProfileChanged(profile) => {
-                            let mut global_state = crate::STATE.write();
+                            let mut global_state = crate::STATE.write().unwrap();
                             global_state.active_profile = Some(profile);
 
                             if let Some(ctx) = &global_state.egui_ctx {
@@ -134,7 +134,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
                         }
 
                         Message::BrightnessChanged(brightness) => {
-                            let mut global_state = crate::STATE.write();
+                            let mut global_state = crate::STATE.write().unwrap();
                             global_state.current_brightness = Some(brightness);
 
                             if let Some(ctx) = &global_state.egui_ctx {
@@ -143,7 +143,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
                         }
 
                         Message::SoundFxChanged(state) => {
-                            let mut global_state = crate::STATE.write();
+                            let mut global_state = crate::STATE.write().unwrap();
                             global_state.sound_fx = Some(state);
 
                             if let Some(ctx) = &global_state.egui_ctx {

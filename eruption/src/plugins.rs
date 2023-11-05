@@ -84,7 +84,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 pub fn register_plugins() -> Result<()> {
     trace!("Registering all available plugins...");
 
-    let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write();
+    let mut plugin_manager = plugin_manager::PLUGIN_MANAGER.write().unwrap();
 
     // Base plugins
     let _ = plugin_manager

@@ -80,7 +80,7 @@ impl DbusApi {
                         .add_s(rules_changed_signal_clone)
                         .add_m(
                             f.method("EnumRules", (), move |m| {
-                                let rules_map = crate::RULES_MAP.read();
+                                let rules_map = crate::RULES_MAP.read().unwrap();
                                 let s = rules_map
                                     .iter()
                                     .map(|(selector, (metadata, action))| {
@@ -216,7 +216,7 @@ impl DbusApi {
                                     rules_map.insert(selector, (metadata, action));
                                 }
 
-                                *crate::RULES_MAP.write() = rules_map;
+                                *crate::RULES_MAP.write().unwrap() = rules_map;
 
                                 crate::save_rules_map().map_err(|_e| {
                                     dbus::Error::new_failed("Could not save the rules map")
@@ -240,7 +240,7 @@ impl DbusApi {
     }
 
     pub fn notify_rules_changed(&self) {
-        let rules_map = crate::RULES_MAP.read();
+        let rules_map = crate::RULES_MAP.read().unwrap();
         let s = rules_map
             .iter()
             .map(|(selector, (metadata, action))| {

@@ -155,15 +155,12 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
 pub fn get_script_dirs() -> Vec<PathBuf> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.read();
+    let config = crate::CONFIG.read().unwrap();
+    let config = config.as_ref().unwrap();
 
     let script_dirs = config
-        .as_ref()
-        .map(|c| {
-            c.get::<Vec<String>>("global.script_dirs")
-                .unwrap_or_else(|_| vec![])
-        })
-        .unwrap_or_default();
+        .get::<Vec<String>>("global.script_dirs")
+        .unwrap_or_else(|_| vec![]);
 
     let mut script_dirs = script_dirs
         .iter()
@@ -208,12 +205,12 @@ pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
 /// Provide a simple means to rate-limit log output
 pub mod ratelimited {
     use lazy_static::lazy_static;
-    use parking_lot::Mutex;
     use std::{
         collections::{hash_map::Entry, HashMap},
         sync::Arc,
         time::{Duration, Instant},
     };
+    use tracing_mutex::stdsync::Mutex;
 
     const LIMIT_MSGS_PER_MIN: u64 = 2;
 
@@ -389,7 +386,7 @@ pub mod ratelimited {
     pub(crate) use warning as warn;
 
     pub(crate) fn is_within_rate_limit(p: &str) -> (bool, usize) {
-        let mut map = LAST_LOG_MAP.lock();
+        let mut map = LAST_LOG_MAP.lock().unwrap();
         let e = map.entry(p.to_string());
 
         match e {

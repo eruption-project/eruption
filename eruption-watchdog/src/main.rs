@@ -29,8 +29,8 @@ use i18n_embed::{
 };
 use is_terminal::IsTerminal;
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
 use rust_embed::RustEmbed;
+use tracing_mutex::stdsync::Mutex;
 // use colored::*;
 use flume::bounded;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -58,14 +58,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -247,7 +247,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {

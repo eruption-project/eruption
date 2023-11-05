@@ -45,7 +45,7 @@ impl Backend for GnomeBackend {
     fn initialize(&mut self) -> Result<()> {
         self.failed = true;
 
-        let _opts = crate::OPTIONS.read().as_ref().unwrap().clone();
+        let _opts = crate::OPTIONS.read().unwrap().as_ref().unwrap().clone();
 
         // if we made it up to here, the initialization succeeded
         self.failed = false;

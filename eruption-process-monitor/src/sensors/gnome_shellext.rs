@@ -30,7 +30,6 @@ use nix::{
     sys::stat::Mode,
     unistd::{self},
 };
-use parking_lot::Mutex;
 use serde::Deserialize;
 use std::os::fd::AsRawFd;
 use std::{env, path::PathBuf};
@@ -39,6 +38,7 @@ use std::{
     os::fd::{FromRawFd, OwnedFd},
 };
 use std::{sync::Arc, thread};
+use tracing_mutex::stdsync::Mutex;
 
 use crate::constants;
 use crate::QUIT;
@@ -131,7 +131,7 @@ impl GnomeShellExtensionSensor {
     // }
 
     pub fn spawn_events_thread(&mut self, tx: Sender<GnomeShellExtSensorData>) -> Result<()> {
-        *THREAD_TX.lock() = Some(tx);
+        *THREAD_TX.lock().unwrap() = Some(tx);
 
         let fifo_path = PathBuf::from(
             env::var("XDG_RUNTIME_DIR")
@@ -191,7 +191,7 @@ impl GnomeShellExtensionSensor {
                                                         );
 
                                             THREAD_TX
-                                                        .lock()
+                                                        .lock().unwrap()
                                                         .as_ref()
                                                         .unwrap()
                                                         .send(result)
@@ -270,6 +270,7 @@ rules add window-instance gnome-calculator 2
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
             .read()
+            .unwrap()
             .contains(&SensorConfiguration::EnableGnomeShellExt)
     }
 

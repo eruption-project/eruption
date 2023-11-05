@@ -53,7 +53,7 @@ impl ProfilesPlugin {
     }
 
     pub(crate) fn get_current_profile() -> Option<String> {
-        (*crate::ACTIVE_PROFILE.read())
+        (*crate::ACTIVE_PROFILE.read().unwrap())
             .as_ref()
             .map(|profile| (*profile.profile_file.to_string_lossy()).to_string())
     }
@@ -61,7 +61,7 @@ impl ProfilesPlugin {
     pub(crate) fn switch_to_profile(profile: String) {
         // the main loop will switch the active profile when it
         // detects, that ACTIVE_PROFILE_NAME has been changed
-        *crate::ACTIVE_PROFILE_NAME.write() = Some(profile);
+        *crate::ACTIVE_PROFILE_NAME.write().unwrap() = Some(profile);
     }
 }
 

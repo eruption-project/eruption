@@ -22,11 +22,12 @@
 use bitvec::prelude::*;
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
+use flume::Receiver;
 use hidapi::{HidApi, HidDevice};
 use libc::wchar_t;
-use parking_lot::Mutex;
 use std::time::Duration;
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 // use std::sync::atomic::Ordering;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -110,6 +111,8 @@ pub struct DeviceInfo {
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Kone Pro Air mouse
 pub struct RoccatKoneProAir {
+    pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
+
     pub is_initialized: bool,
 
     pub is_bound: bool,
@@ -141,6 +144,8 @@ impl RoccatKoneProAir {
         debug!("Bound driver: ROCCAT Kone Pro Air");
 
         Self {
+            evdev_rx: None,
+
             is_initialized: false,
 
             is_bound: true,
@@ -178,7 +183,7 @@ impl RoccatKoneProAir {
     //                 let mut buf: [u8; 256] = [0; 256];
     //                 buf[0] = id;
 
-    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
@@ -207,7 +212,7 @@ impl RoccatKoneProAir {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             // using led_hiddev is intentional here
-            let led_dev = self.led_hiddev.as_ref().lock();
+            let led_dev = self.led_hiddev.as_ref().lock().unwrap();
             let led_dev = led_dev.as_ref().unwrap();
 
             match id {
@@ -248,7 +253,7 @@ impl RoccatKoneProAir {
         } else {
             let mut buf: [u8; 1] = [0; 1];
 
-            let ctrl_dev = self.led_hiddev.as_ref().lock();
+            let ctrl_dev = self.led_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.read_timeout(&mut buf, 15) {
@@ -274,7 +279,7 @@ impl RoccatKoneProAir {
     //     if !self.is_bound {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
     //     } else {
-    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //         match ctrl_dev.send_feature_report(buffer) {
@@ -294,7 +299,7 @@ impl RoccatKoneProAir {
     //         Err(HwDeviceError::DeviceNotBound {}.into())
     //     } else {
     //         // we have to use the led_hiddev here, this is intentional
-    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //         let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //         loop {
@@ -426,7 +431,7 @@ impl RoccatKoneProAir {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let led_dev = self.led_hiddev.as_ref().lock();
+            let led_dev = self.led_hiddev.as_ref().lock().unwrap();
             let led_dev = led_dev.as_ref().unwrap();
 
             // TODO: Further investigate the meaning of the fields
@@ -506,7 +511,7 @@ impl DeviceInfoExt for RoccatKoneProAir {
             /* let mut buf = [0; size_of::<DeviceInfo>()];
                         buf[0] = 0x09; // Query device info (HID report 0x09)
 
-                        let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                        let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
                         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
                         match ctrl_dev.get_feature_report(&mut buf) {
@@ -601,14 +606,14 @@ impl DeviceExt for RoccatKoneProAir {
             trace!("Opening control device...");
 
             match self.ctrl_hiddev_info.as_ref().unwrap().open_device(api) {
-                Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
+                Ok(dev) => *self.ctrl_hiddev.lock().unwrap() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
             trace!("Opening LED device...");
 
             match self.led_hiddev_info.as_ref().unwrap().open_device(api) {
-                Ok(dev) => *self.led_hiddev.lock() = Some(dev),
+                Ok(dev) => *self.led_hiddev.lock().unwrap() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
@@ -628,10 +633,10 @@ impl DeviceExt for RoccatKoneProAir {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             trace!("Closing control device...");
-            *self.ctrl_hiddev.lock() = None;
+            *self.ctrl_hiddev.lock().unwrap() = None;
 
             trace!("Closing LED device...");
-            *self.led_hiddev.lock() = None;
+            *self.led_hiddev.lock().unwrap() = None;
 
             self.is_opened = false;
 
@@ -717,7 +722,7 @@ impl DeviceExt for RoccatKoneProAir {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.write(buf) {
@@ -740,7 +745,7 @@ impl DeviceExt for RoccatKoneProAir {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = Vec::new();
@@ -788,7 +793,7 @@ impl DeviceExt for RoccatKoneProAir {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
             if self.allocated_zone.enabled {
-                let led_dev = self.led_hiddev.as_ref().lock();
+                let led_dev = self.led_hiddev.as_ref().lock().unwrap();
                 let led_dev = led_dev.as_ref().unwrap();
 
                 #[inline]
@@ -914,7 +919,7 @@ impl DeviceExt for RoccatKoneProAir {
                     }
                 }
             } else {
-                let led_dev = self.led_hiddev.as_ref().lock();
+                let led_dev = self.led_hiddev.as_ref().lock().unwrap();
                 let led_dev = led_dev.as_ref().unwrap();
 
                 let buf: [u8; 65] = [
@@ -1066,6 +1071,14 @@ impl DeviceExt for RoccatKoneProAir {
     fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Send + Sync)> {
         None
     }
+
+    fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
+        &self.evdev_rx
+    }
+
+    fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
+        self.evdev_rx = rx;
+    }
 }
 
 impl MouseDeviceExt for RoccatKoneProAir {
@@ -1077,7 +1090,7 @@ impl MouseDeviceExt for RoccatKoneProAir {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // let mut buf: [u8; 64] = [0x00 as u8; 64];
@@ -1108,7 +1121,7 @@ impl MouseDeviceExt for RoccatKoneProAir {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // let mut buf: [u8; 64] = [0x00 as u8; 64];
@@ -1219,7 +1232,7 @@ impl MouseDeviceExt for RoccatKoneProAir {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = [0; 8];
@@ -1240,7 +1253,7 @@ impl MouseDeviceExt for RoccatKoneProAir {
                             let button_mask = button_mask.view_bits::<Lsb0>();
                             let button_mask2 = button_mask2.view_bits::<Lsb0>();
 
-                            let mut button_states = self.button_states.lock();
+                            let mut button_states = self.button_states.lock().unwrap();
 
                             // notify button press events for the buttons 0..7
                             for (index, down) in button_mask.iter().enumerate() {

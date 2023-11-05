@@ -21,7 +21,6 @@
 
 use lazy_static::lazy_static;
 use mlua::prelude::*;
-use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::collections::HashMap;
@@ -29,6 +28,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tracing::*;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::constants;
 use crate::plugins::{self, Plugin};
@@ -72,7 +72,7 @@ macro_rules! store_operation {
         paste::item! {
             pub(crate) fn [<store_ $t>](key: String, value: $tval) -> Result<()> {
                 GLOBAL_STORE
-                    .write()
+                    .write().unwrap()
                     .insert(key, $sval(value));
                 Ok(())
             }
@@ -84,7 +84,7 @@ macro_rules! load_operation {
     ($t:ident, $tval:ty, $sval:ty) => {
         paste::item! {
             pub(crate) fn [<load_ $t>](key: &str) -> Result<$tval> {
-                match GLOBAL_STORE.read().get(key) {
+                match GLOBAL_STORE.read().unwrap().get(key) {
                     Some(value) => {
                         if let $sval(val) = value {
                             Ok(val.clone())
@@ -109,7 +109,7 @@ macro_rules! store_transient_operation {
         paste::item! {
             pub(crate) fn [<store_ $t _transient>](key: String, value: $tval) -> Result<()> {
                 GLOBAL_EPHEMERAL_STORE
-                    .write()
+                    .write().unwrap()
                     .insert(key, $sval(value));
                 Ok(())
             }
@@ -121,7 +121,7 @@ macro_rules! load_transient_operation {
     ($t:ident, $tval:ty, $sval:ty) => {
         paste::item! {
             pub(crate) fn [<load_ $t _transient>](key: &str) -> Result<$tval> {
-                match GLOBAL_EPHEMERAL_STORE.read().get(key) {
+                match GLOBAL_EPHEMERAL_STORE.read().unwrap().get(key) {
                     Some(value) => {
                         if let $sval(val) = value {
                             Ok(val.clone())
@@ -150,7 +150,7 @@ impl PersistencePlugin {
     pub fn store_persistent_data() -> Result<()> {
         info!("Storing persistent state data to disk...");
 
-        let json_string = serde_json::to_string_pretty(&*GLOBAL_STORE.read())?;
+        let json_string = serde_json::to_string_pretty(&*GLOBAL_STORE.read().unwrap())?;
 
         let path = PathBuf::from(constants::STATE_DIR).join(PathBuf::from("persistent.store"));
 
@@ -170,7 +170,7 @@ impl PersistencePlugin {
         let map: HashMap<String, StoreValue> = serde_json::from_str(&json_string)?;
 
         {
-            *GLOBAL_STORE.write() = map;
+            *GLOBAL_STORE.write().unwrap() = map;
         }
 
         Ok(())

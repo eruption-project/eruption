@@ -23,7 +23,7 @@ use std::sync::Arc;
 
 pub use backends::{AudioBackend, PulseAudioBackend};
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::constants;
 
@@ -53,9 +53,9 @@ mod backends {
 
     use libpulse_binding::{sample, stream::Direction};
     use libpulse_simple_binding::Simple;
-    use parking_lot::RwLock;
     use pulsectl::controllers::{DeviceControl, SinkController};
     use std::cell::RefCell;
+    use tracing_mutex::stdsync::RwLock;
 
     use crate::audio::AudioError;
 
@@ -145,7 +145,7 @@ mod backends {
                     ),
                 })?;
 
-                *self.recorder_handle.write() = Some(result);
+                *self.recorder_handle.write().unwrap() = Some(result);
 
                 let spec = sample::Spec {
                     format: sample::Format::S16NE,
@@ -169,7 +169,7 @@ mod backends {
                     description: format!("Could not open PulseAudio/PipeWire playback device: {e}"),
                 })?;
 
-                *self.player_handle.write() = Some(result);
+                *self.player_handle.write().unwrap() = Some(result);
 
                 self.is_recorder_open = true;
             }
@@ -201,7 +201,7 @@ mod backends {
                     description: format!("Could not open PulseAudio/PipeWire playback device: {e}"),
                 })?;
 
-                *self.player_handle.write() = Some(result);
+                *self.player_handle.write().unwrap() = Some(result);
 
                 self.is_playback_open = true;
             }
@@ -211,7 +211,7 @@ mod backends {
 
         fn close_playback(&mut self) -> Result<()> {
             if self.is_playback_open {
-                *self.player_handle.write() = None;
+                *self.player_handle.write().unwrap() = None;
 
                 self.is_playback_open = false;
             }
@@ -221,7 +221,7 @@ mod backends {
 
         fn close_recorder(&mut self) -> Result<()> {
             if self.is_recorder_open {
-                *self.recorder_handle.write() = None;
+                *self.recorder_handle.write().unwrap() = None;
 
                 self.is_recorder_open = false;
             }
@@ -231,8 +231,8 @@ mod backends {
 
         fn close(&mut self) -> Result<()> {
             if self.is_recorder_open || self.is_playback_open {
-                *self.recorder_handle.write() = None;
-                *self.player_handle.write() = None;
+                *self.recorder_handle.write().unwrap() = None;
+                *self.player_handle.write().unwrap() = None;
 
                 self.is_recorder_open = false;
                 self.is_playback_open = false;
@@ -278,8 +278,8 @@ mod backends {
         }
 
         fn play_sfx(&self, id: u32) -> Result<()> {
-            if let Some(player) = &*self.player_handle.read() {
-                let sfx_map = crate::SOUND_FX.read();
+            if let Some(player) = &*self.player_handle.read().unwrap() {
+                let sfx_map = crate::SOUND_FX.read().unwrap();
                 let data = &sfx_map[&id];
 
                 player.write(data).map_err(|e| AudioError::PlayerError {
@@ -296,7 +296,7 @@ mod backends {
         }
 
         fn play_samples(&self, data: &[u8]) -> Result<()> {
-            if let Some(player) = &*self.player_handle.read() {
+            if let Some(player) = &*self.player_handle.read().unwrap() {
                 player.write(data).map_err(|e| AudioError::PlayerError {
                     description: format!("Error during playback: {e}"),
                 })?;
@@ -311,9 +311,9 @@ mod backends {
         }
 
         fn record_samples(&self) -> Result<()> {
-            let mut buf = super::AUDIO_BUFFER.write();
+            let mut buf = super::AUDIO_BUFFER.write().unwrap();
 
-            if let Some(grabber) = &*self.recorder_handle.read() {
+            if let Some(grabber) = &*self.recorder_handle.read().unwrap() {
                 grabber
                     .read(&mut buf)
                     .map_err(|e| AudioError::GrabberError {

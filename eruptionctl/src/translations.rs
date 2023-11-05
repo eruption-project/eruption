@@ -24,9 +24,9 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 use std::sync::Arc;
+use tracing_mutex::stdsync::Mutex;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -42,14 +42,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::translations::STATIC_LOADER.lock();
+        let loader = $crate::translations::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::translations::STATIC_LOADER.lock();
+        let loader = $crate::translations::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -63,7 +63,7 @@ pub fn load() -> Result<()> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     Ok(())
 }

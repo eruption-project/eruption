@@ -77,7 +77,7 @@ impl Keyboard for RoccatVulcanTKL {
         context.set_source_pixbuf(pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
-        let led_colors = crate::CANVAS.read();
+        let led_colors = crate::CANVAS.read().unwrap();
 
         let layout = pangocairo::create_layout(context);
         FONT_DESC.with(|f| -> Result<()> {
@@ -165,7 +165,7 @@ impl Keyboard for RoccatVulcanTKL {
         if !key_def.is_dummy {
             // compute scaling factor
             // let factor =
-            //     ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
+            //     ((100.0 - crate::STATE.read().unwrap().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
 
             // post-process color
             let source_color = LinSrgba::new(

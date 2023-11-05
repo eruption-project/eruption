@@ -25,7 +25,6 @@ use crate::hardware::HotplugInfo;
 use crate::transport::{ServerStatus, Transport};
 use crate::{util, Result};
 use eyre::eyre;
-use parking_lot::RwLock;
 use prost::Message;
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::collections::HashMap;
@@ -33,6 +32,7 @@ use std::io::{Cursor, Write};
 use std::mem::MaybeUninit;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use tracing_mutex::stdsync::RwLock;
 
 pub mod protocol {
     include!(concat!(env!("OUT_DIR"), "/sdk_support.rs"));
@@ -61,14 +61,14 @@ impl LocalTransport {
 impl Transport for LocalTransport {
     fn connect(&mut self) -> Result<()> {
         let addr = SockAddr::unix(SOCKET_ADDRESS)?;
-        self.socket.read().connect(&addr)?;
+        self.socket.read().unwrap().connect(&addr)?;
 
         Ok(())
     }
 
     fn disconnect(&mut self) -> Result<()> {
-        self.socket.write().flush()?;
-        // self.socket.write().shutdown(Shutdown::Both)?;
+        self.socket.write().unwrap().flush()?;
+        // self.socket.write().unwrap().shutdown(Shutdown::Both)?;
 
         Ok(())
     }
@@ -84,7 +84,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.read();
+        let socket = self.socket.read().unwrap();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -127,7 +127,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.read();
+        let socket = self.socket.read().unwrap();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -171,7 +171,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.read();
+        let socket = self.socket.read().unwrap();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -222,7 +222,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.read();
+        let socket = self.socket.read().unwrap();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -270,7 +270,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.read();
+        let socket = self.socket.read().unwrap();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -312,7 +312,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.read();
+        let socket = self.socket.read().unwrap();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -365,7 +365,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.read();
+        let socket = self.socket.read().unwrap();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response
@@ -401,7 +401,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let socket = self.socket.read();
+        let socket = self.socket.read().unwrap();
         match socket.send(&buf) {
             Ok(_n) => {
                 // read response

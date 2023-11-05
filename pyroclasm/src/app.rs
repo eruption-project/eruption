@@ -157,7 +157,7 @@ impl Pyroclasm {
 
     /// Render the window title bar
     fn title_bar(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        let global_state = crate::STATE.read();
+        let global_state = crate::STATE.read().unwrap();
 
         egui::TopBottomPanel::top("title").show(ctx, |ui| {
             ui.with_layout(Layout::left_to_right(Align::Max), |ui| {
@@ -479,7 +479,7 @@ impl Pyroclasm {
 
     /// Render the footer panel
     fn footer(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let global_state = crate::STATE.read();
+        let global_state = crate::STATE.read().unwrap();
 
         TopBottomPanel::bottom("footer").show(ctx, |ui| {
             ui.horizontal_centered(|ui| {
@@ -496,7 +496,7 @@ impl Pyroclasm {
 
     /// Render the slot panel
     fn slot_panel(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let global_state = crate::STATE.read();
+        let global_state = crate::STATE.read().unwrap();
 
         TopBottomPanel::bottom("slot_panel").show(ctx, |ui| {
             ui.horizontal_centered(|ui| {

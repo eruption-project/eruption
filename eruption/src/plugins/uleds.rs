@@ -25,7 +25,6 @@ use mlua::prelude::*;
 use nix::fcntl::{self, OFlag};
 use nix::sys::stat::Mode;
 use nix::unistd;
-use parking_lot::Mutex;
 use std::any::Any;
 use std::ffi::CString;
 use std::os::unix::prelude::RawFd;
@@ -34,6 +33,7 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::thread;
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 
 use crate::hwdevices::RGBA;
 use crate::plugins::Plugin;
@@ -85,11 +85,11 @@ impl UledsPlugin {
 
                 // Self::initialize_thread_locals()?;
 
-                if ULEDS_FDS.lock().len() > 0 {
+                if ULEDS_FDS.lock().unwrap().len() > 0 {
                     ULEDS_SUPPORT_ACTIVE.store(true, Ordering::SeqCst);
 
                     loop {
-                        for fd in ULEDS_FDS.lock().iter() {
+                        for fd in ULEDS_FDS.lock().unwrap().iter() {
                             let mut buffer = [0u8; 4];
                             let _result = unistd::read(*fd, &mut buffer)?;
 
@@ -97,7 +97,7 @@ impl UledsPlugin {
 
                             debug!("ULEDS: value read: {}", brightness);
 
-                            let mut led_map = LED_MAP.lock();
+                            let mut led_map = LED_MAP.lock().unwrap();
                             for (_i, color) in led_map.iter_mut().enumerate() {
                                 *color = RGBA {
                                     r: brightness as u8,
@@ -115,7 +115,7 @@ impl UledsPlugin {
                 Ok(())
             })?;
 
-        // *ULEDS_TX.write() = Some(uleds_tx);
+        // *ULEDS_TX.write().unwrap() = Some(uleds_tx);
 
         Ok(())
     }
@@ -153,7 +153,7 @@ impl Plugin for UledsPlugin {
             let bytes = unsafe { any_as_u8_slice(&dev) };
             let _result = nix::unistd::write(fd, bytes)?;
 
-            ULEDS_FDS.lock().push(fd);
+            ULEDS_FDS.lock().unwrap().push(fd);
 
             debug!("Successfully initialized the ULEDs subsystem");
 

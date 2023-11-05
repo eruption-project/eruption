@@ -260,6 +260,14 @@ impl DeviceExt for GenericKeyboard {
     fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Sync + Send)> {
         None
     }
+
+    fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
+        &None
+    }
+
+    fn set_evdev_input_rx(&mut self, _rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
+        // do nothing
+    }
 }
 
 impl KeyboardDeviceExt for GenericKeyboard {

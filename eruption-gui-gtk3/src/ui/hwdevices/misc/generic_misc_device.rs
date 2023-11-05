@@ -66,7 +66,7 @@ impl MiscDevice for GenericMiscDevice {
         context.set_source_pixbuf(pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
-        // let led_colors = crate::COLOR_MAP.lock();
+        // let led_colors = crate::COLOR_MAP.lock().unwrap();
 
         Ok(())
     }

@@ -20,11 +20,11 @@
 */
 
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
 use std::sync::Arc;
 use std::{any::Any, sync::atomic::Ordering};
+use tracing_mutex::stdsync::RwLock;
 
 use gpgpu::*;
 use mlua::prelude::*;
@@ -109,7 +109,7 @@ impl HwAccelPlugin {
         let mut result = BTreeMap::new();
 
         if crate::EXPERIMENTAL_FEATURES.load(Ordering::SeqCst) {
-            // let state = HWACCEL_STATE.read();
+            // let state = HWACCEL_STATE.read().unwrap();
             // let state = state.as_ref().unwrap();
 
             let device_name = "<unknown>".to_string();
@@ -127,7 +127,7 @@ impl HwAccelPlugin {
     }
 
     pub fn render(shader: usize) -> Result<()> {
-        match SHADERS.read().get(&shader) {
+        match SHADERS.read().unwrap().get(&shader) {
             Some(shader) => {
                 let fw = &FRAMEWORK;
 
@@ -168,8 +168,11 @@ impl HwAccelPlugin {
         let shader = Shader::from_spirv_file(&fw, &shader_path)?;
         let shader_state = ShaderState::new(shader);
 
-        let index = SHADERS.read().len();
-        SHADERS.write().insert(index, Box::new(shader_state));
+        let index = SHADERS.read().unwrap().len();
+        SHADERS
+            .write()
+            .unwrap()
+            .insert(index, Box::new(shader_state));
 
         Ok(index)
     }

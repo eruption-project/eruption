@@ -22,9 +22,9 @@
 #![allow(dead_code)]
 
 // use tracing::trace;
-use parking_lot::Mutex;
 use serialport::SerialPort;
 use std::{sync::Arc, time::Duration};
+use tracing_mutex::stdsync::Mutex;
 
 use super::{HwDeviceError, RGBA};
 
@@ -94,7 +94,7 @@ impl CustomSerialLeds {
     pub fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
         println_v!(1, "Setting LEDs from supplied map...");
 
-        if let Some(ref mut port) = *self.serial_port.lock() {
+        if let Some(ref mut port) = *self.serial_port.lock().unwrap() {
             const HEADER_OFFSET: usize = 6;
 
             let mut buffer: [u8; HEADER_OFFSET + (NUM_LEDS * 3)] =

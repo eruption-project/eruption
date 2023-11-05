@@ -160,6 +160,7 @@ rules add exec gnome-calc.* 2
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
             .read()
+            .unwrap()
             .contains(&SensorConfiguration::EnableProcmon)
     }
 

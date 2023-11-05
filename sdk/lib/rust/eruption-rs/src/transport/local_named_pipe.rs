@@ -25,13 +25,13 @@ use crate::hardware::HotplugInfo;
 use crate::transport::{ServerStatus, Transport};
 use crate::{util, Result};
 use eyre::eyre;
-use parking_lot::RwLock;
 use prost::Message;
 use std::collections::HashMap;
 use std::io::{Cursor, Read, Write};
 use std::mem::MaybeUninit;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use tracing_mutex::stdsync::RwLock;
 use windows_named_pipe::*;
 
 pub mod protocol {
@@ -58,14 +58,14 @@ impl LocalTransport {
 
 impl Transport for LocalTransport {
     fn connect(&mut self) -> Result<()> {
-        // self.pipe.read().connect(&addr)?;
+        // self.pipe.read().unwrap().connect(&addr)?;
 
         Ok(())
     }
 
     fn disconnect(&mut self) -> Result<()> {
-        // self.pipe.write().flush()?;
-        // self.pipe.write().shutdown(Shutdown::Both)?;
+        // self.pipe.write().unwrap().flush()?;
+        // self.pipe.write().unwrap().shutdown(Shutdown::Both)?;
 
         Ok(())
     }
@@ -81,7 +81,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let mut pipe = self.pipe.write();
+        let mut pipe = self.pipe.write().unwrap();
         match pipe.write_all(&buf) {
             Ok(_n) => {
                 // read response
@@ -123,7 +123,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let mut pipe = self.pipe.write();
+        let mut pipe = self.pipe.write().unwrap();
         match pipe.write_all(&buf) {
             Ok(_n) => {
                 // read response
@@ -166,7 +166,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let mut pipe = self.pipe.write();
+        let mut pipe = self.pipe.write().unwrap();
         match pipe.write_all(&buf) {
             Ok(_n) => {
                 // read response
@@ -216,7 +216,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let mut pipe = self.pipe.write();
+        let mut pipe = self.pipe.write().unwrap();
         match pipe.write_all(&buf) {
             Ok(_n) => {
                 // read response
@@ -263,7 +263,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let mut pipe = self.pipe.write();
+        let mut pipe = self.pipe.write().unwrap();
         match pipe.write_all(&buf) {
             Ok(_n) => {
                 // read response
@@ -304,7 +304,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let mut pipe = self.pipe.write();
+        let mut pipe = self.pipe.write().unwrap();
         match pipe.write_all(&buf) {
             Ok(_n) => {
                 // read response
@@ -356,7 +356,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let mut pipe = self.pipe.write();
+        let mut pipe = self.pipe.write().unwrap();
         match pipe.write_all(&buf) {
             Ok(_n) => {
                 // read response
@@ -391,7 +391,7 @@ impl Transport for LocalTransport {
         request.encode_length_delimited(&mut buf)?;
 
         // send data
-        let mut pipe = self.pipe.write();
+        let mut pipe = self.pipe.write().unwrap();
         match pipe.write_all(&buf) {
             Ok(_n) => {
                 // read response

@@ -21,7 +21,6 @@
 
 use config::Config;
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
@@ -29,6 +28,7 @@ use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use tracing::*;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::color_scheme::ColorScheme;
 use crate::plugins::audio;
@@ -73,7 +73,7 @@ struct State {
 
 pub fn init_global_runtime_state() -> Result<()> {
     // initialize runtime state to sane defaults
-    let mut profiles = crate::SLOT_PROFILES.write();
+    let mut profiles = crate::SLOT_PROFILES.write().unwrap();
     profiles.replace(vec![
         PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("blue-fx-swirl-perlin.profile"),
         PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("red-wave.profile"),
@@ -88,7 +88,7 @@ pub fn init_global_runtime_state() -> Result<()> {
         "Profile Slot 4".to_string(),
     ];
 
-    let mut slot_names = crate::SLOT_NAMES.write();
+    let mut slot_names = crate::SLOT_NAMES.write().unwrap();
     *slot_names = default_slot_names.clone();
 
     // load state file
@@ -110,11 +110,12 @@ pub fn init_global_runtime_state() -> Result<()> {
             description: format!("{e}"),
         })?;
 
-    *STATE.write() = Some(state);
+    *STATE.write().unwrap() = Some(state);
 
     audio::ENABLE_SFX.store(
         STATE
             .read()
+            .unwrap()
             .as_ref()
             .unwrap()
             .get_bool("enable_sfx")
@@ -124,6 +125,7 @@ pub fn init_global_runtime_state() -> Result<()> {
 
     STATE
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get("profiles")
@@ -135,6 +137,7 @@ pub fn init_global_runtime_state() -> Result<()> {
     crate::ACTIVE_SLOT.store(
         STATE
             .read()
+            .unwrap()
             .as_ref()
             .unwrap()
             .get::<usize>("active_slot")
@@ -145,6 +148,7 @@ pub fn init_global_runtime_state() -> Result<()> {
     crate::BRIGHTNESS.store(
         STATE
             .read()
+            .unwrap()
             .as_ref()
             .unwrap()
             .get::<i64>("brightness")
@@ -154,6 +158,7 @@ pub fn init_global_runtime_state() -> Result<()> {
 
     let hue = STATE
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get::<f64>("canvas_hue")
@@ -161,6 +166,7 @@ pub fn init_global_runtime_state() -> Result<()> {
 
     let saturation = STATE
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get::<f64>("canvas_saturation")
@@ -168,15 +174,17 @@ pub fn init_global_runtime_state() -> Result<()> {
 
     let lightness = STATE
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get::<f64>("canvas_lightness")
         .unwrap_or(0.0);
 
-    *crate::CANVAS_HSL.write() = (hue, saturation, lightness);
+    *crate::CANVAS_HSL.write().unwrap() = (hue, saturation, lightness);
 
     *slot_names = STATE
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get::<Vec<String>>("slot_names")
@@ -191,7 +199,7 @@ pub fn init_global_runtime_state() -> Result<()> {
     Ok(())
 }
 
-pub fn init_runtime_state(device: hwdevices::Device) -> Result<()> {
+pub fn init_runtime_state(device: &mut (dyn hwdevices::DeviceExt + Sync + Send)) -> Result<()> {
     // TODO: retain inactive device's brightness values across
     //       restarts of the Eruption daemon
 
@@ -199,17 +207,14 @@ pub fn init_runtime_state(device: hwdevices::Device) -> Result<()> {
 
     if let Ok(device_brightness) = STATE
         .read()
+        .unwrap()
         .as_ref()
         .unwrap_or(&empty)
         .get_table("device_brightness")
     {
-        let make = format!("0x{:x}", device.read_recursive().get_usb_vid());
-        let model = format!("0x{:x}", device.read_recursive().get_usb_pid());
-        let serial = device
-            .read_recursive()
-            .get_serial()
-            .unwrap_or("")
-            .to_string();
+        let make = format!("0x{:x}", device.get_usb_vid());
+        let model = format!("0x{:x}", device.get_usb_pid());
+        let serial = device.get_serial().unwrap_or("").to_string();
 
         let val = config::Value::new(None, 100);
 
@@ -221,27 +226,21 @@ pub fn init_runtime_state(device: hwdevices::Device) -> Result<()> {
 
         debug!("{}:{}:{} Brightness: {}", make, model, serial, brightness);
 
-        device
-            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-            .and_then(|mut device| {
-                device.set_brightness(brightness).unwrap_or_else(|e| {
-                    error!("Could not set brightness: {e}");
-                });
-
-                Some(device)
-            });
+        device.set_brightness(brightness).unwrap_or_else(|e| {
+            error!("Could not set brightness: {e}");
+        });
     }
 
     Ok(())
 }
 
-pub fn save_runtime_state() -> Result<()> {
+pub fn save_runtime_state(devices: &[hwdevices::Device]) -> Result<()> {
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
 
     let mut device_brightness = HashMap::new();
 
-    for (_handle, device) in &*crate::DEVICES.read() {
-        let device = device.read_recursive();
+    for device in devices {
+        let device = device.read().unwrap();
 
         let make = format!("0x{:x}", device.get_usb_vid());
         let model = format!("0x{:x}", device.get_usb_pid());
@@ -254,12 +253,20 @@ pub fn save_runtime_state() -> Result<()> {
         device_brightness.insert(format!("{make}:{model}:{serial}"), brightness);
     }
 
-    let canvas_hsl = crate::CANVAS_HSL.write();
+    let canvas_hsl = crate::CANVAS_HSL.read().unwrap();
+
+    let profiles = crate::SLOT_PROFILES
+        .read()
+        .unwrap()
+        .as_ref()
+        .unwrap()
+        .clone();
+    let slot_names = crate::SLOT_NAMES.read().unwrap().clone();
 
     let config = State {
         active_slot: crate::ACTIVE_SLOT.load(Ordering::SeqCst),
-        slot_names: crate::SLOT_NAMES.read().clone(),
-        profiles: crate::SLOT_PROFILES.read().as_ref().unwrap().clone(),
+        slot_names,
+        profiles,
         enable_sfx: audio::ENABLE_SFX.load(Ordering::SeqCst),
         brightness: crate::BRIGHTNESS.load(Ordering::SeqCst) as i64,
         canvas_hue: canvas_hsl.0,
@@ -280,6 +287,7 @@ pub fn save_runtime_state() -> Result<()> {
 fn perform_sanity_checks() {
     if STATE
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get_int("brightness")
@@ -291,6 +299,7 @@ fn perform_sanity_checks() {
 
     let active_slot = STATE
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get_int("active_slot")
@@ -303,7 +312,7 @@ fn perform_sanity_checks() {
 pub fn save_color_schemes() -> Result<()> {
     let file_name = PathBuf::from(&constants::STATE_DIR).join("color-schemes.state");
 
-    let data = toml::to_string_pretty(&*crate::NAMED_COLOR_SCHEMES.read())?;
+    let data = toml::to_string_pretty(&*crate::NAMED_COLOR_SCHEMES.read().unwrap())?;
     util::write_file(&file_name, &data)?;
 
     Ok(())
@@ -315,7 +324,7 @@ pub fn load_color_schemes() -> Result<()> {
     let data = fs::read_to_string(file_name)?;
     let color_schemes: HashMap<String, ColorScheme> = toml::from_str(&data)?;
 
-    *crate::NAMED_COLOR_SCHEMES.write() = color_schemes;
+    *crate::NAMED_COLOR_SCHEMES.write().unwrap() = color_schemes;
 
     Ok(())
 }

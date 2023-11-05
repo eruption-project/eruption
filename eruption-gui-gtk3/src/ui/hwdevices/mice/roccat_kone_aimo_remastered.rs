@@ -63,7 +63,7 @@ impl Mouse for RoccatKoneAimoRemastered {
         let width = da.allocated_width() as f64;
         let height = da.allocated_height() as f64;
 
-        let led_colors = crate::CANVAS.read();
+        let led_colors = crate::CANVAS.read().unwrap();
 
         let pixbuf = &self.pixbuf;
 
@@ -99,7 +99,8 @@ impl Mouse for RoccatKoneAimoRemastered {
     ) -> Result<()> {
         // compute scaling factor
         let factor =
-            ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
+            ((100.0 - crate::STATE.read().unwrap().current_brightness.unwrap_or(0) as f64) / 100.0)
+                * 0.15;
 
         match cell_index {
             0 => {

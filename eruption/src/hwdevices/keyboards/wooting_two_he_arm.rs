@@ -22,10 +22,10 @@
 use bitfield_struct::bitfield;
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
+use flume::Receiver;
 use hidapi::HidApi;
 use libc::wchar_t;
 use ndarray::{s, ArrayView2};
-use parking_lot::Mutex;
 use resize::Pixel::RGB8;
 use resize::Type;
 use rgb::RGB8;
@@ -34,6 +34,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 use std::{sync::Arc, thread};
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 
 use crate::constants;
 
@@ -130,6 +131,8 @@ pub struct DeviceInfo {
 #[derive(Clone)]
 /// Device specific code for the Wooting Two HE (ARM) series keyboards
 pub struct WootingTwoHeArm {
+    pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
+
     pub is_initialized: bool,
 
     // keyboard
@@ -155,6 +158,8 @@ impl WootingTwoHeArm {
         debug!("Bound driver: Wooting Two HE (ARM)");
 
         Self {
+            evdev_rx: None,
+
             is_initialized: false,
 
             is_bound: true,
@@ -186,7 +191,7 @@ impl WootingTwoHeArm {
     //                 let mut buf: [u8; 256] = [0; 256];
     //                 buf[0] = id;
 
-    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
@@ -231,7 +236,7 @@ impl WootingTwoHeArm {
         report_buffer[6] = params[1];
         report_buffer[7] = params[0];
 
-        let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+        let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
         let result = ctrl_dev.write(&report_buffer);
@@ -264,7 +269,7 @@ impl WootingTwoHeArm {
         report_buffer[6] = params[1];
         report_buffer[7] = params[0];
 
-        let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+        let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
         let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
         let result = ctrl_dev.write(&report_buffer);
@@ -298,7 +303,7 @@ impl WootingTwoHeArm {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // match id {
@@ -324,7 +329,7 @@ impl WootingTwoHeArm {
         } else {
             let mut buf: [u8; RESPONSE_SIZE] = [0x00; RESPONSE_SIZE];
 
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
@@ -351,7 +356,7 @@ impl WootingTwoHeArm {
         } else {
             let mut buf: [u8; RESPONSE_SIZE] = [0x00; RESPONSE_SIZE];
 
-            let led_dev = self.led_hiddev.as_ref().lock();
+            let led_dev = self.led_hiddev.as_ref().lock().unwrap();
             let led_dev = led_dev.as_ref().unwrap();
 
             match led_dev.read_timeout(&mut buf, READ_RESPONSE_TIMEOUT) {
@@ -384,7 +389,7 @@ impl DeviceInfoExt for WootingTwoHeArm {
             // let mut buf = [0; size_of::<DeviceInfo>()];
             // buf[0] = 0x0f; // Query device info (HID report 0x0f)
 
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             // match ctrl_dev.get_feature_report(&mut buf) {
@@ -477,14 +482,14 @@ impl DeviceExt for WootingTwoHeArm {
             trace!("Opening control device...");
 
             match self.ctrl_hiddev_info.as_ref().unwrap().open_device(api) {
-                Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
+                Ok(dev) => *self.ctrl_hiddev.lock().unwrap() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
             trace!("Opening LED device...");
 
             match self.led_hiddev_info.as_ref().unwrap().open_device(api) {
-                Ok(dev) => *self.led_hiddev.lock() = Some(dev),
+                Ok(dev) => *self.led_hiddev.lock().unwrap() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
@@ -504,10 +509,10 @@ impl DeviceExt for WootingTwoHeArm {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             trace!("Closing control device...");
-            *self.ctrl_hiddev.lock() = None;
+            *self.ctrl_hiddev.lock().unwrap() = None;
 
             trace!("Closing LED device...");
-            *self.led_hiddev.lock() = None;
+            *self.led_hiddev.lock().unwrap() = None;
 
             self.is_opened = false;
 
@@ -592,7 +597,7 @@ impl DeviceExt for WootingTwoHeArm {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.write(buf) {
@@ -615,7 +620,7 @@ impl DeviceExt for WootingTwoHeArm {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = Vec::new();
@@ -658,7 +663,7 @@ impl DeviceExt for WootingTwoHeArm {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            match *self.led_hiddev.lock() {
+            match *self.led_hiddev.lock().unwrap() {
                 Some(ref led_dev) => {
                     if led_map.len() < LED_INDICES {
                         error!(
@@ -871,6 +876,14 @@ impl DeviceExt for WootingTwoHeArm {
 
     fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Sync + Send)> {
         None
+    }
+
+    fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
+        &self.evdev_rx
+    }
+
+    fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
+        self.evdev_rx = rx;
     }
 }
 

@@ -22,7 +22,6 @@
 use async_trait::async_trait;
 use flume::Sender;
 use lazy_static::lazy_static;
-use parking_lot::{Mutex, RwLock};
 use std::{
     collections::HashMap,
     env,
@@ -34,6 +33,7 @@ use std::{
     thread,
     time::Duration,
 };
+use tracing_mutex::stdsync::{Mutex, RwLock};
 use wayland_client::{
     event_created_child,
     protocol::{wl_compositor, wl_registry},
@@ -147,7 +147,7 @@ impl WaylandSensor {
                     "Trying to establish a connection to Wayland via the configured parameters..."
                 );
 
-                let display = (*CONFIG.lock())
+                let display = (*CONFIG.lock().unwrap())
                     .as_ref()
                     .unwrap()
                     .get_string("Wayland.display")
@@ -156,7 +156,7 @@ impl WaylandSensor {
                 let xdg_runtime_dir =
                     env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| "/run/user/1000".to_string());
 
-                // let xdg_desktop_environment = (*CONFIG.lock())
+                // let xdg_desktop_environment = (*CONFIG.lock().unwrap())
                 //     .as_ref()
                 //     .unwrap()
                 //     .get_string("Wayland.desktop_environment")
@@ -207,7 +207,7 @@ impl WaylandSensor {
         &mut self,
         wayland_tx: Sender<WaylandSensorData>,
     ) -> Result<()> {
-        *WAYLAND_TX.lock() = Some(wayland_tx);
+        *WAYLAND_TX.lock().unwrap() = Some(wayland_tx);
 
         let event_queue = self.event_queue.clone();
 
@@ -223,7 +223,7 @@ impl WaylandSensor {
                     match &event_queue {
                         Some(event_queue) => {
                             let mut data = AppData::default();
-                            event_queue.write().roundtrip(&mut data)?;
+                            event_queue.write().unwrap().roundtrip(&mut data)?;
                         }
 
                         None => {
@@ -251,6 +251,7 @@ impl Sensor for WaylandSensor {
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
             .read()
+            .unwrap()
             .contains(&SensorConfiguration::EnableWayland)
     }
 
@@ -394,6 +395,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
 
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
+                    .unwrap()
                     .entry(object)
                     .or_default()
                     .title
@@ -405,6 +407,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
 
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
+                    .unwrap()
                     .entry(object)
                     .or_default()
                     .app_id
@@ -422,6 +425,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
 
                 let _previous = WAYLAND_TOPLEVEL_WINDOWS
                     .write()
+                    .unwrap()
                     .entry(object)
                     .or_default()
                     .state
@@ -429,7 +433,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
             }
 
             Event::Done => {
-                let windows = WAYLAND_TOPLEVEL_WINDOWS.read();
+                let windows = WAYLAND_TOPLEVEL_WINDOWS.read().unwrap();
                 let attributes = windows.get(&object);
 
                 if let Some(attributes) = attributes {
@@ -447,6 +451,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
 
                             WAYLAND_TX
                                 .lock()
+                                .unwrap()
                                 .as_ref()
                                 .unwrap()
                                 .send(WaylandSensorData {
@@ -465,6 +470,7 @@ impl Dispatch<ZwlrForeignToplevelHandleV1, ()> for AppData {
 
                             WAYLAND_TX
                                 .lock()
+                                .unwrap()
                                 .as_ref()
                                 .unwrap()
                                 .send(WaylandSensorData {

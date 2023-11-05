@@ -63,7 +63,6 @@ use i18n_embed::{
 use indexmap::IndexMap;
 use is_terminal::IsTerminal;
 use lazy_static::lazy_static;
-use parking_lot::{Mutex, RwLock};
 use regex::Regex;
 use rust_embed::RustEmbed;
 use sensors::WindowSensorData;
@@ -71,6 +70,7 @@ use serde::{Deserialize, Serialize};
 use std::{env, fmt, fs, path::PathBuf, process, sync::atomic::AtomicBool, sync::Arc};
 use std::{sync::atomic::Ordering, thread, time::Duration};
 use tracing::*;
+use tracing_mutex::stdsync::{Mutex, RwLock};
 
 mod constants;
 mod dbus_client;
@@ -93,14 +93,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -380,8 +380,8 @@ Copyright (c) 2019-2023, The Eruption Development Team
 fn process_action(action: &Action) -> Result<()> {
     match action {
         Action::SwitchToProfile { profile_name } => {
-            if CURRENT_STATE.read().1.is_none()
-                || CURRENT_STATE.read().1.as_ref().unwrap() != profile_name
+            if CURRENT_STATE.read().unwrap().1.is_none()
+                || CURRENT_STATE.read().unwrap().1.as_ref().unwrap() != profile_name
             {
                 info!("Triggered action: {}", action);
 
@@ -390,12 +390,12 @@ fn process_action(action: &Action) -> Result<()> {
                 dbus_client::switch_profile(profile_name)?;
             }
 
-            CURRENT_STATE.write().1 = Some(profile_name.clone());
+            CURRENT_STATE.write().unwrap().1 = Some(profile_name.clone());
         }
 
         Action::SwitchToSlot { slot_index } => {
-            if CURRENT_STATE.read().0.is_none()
-                || CURRENT_STATE.read().0.as_ref().unwrap() != slot_index
+            if CURRENT_STATE.read().unwrap().0.is_none()
+                || CURRENT_STATE.read().unwrap().0.as_ref().unwrap() != slot_index
             {
                 info!("Triggered action: {}", action);
 
@@ -404,7 +404,7 @@ fn process_action(action: &Action) -> Result<()> {
                 dbus_client::switch_slot(*slot_index)?;
             }
 
-            CURRENT_STATE.write().0 = Some(*slot_index);
+            CURRENT_STATE.write().unwrap().0 = Some(*slot_index);
         }
     }
 
@@ -421,7 +421,7 @@ fn process_system_event(event: &SystemEvent) -> Result<()> {
             comm,
         } => {
             if let Some(comm) = comm {
-                for (selector, (metadata, action)) in RULES_MAP.read().iter() {
+                for (selector, (metadata, action)) in RULES_MAP.read().unwrap().iter() {
                     match selector {
                         Selector::ProcessExec { comm: regex } => {
                             if metadata.enabled {
@@ -437,6 +437,7 @@ fn process_system_event(event: &SystemEvent) -> Result<()> {
                                                 Action::SwitchToProfile { profile_name };
                                             PREVIOUS_STATES_MAP
                                                 .write()
+                                                .unwrap()
                                                 .insert(event.pid, return_action);
                                         }
 
@@ -445,6 +446,7 @@ fn process_system_event(event: &SystemEvent) -> Result<()> {
                                             let return_action = Action::SwitchToSlot { slot_index };
                                             PREVIOUS_STATES_MAP
                                                 .write()
+                                                .unwrap()
                                                 .insert(event.pid, return_action);
                                         }
                                     }
@@ -464,7 +466,7 @@ fn process_system_event(event: &SystemEvent) -> Result<()> {
         }
 
         SystemEvent::ProcessExit { event } => {
-            match PREVIOUS_STATES_MAP.read().get(&event.pid) {
+            match PREVIOUS_STATES_MAP.read().unwrap().get(&event.pid) {
                 Some(action) => match action {
                     Action::SwitchToProfile { profile_name } => {
                         debug!("Returning to profile: {}", profile_name);
@@ -495,11 +497,11 @@ fn process_fs_event(event: &FileSystemEvent, dbus_api_tx: &Sender<DbusApiEvent>)
         FileSystemEvent::RulesChanged => {
             info!("Rules changed, reloading...");
 
-            RULES_MAP.write().clear();
+            RULES_MAP.write().unwrap().clear();
 
             load_rules_map().unwrap_or_else(|e| error!("Could not load rules: {}", e));
 
-            for (selector, (metadata, action)) in RULES_MAP.read().iter() {
+            for (selector, (metadata, action)) in RULES_MAP.read().unwrap().iter() {
                 debug!("{} => {} ({})", selector, action, metadata);
             }
 
@@ -522,7 +524,7 @@ fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
                     regex: ".*".to_string(),
                 };
 
-                if let Some((_metadata, action)) = RULES_MAP.write().get_mut(&selector) {
+                if let Some((_metadata, action)) = RULES_MAP.write().unwrap().get_mut(&selector) {
                     info!(
                         "Updating the default rule to use the profile: {}",
                         profile_name
@@ -536,7 +538,7 @@ fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
                 }
 
                 // update global state
-                CURRENT_STATE.write().1 = Some(profile_name.clone());
+                CURRENT_STATE.write().unwrap().1 = Some(profile_name.clone());
             } else {
                 // we initiated the profile change
                 PROFILE_CHANGING.store(false, Ordering::SeqCst);
@@ -553,7 +555,7 @@ fn process_dbus_event(event: &dbus_client::Message) -> Result<()> {
 fn process_window_event(event: &dyn WindowSensorData) -> Result<()> {
     trace!("Sensor data: {:#?}", event);
 
-    for (selector, (metadata, action)) in RULES_MAP.read().iter() {
+    for (selector, (metadata, action)) in RULES_MAP.read().unwrap().iter() {
         match selector {
             Selector::WindowFocused { mode, regex } => {
                 if metadata.enabled {
@@ -770,39 +772,6 @@ fn spawn_dbus_api_thread(dbus_tx: Sender<dbus_interface::Message>) -> Result<Sen
     Ok(dbus_api_tx)
 }
 
-#[cfg(debug_assertions)]
-mod thread_util {
-    use crate::Result;
-    use parking_lot::deadlock;
-    use std::thread;
-    use std::time::Duration;
-    use tracing::*;
-
-    /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() -> Result<()> {
-        thread::Builder::new()
-            .name("deadlockd".to_owned())
-            .spawn(move || loop {
-                thread::sleep(Duration::from_secs(5));
-                let deadlocks = deadlock::check_deadlock();
-                if !deadlocks.is_empty() {
-                    error!("{} deadlocks detected", deadlocks.len());
-
-                    for (i, threads) in deadlocks.iter().enumerate() {
-                        error!("Deadlock #{}", i);
-
-                        for t in threads {
-                            error!("Thread Id {:#?}", t.thread_id());
-                            error!("{:#?}", t.backtrace());
-                        }
-                    }
-                }
-            })?;
-
-        Ok(())
-    }
-}
-
 pub fn run_main_loop(
     #[cfg(feature = "sensor-procmon")] sysevents_rx: &Receiver<SystemEvent>,
     #[cfg(feature = "sensor-wayland")] wayland_rx: &Receiver<WaylandSensorData>,
@@ -847,6 +816,7 @@ pub fn run_main_loop(
         {
             if SENSORS_CONFIGURATION
                 .read()
+                .unwrap()
                 .contains(&SensorConfiguration::EnableProcmon)
                 && !PROCESS_SENSOR_FAILED.load(Ordering::SeqCst)
             {
@@ -867,6 +837,7 @@ pub fn run_main_loop(
         {
             if SENSORS_CONFIGURATION
                 .read()
+                .unwrap()
                 .contains(&SensorConfiguration::EnableWayland)
             {
                 sel = sel.recv(wayland_rx, |event| {
@@ -887,6 +858,7 @@ pub fn run_main_loop(
         {
             if SENSORS_CONFIGURATION
                 .read()
+                .unwrap()
                 .contains(&SensorConfiguration::EnableGnomeShellExt)
             {
                 sel = sel.recv(gnome_shellext_rx, |event| {
@@ -909,7 +881,7 @@ pub fn run_main_loop(
         let _result = sel.wait_timeout(Duration::from_millis(constants::MAIN_LOOP_SLEEP_MILLIS));
 
         // poll all pollable sensors that do not notify us via messages
-        for sensor in sensors::SENSORS.write().iter_mut() {
+        for sensor in sensors::SENSORS.write().unwrap().iter_mut() {
             if sensor.is_enabled() && sensor.is_pollable() && !sensor.is_failed() {
                 match sensor.poll() {
                     #[allow(unused_variables)]
@@ -1023,7 +995,7 @@ fn autodetect_sensor_configuration() -> Result<()> {
 
     tracing::info!("The following sensor configuration has been auto-detected: {config_profile:?}");
 
-    *SENSORS_CONFIGURATION.write() = config_profile;
+    *SENSORS_CONFIGURATION.write().unwrap() = config_profile;
 
     Ok(())
 }
@@ -1039,11 +1011,12 @@ fn load_rules_map() -> Result<()> {
         .cloned()
         .collect::<IndexMap<Selector, (RuleMetadata, Action)>>();
 
-    RULES_MAP.write().extend(rules_map);
+    RULES_MAP.write().unwrap().extend(rules_map);
 
     // add auto-generated rules
     let default_profile = crate::CONFIG
         .lock()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get_string("global.default_profile")
@@ -1066,7 +1039,10 @@ fn load_rules_map() -> Result<()> {
         profile_name: default_profile,
     };
 
-    RULES_MAP.write().insert(selector, (metadata, action));
+    RULES_MAP
+        .write()
+        .unwrap()
+        .insert(selector, (metadata, action));
 
     Ok(())
 }
@@ -1077,7 +1053,7 @@ fn save_rules_map() -> Result<()> {
 
     util::create_dir(&rules_dir)?;
 
-    let rules_map = RULES_MAP.read();
+    let rules_map = RULES_MAP.read().unwrap();
     let v = rules_map
         .iter()
         // do not save internal auto-generated rules, they will be regenerated anyway
@@ -1144,7 +1120,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -1166,11 +1142,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     let opts = Options::parse();
     let _daemon = matches!(opts.command, Subcommands::Daemon);
-
-    // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
 
     info!(
         "Starting eruption-process-monitor: Version {}",
@@ -1212,7 +1183,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         warn!("** EXPERIMENTAL FEATURES are ENABLED, this may expose serious bugs! **");
     }
 
-    *CONFIG.lock() = Some(config);
+    *CONFIG.lock().unwrap() = Some(config);
 
     // initialize plugins
     info!("Registering plugins...");
@@ -1224,7 +1195,9 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
     match opts.command {
         Subcommands::Daemon => {
-            for (index, (selector, (metadata, action))) in RULES_MAP.read().iter().enumerate() {
+            for (index, (selector, (metadata, action))) in
+                RULES_MAP.read().unwrap().iter().enumerate()
+            {
                 info!("{:3}: {} => {} ({})", index, selector, action, metadata);
             }
 
@@ -1289,7 +1262,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             let active_slot = dbus_client::get_active_slot()?;
             let active_profile = dbus_client::get_active_profile()?;
 
-            *CURRENT_STATE.write() = (Some(active_slot), Some(active_profile));
+            *CURRENT_STATE.write().unwrap() = (Some(active_slot), Some(active_profile));
 
             info!("Startup completed");
 
@@ -1317,7 +1290,9 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
         Subcommands::Rules { command } => match command {
             RulesSubcommands::List => {
-                for (index, (selector, (metadata, action))) in RULES_MAP.read().iter().enumerate() {
+                for (index, (selector, (metadata, action))) in
+                    RULES_MAP.read().unwrap().iter().enumerate()
+                {
                     println!("{index:3}: {selector} => {action} ({metadata})");
                 }
             }
@@ -1326,7 +1301,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 fn print_usage_examples() {
                     eprintln!("\nPlease see below for some examples:");
 
-                    for s in sensors::SENSORS.read().iter() {
+                    for s in sensors::SENSORS.read().unwrap().iter() {
                         eprintln!("{}", s.get_usage_example());
                     }
                 }
@@ -1373,7 +1348,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                 profile_name: action.clone(),
                             };
 
-                            RULES_MAP.write().insert(
+                            RULES_MAP.write().unwrap().insert(
                                 parsed_selector.clone().unwrap(),
                                 (RuleMetadata::default(), parsed_action.clone()),
                             );
@@ -1382,7 +1357,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                 slot_index: action.parse::<u64>()? - 1,
                             };
 
-                            RULES_MAP.write().insert(
+                            RULES_MAP.write().unwrap().insert(
                                 parsed_selector.clone().unwrap(),
                                 (RuleMetadata::default(), parsed_action.clone()),
                             );
@@ -1397,7 +1372,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             }
 
             RulesSubcommands::Enable { rule_index } => {
-                match RULES_MAP.write().get_index_mut(rule_index) {
+                match RULES_MAP.write().unwrap().get_index_mut(rule_index) {
                     Some((ref selector, (metadata, action))) => {
                         if !metadata.internal {
                             metadata.enabled = true;
@@ -1415,7 +1390,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             }
 
             RulesSubcommands::Disable { rule_index } => {
-                match RULES_MAP.write().get_index_mut(rule_index) {
+                match RULES_MAP.write().unwrap().get_index_mut(rule_index) {
                     Some((ref selector, (metadata, action))) => {
                         if !metadata.internal {
                             metadata.enabled = false;
@@ -1434,7 +1409,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
             RulesSubcommands::Remove { rule_index } => {
                 // print results to console
-                match RULES_MAP.write().shift_remove_index(rule_index) {
+                match RULES_MAP.write().unwrap().shift_remove_index(rule_index) {
                     Some((selector, (metadata, action))) => {
                         if !metadata.internal {
                             println!("{rule_index:3}: {selector} => {action} ({metadata})");

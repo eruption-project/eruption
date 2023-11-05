@@ -418,11 +418,10 @@ impl Default for Profile {
 pub fn get_profile_dirs() -> Vec<PathBuf> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.read();
+    let config = crate::CONFIG.read().unwrap();
+    let config = config.as_ref().unwrap();
 
     let profile_dirs = config
-        .as_ref()
-        .unwrap()
         .get::<Vec<String>>("global.profile_dirs")
         .unwrap_or_else(|_| vec![]);
 
@@ -686,7 +685,7 @@ mod tests {
 
         let profile_path = assets_path.join("manifest_test.profile").canonicalize()?;
 
-        let config = config::Config::builder()
+        let mut config = config::Config::builder()
             .set_override(
                 "global.script_dirs",
                 vec![assets_path.to_string_lossy().to_string()],
@@ -694,7 +693,7 @@ mod tests {
             .build()
             .unwrap();
 
-        *crate::CONFIG.write() = Some(config);
+        crate::CONFIG.write().unwrap().as_mut().replace(&mut config);
 
         let profile = super::Profile::load_fully(&profile_path);
         let profile = match profile {

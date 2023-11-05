@@ -197,8 +197,8 @@ pub(crate) fn get_target_fps() -> u64 {
 pub(crate) fn get_support_script_files() -> Vec<String> {
     let mut result = Vec::new();
 
-    for (_handle, device) in crate::DEVICES.read().iter() {
-        result.push(device.read_recursive().get_support_script_file());
+    for (_handle, device) in crate::DEVICES.read().unwrap().iter() {
+        result.push(device.read().unwrap().get_support_script_file());
     }
 
     result
@@ -229,18 +229,15 @@ pub(crate) fn inject_key(ev_key: u32, down: bool) {
     macros::DROP_CURRENT_KEY.store(true, Ordering::SeqCst);
 
     #[cfg(not(target_os = "windows"))]
-    macros::UINPUT_TX
-        .try_read_recursive_for(constants::LOCK_CONTENDED_WAIT_MILLIS_LONG)
-        .and_then(|tx| {
-            tx.as_ref()
-                .unwrap()
-                .send(macros::Message::InjectKey { key: ev_key, down })
-                .unwrap_or_else(|e| {
-                    ratelimited::error!("Could not inject a key event: {}", e);
-                });
+    {
+        let tx = macros::UINPUT_TX.as_ref().read().unwrap();
+        let tx = tx.as_ref().unwrap();
 
-            Some(tx)
-        });
+        tx.send(macros::Message::InjectKey { key: ev_key, down })
+            .unwrap_or_else(|e| {
+                ratelimited::error!("Could not inject a key event: {}", e);
+            });
+    }
 }
 
 /// Inject a button event on the eruption virtual mouse.
@@ -253,21 +250,18 @@ pub(crate) fn inject_mouse_button(button_index: u32, down: bool) {
     macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
 
     #[cfg(not(target_os = "windows"))]
-    macros::UINPUT_TX
-        .try_read_recursive_for(constants::LOCK_CONTENDED_WAIT_MILLIS_LONG)
-        .and_then(|tx| {
-            tx.as_ref()
-                .unwrap()
-                .send(macros::Message::InjectButtonEvent {
-                    button: button_index,
-                    down,
-                })
-                .unwrap_or_else(|e| {
-                    ratelimited::error!("Could not inject a key event: {}", e);
-                });
+    {
+        let tx = macros::UINPUT_TX.as_ref().read().unwrap();
+        let tx = tx.as_ref().unwrap();
 
-            Some(tx)
+        tx.send(macros::Message::InjectButtonEvent {
+            button: button_index,
+            down,
+        })
+        .unwrap_or_else(|e| {
+            ratelimited::error!("Could not inject a key event: {}", e);
         });
+    }
 }
 
 /// Inject a mouse wheel scroll event on the eruption virtual mouse.
@@ -280,14 +274,15 @@ pub(crate) fn inject_mouse_wheel(direction: u32) {
     macros::DROP_CURRENT_MOUSE_INPUT.store(true, Ordering::SeqCst);
 
     #[cfg(not(target_os = "windows"))]
-    macros::UINPUT_TX
-        .read()
-        .as_ref()
-        .unwrap()
-        .send(macros::Message::InjectMouseWheelEvent { direction })
-        .unwrap_or_else(|e| {
-            ratelimited::error!("Could not inject a mouse wheel event: {}", e);
-        });
+    {
+        let tx = macros::UINPUT_TX.as_ref().read().unwrap();
+        let tx = tx.as_ref().unwrap();
+
+        tx.send(macros::Message::InjectMouseWheelEvent { direction })
+            .unwrap_or_else(|e| {
+                ratelimited::error!("Could not inject a mouse wheel event: {}", e);
+            });
+    }
 }
 
 /// Inject a key on the eruption virtual keyboard after sleeping for `millis` milliseconds.
@@ -305,21 +300,22 @@ pub(crate) fn inject_key_with_delay(ev_key: u32, down: bool, millis: u64) {
             thread::sleep(Duration::from_millis(millis));
 
             #[cfg(not(target_os = "windows"))]
-            macros::UINPUT_TX
-                .read()
-                .as_ref()
-                .unwrap()
-                .send(macros::Message::InjectKey { key: ev_key, down })
-                .unwrap_or_else(|e| {
-                    ratelimited::error!("Could not inject a key event: {}", e);
-                })
+            {
+                let tx = macros::UINPUT_TX.as_ref().read().unwrap();
+                let tx = tx.as_ref().unwrap();
+
+                tx.send(macros::Message::InjectKey { key: ev_key, down })
+                    .unwrap_or_else(|e| {
+                        ratelimited::error!("Could not inject a key event: {}", e);
+                    })
+            }
         })
         .unwrap();
 }
 
 // pub(crate) fn set_status_led(keyboard_device: &KeyboardDevice, led_id: u8, on: bool) {
 //     keyboard_device
-//         .lock()
+//         .lock().unwrap()
 //         .set_status_led(LedKind::from_id(led_id).unwrap(), on)
 //         .unwrap_or_else(|e| error!("{}", e));
 // }
@@ -491,16 +487,17 @@ pub(crate) fn gradient_from_name(val: &str) -> Result<usize> {
             let mut m = f.borrow_mut();
             let idx = m.len() + 1;
 
-            let gradient = if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().get(val) {
-                colorgrad::CustomGradient::new()
-                    // start at index 1, ignore the darkest/black part of the palette
-                    .mode(BlendMode::LinearRgb)
-                    .colors(&color_scheme.colors)
-                    .build()?
-            } else {
-                // use sinebow gradient as a fallback
-                colorgrad::sinebow()
-            };
+            let gradient =
+                if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().unwrap().get(val) {
+                    colorgrad::CustomGradient::new()
+                        // start at index 1, ignore the darkest/black part of the palette
+                        .mode(BlendMode::LinearRgb)
+                        .colors(&color_scheme.colors)
+                        .build()?
+                } else {
+                    // use sinebow gradient as a fallback
+                    colorgrad::sinebow()
+                };
 
             m.insert(idx, gradient);
 
@@ -508,7 +505,7 @@ pub(crate) fn gradient_from_name(val: &str) -> Result<usize> {
         }),
 
         _ => {
-            if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().get(val) {
+            if let Some(color_scheme) = crate::NAMED_COLOR_SCHEMES.read().unwrap().get(val) {
                 // Create a gradient from the named color scheme
                 ALLOCATED_GRADIENTS.with(|f| {
                     let mut m = f.borrow_mut();
@@ -716,14 +713,15 @@ fn test_rotate() {
 /// Get the number of keys of the managed device.
 pub(crate) fn get_num_keys() -> usize {
     // TODO: Return the number of keys of a specific device
-    let devices = crate::DEVICES.read();
+    let devices = crate::DEVICES.read().unwrap();
     let device = devices.iter().find(|(_handle, device)| {
-        device.read_recursive().get_device_class() == DeviceClass::Keyboard
+        device.read().unwrap().get_device_class() == DeviceClass::Keyboard
     });
 
     if let Some((_handle, device)) = device {
         device
-            .read_recursive()
+            .read()
+            .unwrap()
             .as_keyboard_device()
             .unwrap()
             .get_num_keys()
@@ -734,7 +732,7 @@ pub(crate) fn get_num_keys() -> usize {
 
 /// Get state of all LEDs
 pub(crate) fn get_color_map() -> Vec<u32> {
-    let global_led_map = LED_MAP.read();
+    let global_led_map = LED_MAP.read().unwrap();
 
     let result = global_led_map
         .iter()
@@ -753,7 +751,7 @@ pub(crate) fn get_color_map() -> Vec<u32> {
 
 /// Get saved state of all LEDs
 pub(crate) fn get_saved_color_map() -> Vec<u32> {
-    let global_led_map = LAST_RENDERED_LED_MAP.read();
+    let global_led_map = LAST_RENDERED_LED_MAP.read().unwrap();
 
     let result = global_led_map
         .iter()
@@ -1173,7 +1171,7 @@ pub fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     globals.set("set_brightness", set_brightness)?;
 
     // finally, register Lua functions supplied by eruption plugins
-    let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
+    let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
     let plugins = plugin_manager.get_plugins();
 
     for plugin in plugins.iter() {

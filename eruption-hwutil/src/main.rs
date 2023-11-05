@@ -30,7 +30,6 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 use std::{
     env,
@@ -43,6 +42,7 @@ use std::{
     time::Duration,
 };
 use tracing::error;
+use tracing_mutex::stdsync::Mutex;
 
 mod constants;
 mod device;
@@ -62,14 +62,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -85,19 +85,19 @@ macro_rules! println_v {
     };
 
     ($verbosity : expr) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!()
         }
     };
 
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!($l, $($params),*)
         }
     };
 
     ($verbosity : expr, $($params : tt) *) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!($($params)*)
         }
     };
@@ -110,19 +110,19 @@ macro_rules! eprintln_v {
     };
 
     ($verbosity : expr) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!()
         }
     };
 
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!($l, $($params),*)
         }
     };
 
     ($verbosity : expr, $($params : tt) *) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!($($params)*)
         }
     };
@@ -297,7 +297,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -331,7 +331,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
     let opts = Options::parse();
-    *OPTIONS.lock() = Some(opts.clone());
+    *OPTIONS.lock().unwrap() = Some(opts.clone());
 
     interact::INTERACTIVE.store(opts.interactive, Ordering::SeqCst);
 
@@ -348,7 +348,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             process::exit(4);
         });
 
-    *CONFIG.lock() = Some(config);
+    *CONFIG.lock().unwrap() = Some(config);
 
     match opts.command {
         // device specific sub-commands

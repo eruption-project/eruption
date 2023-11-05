@@ -19,6 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use std::ops::RangeFull;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::u64;
@@ -53,10 +54,10 @@ use is_terminal::IsTerminal;
 use lazy_static::lazy_static;
 #[cfg(feature = "mimalloc_allocator")]
 use mimalloc::MiMalloc;
-use parking_lot::{Condvar, Mutex, RwLock};
 use rayon::prelude::*;
 use rust_embed::RustEmbed;
 use tracing::*;
+use tracing_mutex::stdsync::{Condvar, Mutex, RwLock};
 #[cfg(target_os = "windows")]
 use windows_named_pipe::PipeStream;
 
@@ -123,14 +124,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -143,9 +144,6 @@ lazy_static! {
 
     /// Connected devices managed by Eruption
     pub static ref DEVICES: Arc<RwLock<IndexMap<DeviceHandle, Device>>> = Arc::new(RwLock::new(IndexMap::new()));
-
-    #[cfg(not(target_os = "windows"))]
-    pub static ref EVENT_RX: Arc<RwLock<IndexMap<DeviceHandle, Option<Receiver<Option<evdev_rs::InputEvent>>>>>> = Arc::new(RwLock::new(IndexMap::new()));
 
     /// Holds device status information, like e.g: current signal strength or battery levels
     pub static ref DEVICE_STATUS: Arc<RwLock<HashMap<u64, DeviceStatus>>> =
@@ -241,9 +239,9 @@ lazy_static! {
 }
 
 lazy_static! {
-    // Eruption start completed and event processing is ready?
-    //   pub static ref STARTUP_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
-    //     Arc::new((Mutex::new(false), Condvar::new()));
+    // Is Eruption startup completed and event processing ready?
+    pub static ref STARTUP_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
+        Arc::new((Mutex::new(false), Condvar::new()));
 
     // Color maps of Lua VMs ready?
     pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
@@ -410,7 +408,7 @@ fn parse_commandline() -> clap::ArgMatches {
 }
 
 pub fn switch_profile_please(profile_file: Option<&Path>) -> Result<SwitchProfileResult> {
-    let dbus_api_tx = crate::DBUS_API_TX.read();
+    let dbus_api_tx = crate::DBUS_API_TX.read().unwrap();
     let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
     switch_profile(profile_file, dbus_api_tx, true)
@@ -455,11 +453,11 @@ pub fn switch_profile(
                 tx.is_failed = true
             }
 
-            LUA_TXS.write().push(tx);
+            LUA_TXS.write().unwrap().push(tx);
         }
 
         // finally assign the globally active profile
-        *ACTIVE_PROFILE.write() = Some(profile);
+        *ACTIVE_PROFILE.write().unwrap() = Some(profile);
 
         if notify {
             dbus_api_tx
@@ -469,7 +467,7 @@ pub fn switch_profile(
 
         // let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
 
-        // let mut slot_profiles = SLOT_PROFILES.write();
+        // let mut slot_profiles = SLOT_PROFILES.write().unwrap();
         // slot_profiles.as_mut().unwrap()[active_slot] = "failsafe.profile".into();
 
         if errors_present {
@@ -480,33 +478,43 @@ pub fn switch_profile(
         }
     }
 
-    let mut switch_completed = crate::PROFILE_SWITCHING_COMPLETED_CONDITION.0.lock();
-    if !*switch_completed {
-        // wait for previous profile switching requests to complete...
+    {
+        let switch_completed = crate::PROFILE_SWITCHING_COMPLETED_CONDITION
+            .0
+            .lock()
+            .unwrap();
+        if !*switch_completed {
+            // wait for previous profile switching requests to complete...
 
-        let result = PROFILE_SWITCHING_COMPLETED_CONDITION.1.wait_for(
-            &mut switch_completed,
-            Duration::from_millis(constants::TIMEOUT_MILLIS_LONG),
-        );
+            let result = PROFILE_SWITCHING_COMPLETED_CONDITION
+                .1
+                .wait_timeout(
+                    switch_completed,
+                    Duration::from_millis(constants::TIMEOUT_MILLIS_LONG),
+                )
+                .unwrap();
 
-        if result.timed_out() {
-            ratelimited::error!("Invalid state in profile switching code");
-            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+            if result.1.timed_out() {
+                ratelimited::error!("Invalid state in profile switching code");
+                crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
-            return Err(MainError::SwitchProfileError {}.into());
+                return Err(MainError::SwitchProfileError {}.into());
+            }
         }
     }
 
     // ok, no previous operations pending, begin switching the profile now...
 
-    *switch_completed = false;
+    let mut switch_completed_binding = crate::PROFILE_SWITCHING_COMPLETED_CONDITION.0.lock();
+    let switch_completed = switch_completed_binding.as_mut().unwrap();
+    **switch_completed = false;
 
     if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
         debug!("Preparing to enter failsafe mode...");
 
         // request termination of all Lua VMs
 
-        for lua_tx in LUA_TXS.read().iter() {
+        for lua_tx in LUA_TXS.read().unwrap().iter() {
             if !lua_tx.is_failed {
                 lua_tx
                     .send(script::Message::Unload)
@@ -517,14 +525,14 @@ pub fn switch_profile(
         }
 
         // be safe and clear any leftover channels
-        LUA_TXS.write().clear();
+        LUA_TXS.write().unwrap().clear();
 
         switch_to_failsafe_profile(dbus_api_tx, notify)?;
         REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
 
         debug!("Successfully entered failsafe mode");
 
-        *switch_completed = true;
+        **switch_completed = true;
         crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
 
         Ok(SwitchProfileResult::FallbackToFailsafe)
@@ -533,7 +541,7 @@ pub fn switch_profile(
         let profile_file = if let Some(profile_file) = profile_file {
             profile_file
         } else {
-            *switch_completed = true;
+            **switch_completed = true;
             crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
 
             error!("Undefined profile");
@@ -549,10 +557,11 @@ pub fn switch_profile(
                 let mut errors_present = false;
 
                 // take a snapshot of the last rendered LED map
-                *script::SAVED_LED_MAP.write() = script::LAST_RENDERED_LED_MAP.read().clone();
+                *script::SAVED_LED_MAP.write().unwrap() =
+                    script::LAST_RENDERED_LED_MAP.read().unwrap().clone();
 
                 // request termination of all Lua VMs
-                for lua_tx in LUA_TXS.read().iter() {
+                for lua_tx in LUA_TXS.read().unwrap().iter() {
                     if !lua_tx.is_failed {
                         lua_tx.send(script::Message::Unload).unwrap_or_else(|e| {
                             error!("Could not send an event to a Lua VM: {}", e)
@@ -563,7 +572,8 @@ pub fn switch_profile(
                 }
 
                 // be safe and clear any leftover channels
-                LUA_TXS.write().clear();
+                LUA_TXS.write().unwrap().clear();
+                FAILED_TXS.write().unwrap().clear();
 
                 // we passed the point of no return, from here on we can't just go back
                 // but need to switch to failsafe mode when we encounter any critical errors
@@ -592,7 +602,7 @@ pub fn switch_profile(
                         tx.is_failed = true;
                     }
 
-                    LUA_TXS.write().push(tx);
+                    LUA_TXS.write().unwrap().push(tx);
                 }
 
                 // it seems that at least one Lua VM failed during loading of the new profile,
@@ -603,7 +613,7 @@ pub fn switch_profile(
                     );
                     switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
-                    *switch_completed = true;
+                    **switch_completed = true;
                     crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
 
                     Ok(SwitchProfileResult::FallbackToFailsafe)
@@ -613,21 +623,21 @@ pub fn switch_profile(
 
                     // now clear all led maps, so that we don't get leftover artifacts in
                     // case the new scripts don't paint the whole canvas
-                    script::LED_MAP.write().fill(RGBA {
+                    script::LED_MAP.write().unwrap().fill(RGBA {
                         r: 0x00,
                         g: 0x00,
                         b: 0x00,
                         a: 0x00,
                     });
 
-                    script::LAST_RENDERED_LED_MAP.write().fill(RGBA {
+                    script::LAST_RENDERED_LED_MAP.write().unwrap().fill(RGBA {
                         r: 0x00,
                         g: 0x00,
                         b: 0x00,
                         a: 0x00,
                     });
 
-                    sdk_support::LED_MAP.write().fill(RGBA {
+                    sdk_support::LED_MAP.write().unwrap().fill(RGBA {
                         r: 0x00,
                         g: 0x00,
                         b: 0x00,
@@ -636,6 +646,7 @@ pub fn switch_profile(
 
                     let fade_millis = crate::CONFIG
                         .read()
+                        .unwrap()
                         .as_ref()
                         .unwrap()
                         .get_int("global.profile_fade_milliseconds")
@@ -645,7 +656,7 @@ pub fn switch_profile(
                     crate::FADER.store(fade_frames, Ordering::SeqCst);
                     crate::FADER_BASE.store(fade_frames, Ordering::SeqCst);
 
-                    *ACTIVE_PROFILE.write() = Some(profile);
+                    *ACTIVE_PROFILE.write().unwrap() = Some(profile);
 
                     if notify {
                         dbus_api_tx
@@ -656,10 +667,10 @@ pub fn switch_profile(
                     }
 
                     let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
-                    let mut slot_profiles = SLOT_PROFILES.write();
+                    let mut slot_profiles = SLOT_PROFILES.write().unwrap();
                     slot_profiles.as_mut().unwrap()[active_slot] = profile_file.into();
 
-                    *switch_completed = true;
+                    **switch_completed = true;
                     crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
 
                     Ok(SwitchProfileResult::Switched)
@@ -669,14 +680,14 @@ pub fn switch_profile(
                 // the profile file to switch to is corrupted, so we need to refuse to switch profiles
                 // and simply keep the current one, or load a failsafe profile if we do not have a
                 // currently active profile, like e.g. during startup of the daemon
-                if crate::ACTIVE_PROFILE.read().is_none() {
+                if crate::ACTIVE_PROFILE.read().unwrap().is_none() {
                     error!(
                         "An error occurred during switching of profiles, loading failsafe profile now. {}",
                         e
                     );
                     switch_to_failsafe_profile(dbus_api_tx, notify)?;
 
-                    *switch_completed = true;
+                    **switch_completed = true;
                     crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
 
                     Ok(SwitchProfileResult::FallbackToFailsafe)
@@ -687,7 +698,7 @@ pub fn switch_profile(
                         e
                     );
 
-                    *switch_completed = true;
+                    **switch_completed = true;
                     crate::PROFILE_SWITCHING_COMPLETED_CONDITION.1.notify_all();
 
                     Ok(SwitchProfileResult::InvalidProfile)
@@ -709,6 +720,7 @@ fn run_main_loop(
 
     let afk_timeout_secs = crate::CONFIG
         .read()
+        .unwrap()
         .as_ref()
         .unwrap()
         .get_int("global.afk_timeout_secs")
@@ -717,7 +729,7 @@ fn run_main_loop(
     // main loop iterations, monotonic counter
     let mut ticks = 0;
     let mut start_time;
-    let mut delay_time_hid_poll = Instant::now();
+    let _delay_time_hid_poll = Instant::now();
     let mut delay_time_tick = Instant::now();
     let mut delay_time_render = Instant::now();
     let mut last_status_poll = Instant::now();
@@ -727,9 +739,9 @@ fn run_main_loop(
 
     let mut saved_brightness = BRIGHTNESS.load(Ordering::SeqCst);
 
-    let mut saved_hue = CANVAS_HSL.read().0;
-    let mut saved_saturation = CANVAS_HSL.read().1;
-    let mut saved_lightness = CANVAS_HSL.read().2;
+    let mut saved_hue = CANVAS_HSL.read().unwrap().0;
+    let mut saved_saturation = CANVAS_HSL.read().unwrap().1;
+    let mut saved_lightness = CANVAS_HSL.read().unwrap().2;
 
     // used to detect changes to the AFK state
     let mut saved_afk_mode = false;
@@ -746,11 +758,20 @@ fn run_main_loop(
 
         let mut device_has_failed = false;
 
-        #[cfg(not(target_os = "windows"))]
-        let event_rxs = crate::EVENT_RX.read();
+        let mut evdev_rxs: IndexMap<
+            hwdevices::DeviceHandle,
+            flume::Receiver<std::option::Option<evdev_rs::InputEvent>>,
+        > = IndexMap::new();
 
-        #[cfg(not(target_os = "windows"))]
-        let event_rxs_clone = event_rxs.clone();
+        // get a read lock for `crate::DEVICES` for most of the inner part of the main loop
+        let devices = crate::DEVICES.read().unwrap();
+
+        // build a Vec of all the rxs we are about to wait on
+        for (handle, device) in devices.iter() {
+            if let Some(rx) = device.read().unwrap().get_evdev_input_rx().clone() {
+                evdev_rxs.insert(*handle, rx);
+            }
+        }
 
         let mut sel = Selector::new()
             .recv(ctrl_c_rx, |_event| {
@@ -774,7 +795,7 @@ fn run_main_loop(
                         ratelimited::error!("Could not process a D-Bus event: {}", e)
                     });
 
-                    // FAILED_TXS.write().clear();
+                    // FAILED_TXS.write().unwrap().clear();
                 } else {
                     ratelimited::error!(
                         "Fatal: Could not process a D-Bus event: {}",
@@ -784,18 +805,16 @@ fn run_main_loop(
             });
 
         #[cfg(not(target_os = "windows"))]
-        let failed_event_rxs = Arc::new(RwLock::new(HashSet::new()));
+        {
+            // add evdev event rxs of all devices to the selector
+            for (handle, outer_device) in devices.iter() {
+                let mapper = move |event| {
+                    if let Ok(Some(event)) = event {
+                        let device = &mut **outer_device.write().unwrap();
 
-        #[cfg(not(target_os = "windows"))]
-        for (handle, rx) in event_rxs_clone.iter() {
-            let failed_event_rxs = failed_event_rxs.clone();
-
-            let mapper = move |event| {
-                if let Ok(Some(event)) = event {
-                    if let Some(device) = hwdevices::find_device_by_handle(handle) {
-                        match device.read_recursive().get_device_class() {
+                        match device.get_device_class() {
                             DeviceClass::Keyboard => {
-                                events::process_keyboard_event(&event, device.clone())
+                                events::process_keyboard_event(&event, device)
                                     .unwrap_or_else(|e| {
                                         device_has_failed = true;
 
@@ -805,18 +824,33 @@ fn run_main_loop(
                                         );
 
                                         device
-                                            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-                                            .and_then(|mut device| {
-                                                device.close_all().map_err(|e| {
-                                                    ratelimited::error!("An error occurred while closing the device: {e}")
-                                                })
-                                                .ok()
+                                            .close_all()
+                                            .unwrap_or_else(|e| {
+                                                ratelimited::error!("An error occurred while closing the device: {e}")
                                             });
+
                                     });
+
+                                // events::process_keyboard_hid_events(device.clone())
+                                //     .unwrap_or_else(|e| {
+                                //         device_has_failed = true;
+
+                                //         ratelimited::error!(
+                                //             "Could not process an input event: {}. Trying to close the device...",
+                                //             e
+                                //         );
+
+                                //         device
+                                //             .close_all()
+                                //             .unwrap_or_else(|e| {
+                                //                 ratelimited::error!("An error occurred while closing the device: {e}")
+                                //             });
+
+                                //     });
                             }
 
                             DeviceClass::Mouse => {
-                                events::process_mouse_event(&event, device.clone()).unwrap_or_else(
+                                events::process_mouse_event(&event, device).unwrap_or_else(
                                     |e| {
                                         device_has_failed = true;
 
@@ -826,18 +860,33 @@ fn run_main_loop(
                                         );
 
                                         device
-                                            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-                                            .and_then(|mut device| {
-                                        device.close_all().map_err(|e| {
+                                            .close_all()
+                                            .unwrap_or_else(|e| {
                                                     ratelimited::error!("An error occurred while closing the device: {e}")
-                                                })
-                                                .ok()
-                                            });
+                                                });
+
                                     },
                                 );
+
+                                // events::process_mouse_hid_events(device)
+                                //     .unwrap_or_else(|e| {
+                                //         device_has_failed = true;
+
+                                //         ratelimited::error!(
+                                //             "Could not process an input event: {}. Trying to close the device...",
+                                //             e
+                                //         );
+
+                                //         device
+                                //             .close_all()
+                                //             .unwrap_or_else(|e| {
+                                //                 ratelimited::error!("An error occurred while closing the device: {e}")
+                                //             });
+
+                                //     });
                             }
 
-                            DeviceClass::Misc => events::process_misc_event(&event, device.clone())
+                            DeviceClass::Misc => events::process_misc_event(&event, device)
                                 .unwrap_or_else(|e| {
                                     device_has_failed = true;
 
@@ -847,13 +896,11 @@ fn run_main_loop(
                                     );
 
                                     device
-                                        .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-                                        .and_then(|mut device| {
-                                    device.close_all().map_err(|e| {
-                                                ratelimited::error!("An error occurred while closing the device: {e}")
-                                            })
-                                            .ok()
+                                        .close_all()
+                                        .unwrap_or_else(|e| {
+                                            ratelimited::error!("An error occurred while closing the device: {e}")
                                         });
+
                                 }),
 
                             _ => {
@@ -861,38 +908,32 @@ fn run_main_loop(
                             }
                         }
                     } else {
-                        ratelimited::error!("Could not find a device by its handle");
+                        device_has_failed = true;
+
+                        ratelimited::error!(
+                            "Could not process an input event: {}",
+                            event.as_ref().unwrap_err()
+                        );
+
+                        /* if let Some(device) = hwdevices::find_device_by_handle(*handle as DeviceHandle)
+                        {
+
+                            device
+                            .write()
+                            .unwrap()
+                            .close_all()
+                            .unwrap_or_else(|e| {
+                                ratelimited::error!(
+                                    "An error occurred while closing the device: {e}"
+                                )
+                            });
+                        } */
                     }
-                } else {
-                    device_has_failed = true;
+                };
 
-                    ratelimited::error!(
-                        "Could not process an input event: {}",
-                        event.as_ref().unwrap_err()
-                    );
-
-                    /* if let Some(device) = hwdevices::find_device_by_handle(*handle as DeviceHandle)
-                    {
-
-                        device
-                        .write()
-                        .close_all()
-                        .map_err(|e| {
-                            ratelimited::error!(
-                                "An error occurred while closing the device: {e}"
-                            )
-                        })
-                        .ok();
-                    } */
+                if let Some(rx) = evdev_rxs.get(handle) {
+                    sel = sel.recv(rx, mapper);
                 }
-
-                if device_has_failed {
-                    failed_event_rxs.write().insert(handle);
-                }
-            };
-
-            if let Some(rx) = rx {
-                sel = sel.recv(rx, mapper);
             }
         }
 
@@ -907,7 +948,8 @@ fn run_main_loop(
             crate::REENTER_MAIN_LOOP.store(false, Ordering::SeqCst);
 
             // take a snapshot of the last rendered LED map
-            *script::SAVED_LED_MAP.write() = script::LAST_RENDERED_LED_MAP.read().clone();
+            *script::SAVED_LED_MAP.write().unwrap() =
+                script::LAST_RENDERED_LED_MAP.read().unwrap().clone();
 
             return Ok(());
         }
@@ -917,7 +959,7 @@ fn run_main_loop(
                 warn!("Entering failsafe mode now, due to previous irrecoverable errors");
 
                 // forbid changing of profile and/or slots now
-                *ACTIVE_PROFILE_NAME.write() = None;
+                *ACTIVE_PROFILE_NAME.write().unwrap() = None;
                 saved_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
 
                 if let Err(e) = switch_profile(None, dbus_api_tx, true) {
@@ -927,7 +969,7 @@ fn run_main_loop(
                     #[cfg(not(target_os = "windows"))]
                     plugins::audio::reset_audio_backend();
 
-                    FAILED_TXS.write().clear();
+                    FAILED_TXS.write().unwrap().clear();
                 }
             }
         }
@@ -935,9 +977,9 @@ fn run_main_loop(
         {
             // slot changed?
             let active_slot = ACTIVE_SLOT.load(Ordering::SeqCst);
-            if active_slot != saved_slot || ACTIVE_PROFILE.read().is_none() {
+            if active_slot != saved_slot || ACTIVE_PROFILE.read().unwrap().is_none() {
                 let profile_path = {
-                    let slot_profiles = SLOT_PROFILES.read();
+                    let slot_profiles = SLOT_PROFILES.read().unwrap();
                     slot_profiles.as_ref().unwrap()[active_slot].clone()
                 };
 
@@ -955,7 +997,7 @@ fn run_main_loop(
                         });
 
                     saved_slot = active_slot;
-                    FAILED_TXS.write().clear();
+                    FAILED_TXS.write().unwrap().clear();
                 }
             }
         }
@@ -971,7 +1013,7 @@ fn run_main_loop(
         }
 
         // post-processing parameters changed?
-        let current_hsl = *CANVAS_HSL.read();
+        let current_hsl = *CANVAS_HSL.read().unwrap();
 
         if current_hsl.0 != saved_hue {
             dbus_api_tx
@@ -1005,24 +1047,26 @@ fn run_main_loop(
 
                 let afk_profile = crate::CONFIG
                     .read()
+                    .unwrap()
                     .as_ref()
                     .unwrap()
                     .get::<String>("global.afk_profile")
                     .unwrap_or_else(|_| constants::DEFAULT_AFK_PROFILE.to_owned());
 
-                let active_profile = &*ACTIVE_PROFILE.read();
+                let active_profile = &*ACTIVE_PROFILE.read().unwrap();
                 let before_afk = &active_profile.as_ref().unwrap().profile_file;
 
-                *ACTIVE_PROFILE_NAME_BEFORE_AFK.write() =
+                *ACTIVE_PROFILE_NAME_BEFORE_AFK.write().unwrap() =
                     Some(before_afk.to_string_lossy().to_string());
 
-                ACTIVE_PROFILE_NAME.write().replace(afk_profile);
+                ACTIVE_PROFILE_NAME.write().unwrap().replace(afk_profile);
             } else {
                 info!("Leaving AFK mode now...");
 
-                ACTIVE_PROFILE_NAME.write().replace(
+                ACTIVE_PROFILE_NAME.write().unwrap().replace(
                     ACTIVE_PROFILE_NAME_BEFORE_AFK
                         .read()
+                        .unwrap()
                         .as_ref()
                         .unwrap()
                         .clone(),
@@ -1034,7 +1078,7 @@ fn run_main_loop(
 
         {
             // active profile name changed?
-            if let Some(active_profile) = &*ACTIVE_PROFILE_NAME.read() {
+            if let Some(active_profile) = &*ACTIVE_PROFILE_NAME.read().unwrap() {
                 let profile_path = Path::new(active_profile);
 
                 if let Err(e) = switch_profile(Some(profile_path), dbus_api_tx, true) {
@@ -1044,11 +1088,11 @@ fn run_main_loop(
                     #[cfg(not(target_os = "windows"))]
                     plugins::audio::reset_audio_backend();
 
-                    FAILED_TXS.write().clear();
+                    FAILED_TXS.write().unwrap().clear();
                 }
             }
 
-            *ACTIVE_PROFILE_NAME.write() = None;
+            *ACTIVE_PROFILE_NAME.write().unwrap() = None;
         }
 
         {
@@ -1056,7 +1100,7 @@ fn run_main_loop(
             if REQUEST_PROFILE_RELOAD.load(Ordering::SeqCst) {
                 REQUEST_PROFILE_RELOAD.store(false, Ordering::SeqCst);
 
-                let profile_clone = ACTIVE_PROFILE.read().clone();
+                let profile_clone = ACTIVE_PROFILE.read().unwrap().clone();
 
                 if let Some(profile) = &profile_clone {
                     if let Err(e) = switch_profile(Some(&profile.profile_file), dbus_api_tx, true) {
@@ -1066,7 +1110,7 @@ fn run_main_loop(
                         #[cfg(not(target_os = "windows"))]
                         plugins::audio::reset_audio_backend();
 
-                        FAILED_TXS.write().clear();
+                        FAILED_TXS.write().unwrap().clear();
                     }
                 }
             }
@@ -1077,18 +1121,15 @@ fn run_main_loop(
             coz::scope!("main loop hooks");
 
             // prepare to call main loop hook
-            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read();
+            let plugin_manager = plugin_manager::PLUGIN_MANAGER.read().unwrap();
             let plugins = plugin_manager.get_plugins();
 
             // call main loop hook of each registered plugin
-            // let mut futures = vec![];
             for plugin in plugins.iter() {
                 // call the sync main loop hook, intended to be used
                 // for very short running pieces of code
                 plugin.sync_main_loop_hook(ticks);
             }
-
-            // join_all(futures);
         }
 
         if last_status_poll.elapsed()
@@ -1097,9 +1138,16 @@ fn run_main_loop(
             #[cfg(feature = "profiling")]
             coz::scope!("device status polling");
 
-            let saved_status = crate::DEVICE_STATUS.as_ref().read().clone();
+            let saved_status = { crate::DEVICE_STATUS.as_ref().read().unwrap().clone() };
 
-            if let Err(_e) = events::process_timer_event() {
+            /* let device_status = device.device_status()?;
+
+            DEVICE_STATUS
+                .write()
+                .unwrap()
+                .insert(Into::<u64>::into(handle), device_status); */
+
+            /* if let Err(_e) = events::process_timer_event(handle, device) {
                 /* do nothing  */
 
                 // if e.type_id() == (HwDeviceError::NoOpResult {}).type_id() {
@@ -1107,11 +1155,11 @@ fn run_main_loop(
                 // } else {
                 //   trace!("Result is a NoOp");
                 // }
-            }
+            } */
 
             last_status_poll = Instant::now();
 
-            let current_status = crate::DEVICE_STATUS.read().clone();
+            let current_status = crate::DEVICE_STATUS.read().unwrap().clone();
 
             if current_status != saved_status {
                 dbus_api_tx
@@ -1122,7 +1170,7 @@ fn run_main_loop(
             // use 'device status poll' code to detect failed/disconnected devices as well,
             // by forcing a write to the device. This is required for hotplug to work correctly in
             // case we didn't transfer data to the device for an extended period of time
-            script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
+            // script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
         }
 
         // now, process events from all available sources...
@@ -1138,38 +1186,6 @@ fn run_main_loop(
             false
         };
 
-        // remove all failed devices
-        #[cfg(not(target_os = "windows"))]
-        for handle in failed_event_rxs.read().iter() {
-            ratelimited::warn!("Removing failed device with handle {handle}");
-            // event_rxs.remove(*handle);
-
-            if let Some(device) = hwdevices::find_device_by_handle(*handle) {
-                // NOTE: We may deadlock here, so be careful
-                device
-                    .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-                    .and_then(|mut device| {
-                        device.fail().unwrap_or_else(|e| {
-                            error!("Could not mark a device as failed: {}", e);
-                        });
-
-                        // we need to terminate and then re-enter the main loop to update all global state
-                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-
-                        Some(device)
-                    })
-                    .or_else(|| {
-                        ratelimited::error!("Could not mark the device as failed");
-
-                        None
-                    });
-            } else {
-                ratelimited::error!("Device does not exist");
-            }
-
-            crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
-        }
-
         // terminate the main loop (and later re-enter it) on device failure
         // in most cases eruption should better be restarted
         #[cfg(target_os = "windows")]
@@ -1179,12 +1195,12 @@ fn run_main_loop(
 
         #[cfg(not(target_os = "windows"))]
         if device_has_failed || (result.is_err() && !timedout)
-        /* || !failed_event_rxs.read().is_empty() */
+        /* || !failed_event_rxs.read().unwrap().is_empty() */
         {
             return Err(MainError::DeviceFailed {}.into());
         }
 
-        if delay_time_hid_poll.elapsed()
+        /* if delay_time_hid_poll.elapsed()
             >= Duration::from_millis(1000 / (constants::TARGET_FPS_LIMIT * 8))
         {
             #[cfg(feature = "profiling")]
@@ -1193,12 +1209,10 @@ fn run_main_loop(
             delay_time_hid_poll = Instant::now();
 
             // poll HID events on all available devices
-            for (handle, device) in crate::DEVICES.read().iter() {
-                match device.try_read_for(constants::LOCK_CONTENDED_WAIT_MILLIS) {
-                    Some(dev) => match dev.get_device_class() {
-                        DeviceClass::Keyboard => events::process_keyboard_hid_events(
-                            device.clone(),
-                        )
+            let devices = crate::DEVICES.read().unwrap();
+            for (handle, device) in devices.iter() {
+                match device.get_device_class() {
+                    DeviceClass::Keyboard => events::process_keyboard_hid_events(device)
                         .unwrap_or_else(|e| {
                             ratelimited::error!(
                                 "Could not process a keyboard HID event for {handle}: {}",
@@ -1206,23 +1220,21 @@ fn run_main_loop(
                             )
                         }),
 
-                        DeviceClass::Mouse => events::process_mouse_hid_events(device.clone())
-                            .unwrap_or_else(|e| {
-                                ratelimited::error!(
-                                    "Could not process a mouse HID event for {handle}: {}",
-                                    e
-                                )
-                            }),
+                    DeviceClass::Mouse => {
+                        events::process_mouse_hid_events(device).unwrap_or_else(|e| {
+                            ratelimited::error!(
+                                "Could not process a mouse HID event for {handle}: {}",
+                                e
+                            )
+                        })
+                    }
 
-                        _ => {
-                            // ignore HID events on all other devices
-                        }
-                    },
-
-                    _ => { /* do nothing */ }
+                    _ => {
+                        // ignore HID events on all other devices
+                    }
                 }
             }
-        }
+        } */
 
         if delay_time_tick.elapsed() >= Duration::from_millis(1000 / constants::TIMER_TPS) {
             #[cfg(feature = "profiling")]
@@ -1233,14 +1245,14 @@ fn run_main_loop(
             delay_time_tick = Instant::now();
 
             // send timer tick events to the Lua VMs
-            for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
+            for (index, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
                 // if this tx failed previously, then skip it completely
-                if !FAILED_TXS.read().contains(&index) {
+                if !FAILED_TXS.read().unwrap().contains(&index) {
                     lua_tx
                         .send(script::Message::Tick(delta))
                         .unwrap_or_else(|e| {
                             error!("Send error during timer tick event: {}", e);
-                            FAILED_TXS.write().insert(index);
+                            FAILED_TXS.write().unwrap().insert(index);
                         });
                 }
             }
@@ -1256,12 +1268,12 @@ fn run_main_loop(
             delay_time_render = Instant::now();
 
             // send render request to the Lua VMs
-            for (index, lua_tx) in LUA_TXS.read().iter().enumerate() {
+            for (index, lua_tx) in LUA_TXS.read().unwrap().iter().enumerate() {
                 // if this tx failed previously, then skip it completely
-                if !FAILED_TXS.read().contains(&index) {
+                if !FAILED_TXS.read().unwrap().contains(&index) {
                     lua_tx.send(script::Message::Render).unwrap_or_else(|e| {
                         error!("Send error during timer tick event: {}", e);
-                        FAILED_TXS.write().insert(index);
+                        FAILED_TXS.write().unwrap().insert(index);
                     });
                 }
             }
@@ -1269,6 +1281,7 @@ fn run_main_loop(
             // finally, send request to update the LEDs if necessary
             DEV_IO_TX
                 .read()
+                .unwrap()
                 .as_ref()
                 .unwrap()
                 .send(DeviceAction::RenderNow)
@@ -1283,7 +1296,8 @@ fn run_main_loop(
 
         // compute AFK time
         if afk_timeout_secs > 0 {
-            let afk = LAST_INPUT_TIME.read().elapsed() >= Duration::from_secs(afk_timeout_secs);
+            let afk =
+                LAST_INPUT_TIME.read().unwrap().elapsed() >= Duration::from_secs(afk_timeout_secs);
             AFK.store(afk, Ordering::SeqCst);
         }
 
@@ -1329,20 +1343,19 @@ fn run_main_loop(
 pub fn remove_failed_devices() -> Result<bool> {
     let mut result = false;
 
-    for (handle, device) in crate::DEVICES.read().iter() {
-        if device.read_recursive().has_failed()? {
-            info!("Unplugging failed device {handle}...");
+    for (handle, device) in crate::DEVICES.read().unwrap().iter() {
+        let device = device.read().unwrap();
 
-            let usb_id = (
-                device.read_recursive().get_usb_vid(),
-                device.read_recursive().get_usb_pid(),
-            );
+        if device.has_failed()? {
+            info!("Unplugging the failed device {handle}...");
+
+            let usb_id = (device.get_usb_vid(), device.get_usb_pid());
 
             result = true;
 
-            debug!("Sending device hot remove notification...");
+            debug!("Sending device hot-remove notification...");
 
-            let dbus_api_tx = crate::DBUS_API_TX.read();
+            let dbus_api_tx = crate::DBUS_API_TX.read().unwrap();
             let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
             dbus_api_tx
@@ -1353,7 +1366,8 @@ pub fn remove_failed_devices() -> Result<bool> {
 
     crate::DEVICES
         .write()
-        .retain(|_handle, device| !device.read_recursive().has_failed().unwrap_or(false));
+        .unwrap()
+        .retain(|_handle, device| !device.read().unwrap().has_failed().unwrap_or(false));
 
     Ok(result)
 }
@@ -1460,71 +1474,92 @@ pub fn register_filesystem_watcher(
 
     Ok(())
 }
+/// open the control and LED devices
+pub fn initialize_device(
+    handle: hwdevices::DeviceHandle,
+    device: &mut (dyn hwdevices::DeviceExt + Sync + Send),
+) -> Result<()> {
+    let (usb_vid, usb_pid, make, model) = {
+        let usb_id = (device.get_usb_vid(), device.get_usb_pid());
 
-#[cfg(debug_assertions)]
-mod thread_util {
-    use std::thread;
-    use std::time::Duration;
+        (
+            usb_id.0,
+            usb_id.1,
+            hwdevices::get_device_make(usb_id.0, usb_id.1).unwrap_or("<unknown>"),
+            hwdevices::get_device_model(usb_id.0, usb_id.1).unwrap_or("<unknown>"),
+        )
+    };
 
-    use parking_lot::deadlock;
-    use tracing::*;
+    // spawn evdev input events thread
+    match device.get_device_class() {
+        DeviceClass::Keyboard | DeviceClass::Mouse => {
+            cfg_if::cfg_if! {
+                if #[cfg(not(target_os = "windows"))] {
+                    // spawn a thread to handle keyboard input
+                    info!("Spawning input events thread...");
 
-    use crate::Result;
+                    let (event_tx, event_rx) = bounded(8);
+                    if let Err(e) = threads::spawn_evdev_input_thread(
+                        event_tx,
+                        handle,
+                        usb_vid,
+                        usb_pid,
+                    ) {
+                        error!("Could not spawn the input events thread: {e}");
 
-    /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() -> Result<()> {
-        thread::Builder::new()
-            .name("deadlockd".to_owned())
-            .spawn(move || {
-                #[cfg(feature = "profiling")]
-                coz::thread_init();
+                       device.set_evdev_input_rx(None);
+                    } else {
+                       device.set_evdev_input_rx(Some(event_rx));
+                    }
+                }
+            }
+        }
 
-                loop {
-                    thread::sleep(Duration::from_secs(5));
-                    let deadlocks = deadlock::check_deadlock();
-                    if !deadlocks.is_empty() {
-                        error!("{} deadlocks detected", deadlocks.len());
+        DeviceClass::Misc => {
+            if device.as_misc_device().unwrap().has_input_device() {
+                cfg_if::cfg_if! {
+                    if #[cfg(not(target_os = "windows"))] {
+                        // spawn a thread to handle input
+                        info!("Spawning input events thread...");
 
-                        for (i, threads) in deadlocks.iter().enumerate() {
-                            error!("Deadlock #{}", i);
+                        let (event_tx, event_rx) = bounded(8);
+                        if let Err(e) = threads::spawn_evdev_input_thread(
+                            event_tx,
+                            handle,
+                            usb_vid,
+                            usb_pid,
+                        ) {
+                            error!("Could not spawn the input events thread: {e}");
 
-                            for t in threads {
-                                error!("Thread Id {:#?}", t.thread_id());
-                                error!("{:#?}", t.backtrace());
-                            }
+                            device.set_evdev_input_rx(None);
+                        } else {
+                            device.set_evdev_input_rx(Some(event_rx));
                         }
                     }
                 }
-            })?;
+            } else {
+                device.set_evdev_input_rx(None);
+            }
+        }
 
-        Ok(())
-    }
-}
+        _ => {
+            error!("Unsupported device class");
 
-/// open the control and LED devices
-pub fn initialize_device(device: hwdevices::Device) -> Result<()> {
+            device.set_evdev_input_rx(None);
+        }
+    };
+
     info!("Opening the device...");
 
-    let make = hwdevices::get_device_make(
-        device.read_recursive().get_usb_vid(),
-        device.read_recursive().get_usb_pid(),
-    )
-    .unwrap_or("<unknown>");
-    let model = hwdevices::get_device_model(
-        device.read_recursive().get_usb_vid(),
-        device.read_recursive().get_usb_pid(),
-    )
-    .unwrap_or("<unknown>");
-
     {
-        let hidapi = crate::HIDAPI.read();
+        let hidapi = crate::HIDAPI.read().unwrap();
         let hidapi = hidapi.as_ref().unwrap();
 
-        device.write().open(&hidapi).map_err(|e| {
+        device.open(hidapi).map_err(|e| {
             error!("Error opening the device '{make} {model}': {}", e);
             error!(
-    "This could be a permission problem, or maybe the device is locked by another process?"
-    );
+                    "This could be a permission problem, or maybe the device is locked by another process?"
+                    );
 
             e
         })?;
@@ -1532,14 +1567,14 @@ pub fn initialize_device(device: hwdevices::Device) -> Result<()> {
 
     // send initialization handshake
     info!("Initializing device...");
-    device.write().send_init_sequence().map_err(|e| {
+    device.send_init_sequence().map_err(|e| {
         error!("Could not initialize the device '{make} {model}': {}", e);
         e
     })?;
 
     // set LEDs to a known good initial state
     info!("Configuring LEDs...");
-    device.write().set_led_init_pattern().map_err(|e| {
+    device.set_led_init_pattern().map_err(|e| {
         error!(
             "Could not initialize LEDs of the device '{make} {model}': {}",
             e
@@ -1550,7 +1585,7 @@ pub fn initialize_device(device: hwdevices::Device) -> Result<()> {
 
     info!(
         "Firmware revision: '{make} {model}': {}",
-        device.read_recursive().get_firmware_revision()
+        device.get_firmware_revision()
     );
 
     Ok(())
@@ -1599,7 +1634,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -1650,11 +1685,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             }
         }
     }
-
-    // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
 
     let matches = parse_commandline();
 
@@ -1711,7 +1741,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             process::exit(1);
         });
 
-    *CONFIG.write() = Some(config.clone());
+    *CONFIG.write().unwrap() = Some(config.clone());
 
     // enable support for experimental features?
     let enable_experimental_features = config
@@ -1729,9 +1759,9 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         .get::<MaturityLevel>("global.driver_maturity_level")
         .unwrap_or(MaturityLevel::Stable);
 
-    *DRIVER_MATURITY_LEVEL.write() = driver_maturity_level;
+    *DRIVER_MATURITY_LEVEL.write().unwrap() = driver_maturity_level;
 
-    match *DRIVER_MATURITY_LEVEL.read() {
+    match *DRIVER_MATURITY_LEVEL.read().unwrap() {
         MaturityLevel::Stable => {
             info!("Using only drivers that are marked as stable (default)")
         }
@@ -1758,7 +1788,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     // create the one and only hidapi instance
     match hidapi::HidApi::new() {
         Ok(hidapi) => {
-            *crate::HIDAPI.write() = Some(hidapi);
+            *crate::HIDAPI.write().unwrap() = Some(hidapi);
 
             // initialize plugins
             info!("Registering plugins...");
@@ -1774,88 +1804,33 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             // enumerate devices
             info!("Enumerating connected devices...");
 
-            if let Ok(mut devices) = hwdevices::probe_devices() {
+            let mut connected_devices = IndexMap::new();
+
+            if let Ok(devices) = hwdevices::probe_devices() {
                 // initialize the devices
-                devices.par_iter().enumerate().for_each(|(index, device)| {
-                    let handle = DeviceHandle::from(index as u64);
+                devices
+                    .iter()
+                    .enumerate()
+                    .for_each(|(index, probed_device)| {
+                        let handle = DeviceHandle::from(index as u64);
+                        let device = &mut **probed_device.write().unwrap();
 
-                    crate::DEVICES
-                        .write()
-                        .insert(DeviceHandle::from(index as u64), device.clone());
+                        if initialize_device(handle, device).is_ok() {
+                            info!("Device initialized successfully");
 
-                    let (usb_vid, usb_pid) = (
-                        device.read_recursive().get_usb_vid(),
-                        device.read_recursive().get_usb_pid(),
-                    );
-
-                    if initialize_device(device.clone()).is_ok() {
-                        info!("Device initialized successfully");
-
-                        match device.read_recursive().get_device_class() {
-                            DeviceClass::Keyboard | DeviceClass::Mouse => {
-                                cfg_if::cfg_if! {
-                                if #[cfg(not(target_os = "windows"))] {
-                                  // spawn a thread to handle keyboard input
-                                  info!("Spawning input events thread...");
-
-                                  let (event_tx, event_rx) = bounded(8);
-                                  if let Err(e) = threads::spawn_evdev_input_thread(
-                                    event_tx,
-                                    handle,
-                                    usb_vid,
-                                    usb_pid,
-                                  ) {
-                                    error!("Could not spawn the input events thread: {e}");
-
-                                    crate::EVENT_RX.write().insert(handle, None);
-                                  } else {
-                                    crate::EVENT_RX.write().insert(handle, Some(event_rx));
-                                  }
-                                }
-                                }
-                            }
-
-                            DeviceClass::Misc => {
-                                if device
-                                    .read_recursive()
-                                    .as_misc_device()
-                                    .unwrap()
-                                    .has_input_device()
-                                {
-                                    cfg_if::cfg_if! {
-                                    if #[cfg(not(target_os = "windows"))] {
-                                      // spawn a thread to handle keyboard input
-                                      info!("Spawning input events thread...");
-
-                                      let (event_tx, event_rx) = bounded(8);
-                                      if let Err(e) = threads::spawn_evdev_input_thread(
-                                        event_tx,
-                                        handle,
-                                        usb_vid,
-                                        usb_pid,
-                                      ) {
-                                        error!("Could not spawn the input events thread: {e}");
-
-                                        crate::EVENT_RX.write().insert(handle, None);
-                                      } else {
-                                        crate::EVENT_RX.write().insert(handle, Some(event_rx));
-                                      }
-                                    }
-                                    }
-                                }
-                            }
-
-                            _ => {
-                                error!("Unsupported device class");
-                            }
+                            // load and initialize global runtime state (late init)
+                            info!("Loading saved device state...");
+                            state::init_runtime_state(device)
+                                .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
                         }
 
-                        // load and initialize global runtime state (late init)
-                        info!("Loading saved device state...");
-                        state::init_runtime_state(device.clone())
-                            .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
-                    }
-                });
+                        connected_devices.insert(handle, probed_device.clone());
+                    });
+
+                crate::DEVICES
+                    .write()
+                    .unwrap()
+                    .extend(connected_devices.drain(RangeFull));
 
                 info!("Device enumeration completed");
 
@@ -1863,10 +1838,9 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 // not be technically required it just prevents fast devices
                 // from showing LED lighting long before the slower ones do,
                 // which can lead to an uneven experience on startup
-
                 // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
 
-                if crate::DEVICES.read().is_empty() {
+                if crate::DEVICES.read().unwrap().is_empty() {
                     warn!("No supported devices found!");
                 }
 
@@ -1891,7 +1865,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                         panic!()
                     });
 
-                *DBUS_API_TX.write() = Some(dbus_api_tx.clone());
+                *DBUS_API_TX.write().unwrap() = Some(dbus_api_tx.clone());
 
                 let (fsevents_tx, fsevents_rx) = bounded(8);
                 register_filesystem_watcher(fsevents_tx, PathBuf::from(&config_file))
@@ -1905,9 +1879,13 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                     panic!()
                 });
 
-                *DEV_IO_TX.write() = Some(dev_io_tx);
+                *DEV_IO_TX.write().unwrap() = Some(dev_io_tx);
 
                 info!("Startup completed");
+
+                // notify all waiting threads that we completed the startup sequence
+                *STARTUP_COMPLETED_CONDITION.0.lock().unwrap() = true;
+                STARTUP_COMPLETED_CONDITION.1.notify_all();
 
                 'OUTER_LOOP: loop {
                     info!("Entering the main loop now...");
@@ -1940,36 +1918,41 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                     });
                 }
 
-                events::notify_observers(events::Event::DaemonShutdown)
-                    .unwrap_or_else(|e| error!("Error during notification of observer: {}", e));
+                {
+                    events::notify_observers(events::Event::DaemonShutdown)
+                        .unwrap_or_else(|e| error!("Error during notification of observer: {}", e));
 
-                // we left the main loop, so send a final message to the running Lua VMs
-                info!("Shutting down all Lua VMs now...");
+                    // we left the main loop, so send a final message to the running Lua VMs
+                    info!("Shutting down all Lua VMs now...");
 
-                *UPCALL_COMPLETED_ON_QUIT.0.lock() = LUA_TXS.read().len();
+                    *UPCALL_COMPLETED_ON_QUIT.0.lock().unwrap() = LUA_TXS.read().unwrap().len();
 
-                for lua_tx in LUA_TXS.read().iter() {
-                    lua_tx
-                        .send(script::Message::Quit(0))
-                        .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
-                }
-
-                // wait until all Lua VMs completed the event handler
-                loop {
-                    let mut pending = UPCALL_COMPLETED_ON_QUIT.0.lock();
-
-                    let result = UPCALL_COMPLETED_ON_QUIT.1.wait_for(
-                        &mut pending,
-                        Duration::from_millis(constants::TIMEOUT_MILLIS_SHORT),
-                    );
-
-                    if result.timed_out() {
-                        warn!("Timed out while waiting for a Lua VM to shut down");
-                        break;
+                    for lua_tx in LUA_TXS.read().unwrap().iter() {
+                        lua_tx
+                            .send(script::Message::Quit(0))
+                            .unwrap_or_else(|e| error!("Could not send quit message: {}", e));
                     }
 
-                    if *pending == 0 {
-                        break;
+                    // wait until all Lua VMs completed the event handler
+                    loop {
+                        let pending = UPCALL_COMPLETED_ON_QUIT.0.lock().unwrap();
+
+                        let result = UPCALL_COMPLETED_ON_QUIT
+                            .1
+                            .wait_timeout(
+                                pending,
+                                Duration::from_millis(constants::TIMEOUT_MILLIS_SHORT),
+                            )
+                            .unwrap();
+
+                        if result.1.timed_out() {
+                            warn!("Timed out while waiting for a Lua VM to shut down");
+                            break;
+                        }
+
+                        if *result.0 == 0 {
+                            break;
+                        }
                     }
                 }
 
@@ -1979,7 +1962,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
 
                 // save state
                 info!("Saving global runtime state...");
-                state::save_runtime_state()
+                state::save_runtime_state(&devices)
                     .unwrap_or_else(|e| error!("Could not save runtime state: {}", e));
 
                 // save color-schemes
@@ -1994,17 +1977,18 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 ));
 
                 // set LEDs of all keyboards to a known final state, then close all associated devices
-                for device in devices.iter_mut() {
+                for device in devices.iter() {
+                    let mut device = device.write().unwrap();
+
                     device
-                        .write()
                         .set_led_off_pattern()
                         .unwrap_or_else(|e| error!("Could not finalize LEDs configuration: {}", e));
 
-                    device.write().send_shutdown_sequence().unwrap_or_else(|e| {
+                    device.send_shutdown_sequence().unwrap_or_else(|e| {
                         error!("Could not send shutdown sequence to the device: {}", e);
                     });
 
-                    device.write().close_all().unwrap_or_else(|e| {
+                    device.close_all().unwrap_or_else(|e| {
                         warn!("Could not close the device: {}", e);
                     });
                 }

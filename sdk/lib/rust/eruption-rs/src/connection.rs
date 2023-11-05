@@ -23,12 +23,12 @@ use crate::canvas::Canvas;
 use crate::hardware::HotplugInfo;
 use crate::transport::{LocalTransport, ServerStatus, Transport};
 use crate::Result;
-use parking_lot::RwLock;
 use std::sync::Arc;
+use tracing_mutex::stdsync::RwLock;
 
 #[derive(Clone)]
 pub struct Connection {
-    con: Arc<RwLock<dyn Transport + Sync + Send>>,
+    con: Arc<RwLock<Box<dyn Transport + Sync + Send>>>,
 }
 
 impl Connection {
@@ -39,31 +39,31 @@ impl Connection {
     }
 
     pub fn connect(&self) -> Result<()> {
-        self.con.write().connect()
+        self.con.write().unwrap().connect()
     }
 
     pub fn disconnect(&self) -> Result<()> {
-        self.con.write().disconnect()
+        self.con.write().unwrap().disconnect()
     }
 
     pub fn submit_canvas(&self, canvas: &Canvas) -> Result<()> {
-        self.con.read().submit_canvas(canvas)
+        self.con.read().unwrap().submit_canvas(canvas)
     }
 
     pub fn get_canvas(&self) -> Result<Canvas> {
-        self.con.read().get_canvas()
+        self.con.read().unwrap().get_canvas()
     }
 
     pub fn get_server_status(&self) -> Result<ServerStatus> {
-        self.con.read().get_server_status()
+        self.con.read().unwrap().get_server_status()
     }
 
     pub fn notify_device_hotplug(&self, hotplug_info: &HotplugInfo) -> Result<()> {
-        self.con.read().notify_device_hotplug(hotplug_info)
+        self.con.read().unwrap().notify_device_hotplug(hotplug_info)
     }
 
     pub fn notify_resume_from_suspend(&self) -> Result<()> {
-        self.con.read().notify_resume_from_suspend()
+        self.con.read().unwrap().notify_resume_from_suspend()
     }
 }
 
@@ -86,6 +86,6 @@ pub enum ConnectionType {
     Remote,
 }
 
-fn make_transport(_connection_type: &ConnectionType) -> Result<impl Transport> {
-    LocalTransport::new()
+fn make_transport(_connection_type: &ConnectionType) -> Result<Box<impl Transport>> {
+    Ok(Box::new(LocalTransport::new()?))
 }

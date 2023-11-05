@@ -31,7 +31,6 @@ use i18n_embed::{
     DesktopLanguageRequester,
 };
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
 use rust_embed::RustEmbed;
 use std::{
     env,
@@ -44,6 +43,7 @@ use std::{
     time::Duration,
 };
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 
 mod constants;
 mod hwdevices;
@@ -62,13 +62,13 @@ macro_rules! println_v {
     };
 
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!($l, $($params),*)
         }
     };
 
     ($verbosity : expr, $($params : tt) *) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             println!($($params),*)
         }
     };
@@ -81,13 +81,13 @@ macro_rules! eprintln_v {
     };
 
     ($verbosity : expr, $l : literal $(,$params : tt) *) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!($l, $($params),*)
         }
     };
 
     ($verbosity : expr, $($params : tt) *) => {
-        if $crate::OPTIONS.lock().as_ref().unwrap().verbose >= $verbosity as u8 {
+        if $crate::OPTIONS.lock().unwrap().as_ref().unwrap().verbose >= $verbosity as u8 {
             eprintln!($($params),*)
         }
     };
@@ -104,14 +104,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -259,39 +259,6 @@ Copyright (c) 2019-2023, The Eruption Development Team
     );
 }
 
-#[cfg(debug_assertions)]
-mod thread_util {
-    use crate::Result;
-    use parking_lot::deadlock;
-    use std::thread;
-    use std::time::Duration;
-    use tracing::*;
-
-    /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() -> Result<()> {
-        thread::Builder::new()
-            .name("deadlockd".to_owned())
-            .spawn(move || loop {
-                thread::sleep(Duration::from_secs(5));
-                let deadlocks = deadlock::check_deadlock();
-                if !deadlocks.is_empty() {
-                    error!("{} deadlocks detected", deadlocks.len());
-
-                    for (i, threads) in deadlocks.iter().enumerate() {
-                        error!("Deadlock #{}", i);
-
-                        for t in threads {
-                            error!("Thread Id {:#?}", t.thread_id());
-                            error!("{:#?}", t.backtrace());
-                        }
-                    }
-                }
-            })?;
-
-        Ok(())
-    }
-}
-
 /// Spawns the keyboard events thread and executes it's main loop
 fn spawn_keyboard_input_thread(
     _keyboard_device: Arc<Mutex<Box<HwDevice>>>,
@@ -429,7 +396,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -449,11 +416,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         print_header();
     }
 
-    // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
-
     // register ctrl-c handler
     let (ctrl_c_tx, ctrl_c_rx) = bounded(8);
     ctrlc::set_handler(move || {
@@ -466,7 +428,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     .unwrap_or_else(|e| error!("Could not set CTRL-C handler: {}", e));
 
     let opts = Options::parse();
-    *OPTIONS.lock() = Some(opts.clone());
+    *OPTIONS.lock().unwrap() = Some(opts.clone());
 
     match opts.command {
         Subcommands::List => {
@@ -549,15 +511,15 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                     a: 0,
                                 }; 144];
 
-                                hwdev.lock().send_init_sequence()?;
-                                hwdev.lock().send_led_map(&led_map)?;
+                                hwdev.lock().unwrap().send_init_sequence()?;
+                                hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                 // clear any pending/leftover events
                                 println!();
                                 println!("Clearing any pending events...");
 
                                 loop {
-                                    let ev = hwdev.lock().get_next_event_timeout(1000)?;
+                                    let ev = hwdev.lock().unwrap().get_next_event_timeout(1000)?;
 
                                     // println!("{:?}", ev);
 
@@ -605,7 +567,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                         a: 0,
                                     };
 
-                                    hwdev.lock().send_led_map(&led_map)?;
+                                    hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                     flume::Selector::new()
                                         .recv(&kbd_rx, |msg| -> Result<()> {
@@ -725,15 +687,15 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                     a: 0,
                                 }; 144];
 
-                                hwdev.lock().send_init_sequence()?;
-                                hwdev.lock().send_led_map(&led_map)?;
+                                hwdev.lock().unwrap().send_init_sequence()?;
+                                hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                 // clear any pending/leftover events
                                 println!();
                                 println!("Clearing any pending events...");
 
                                 loop {
-                                    let ev = hwdev.lock().get_next_event_timeout(1000)?;
+                                    let ev = hwdev.lock().unwrap().get_next_event_timeout(1000)?;
 
                                     // println!("{:?}", ev);
 
@@ -771,10 +733,12 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                                         code,
                                                     ) = ev.event_code
                                                     {
-                                                        let key_index =
-                                                            hwdev.lock().ev_key_to_key_index(code)
-                                                                as usize
-                                                                - 1;
+                                                        let key_index = hwdev
+                                                            .lock()
+                                                            .unwrap()
+                                                            .ev_key_to_key_index(code)
+                                                            as usize
+                                                            - 1;
 
                                                         // set highlighted LEDs
                                                         led_map[key_index] = RGBA {
@@ -784,7 +748,10 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                                             a: 0,
                                                         };
 
-                                                        hwdev.lock().send_led_map(&led_map)?;
+                                                        hwdev
+                                                            .lock()
+                                                            .unwrap()
+                                                            .send_led_map(&led_map)?;
                                                     }
                                                 }
 
@@ -865,15 +832,15 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                     a: 0,
                                 }; 144];
 
-                                hwdev.lock().send_init_sequence()?;
-                                hwdev.lock().send_led_map(&led_map)?;
+                                hwdev.lock().unwrap().send_init_sequence()?;
+                                hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                 // clear any pending/leftover events
                                 println!();
                                 println!("Clearing any pending events...");
 
                                 loop {
-                                    let ev = hwdev.lock().get_next_event_timeout(1000)?;
+                                    let ev = hwdev.lock().unwrap().get_next_event_timeout(1000)?;
 
                                     // println!("{:?}", ev);
 
@@ -898,9 +865,9 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                 thread::sleep(Duration::from_millis(1000));
                                 println!();
 
-                                let keys_per_row = hwdev.lock().get_num_cols() + 1;
-                                let num_cols = hwdev.lock().get_num_cols();
-                                let num_rows = hwdev.lock().get_num_rows();
+                                let keys_per_row = hwdev.lock().unwrap().get_num_cols() + 1;
+                                let num_cols = hwdev.lock().unwrap().get_num_cols();
+                                let num_rows = hwdev.lock().unwrap().get_num_rows();
 
                                 // the table that will be filled
                                 let mut topology: Vec<u8> = vec![0xff; (num_cols * num_rows) + 1];
@@ -921,7 +888,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                     //     a: 0,
                                     // };
 
-                                    // hwdev.lock().send_led_map(&led_map)?;
+                                    // hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                     println!("Please press all keys in row {i}, press ESC to skip");
 
@@ -948,7 +915,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                                                     info!("Skipping key index: {}", &key_index);
                                                                     key_index += 1;
                                                                 } else {
-                                                                    let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
+                                                                    let idx = hwdev.lock().unwrap().ev_key_to_key_index(code) - 1;
 
                                                                     info!("Recorded key with index {}", idx);
 
@@ -966,7 +933,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                                                             a: 0,
                                                                         };
 
-                                                                        hwdev.lock().send_led_map(&led_map)?;
+                                                                        hwdev.lock().unwrap().send_led_map(&led_map)?;
                                                                     }
                                                                 }
                                                             } else {
@@ -1081,15 +1048,15 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                     a: 0,
                                 }; 144];
 
-                                hwdev.lock().send_init_sequence()?;
-                                hwdev.lock().send_led_map(&led_map)?;
+                                hwdev.lock().unwrap().send_init_sequence()?;
+                                hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                 // clear any pending/leftover events
                                 println!();
                                 println!("Clearing any pending events...");
 
                                 loop {
-                                    let ev = hwdev.lock().get_next_event_timeout(1000)?;
+                                    let ev = hwdev.lock().unwrap().get_next_event_timeout(1000)?;
 
                                     // println!("{:?}", ev);
 
@@ -1114,9 +1081,9 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                 thread::sleep(Duration::from_millis(1000));
                                 println!();
 
-                                let keys_per_col = hwdev.lock().get_num_rows() + 1;
-                                let num_cols = hwdev.lock().get_num_cols();
-                                let num_rows = hwdev.lock().get_num_rows();
+                                let keys_per_col = hwdev.lock().unwrap().get_num_rows() + 1;
+                                let num_cols = hwdev.lock().unwrap().get_num_cols();
+                                let num_rows = hwdev.lock().unwrap().get_num_rows();
 
                                 // the table that will be filled
                                 let mut topology: Vec<u8> = vec![0xff; (num_cols * num_rows) + 1];
@@ -1137,7 +1104,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                     //     a: 0,
                                     // };
 
-                                    // hwdev.lock().send_led_map(&led_map)?;
+                                    // hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                     println!(
                                         "Please press all keys in column {i}, press ESC to skip"
@@ -1166,7 +1133,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                                                     info!("Skipping key index: {}", &key_index);
                                                                     key_index += 1;
                                                                 } else {
-                                                                    let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
+                                                                    let idx = hwdev.lock().unwrap().ev_key_to_key_index(code) - 1;
 
                                                                     info!("Recorded key with index {}", idx);
 
@@ -1183,7 +1150,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                                                             };
                                                                     }
 
-                                                                    hwdev.lock().send_led_map(&led_map)?;
+                                                                    hwdev.lock().unwrap().send_led_map(&led_map)?;
                                                                 }
                                                             } else {
                                                                 // warn!("Event ignored");
@@ -1299,15 +1266,15 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                     a: 0,
                                 }; 144];
 
-                                hwdev.lock().send_init_sequence()?;
-                                hwdev.lock().send_led_map(&led_map)?;
+                                hwdev.lock().unwrap().send_init_sequence()?;
+                                hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                 // clear any pending/leftover events
                                 println!();
                                 println!("Clearing any pending events...");
 
                                 loop {
-                                    let ev = hwdev.lock().get_next_event_timeout(1000)?;
+                                    let ev = hwdev.lock().unwrap().get_next_event_timeout(1000)?;
 
                                     // println!("{:?}", ev);
 
@@ -1348,7 +1315,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                         a: 0,
                                     };
 
-                                    hwdev.lock().send_led_map(&led_map)?;
+                                    hwdev.lock().unwrap().send_led_map(&led_map)?;
 
                                     println!("Please press all direct neighbor keys of the highlighted (red) key, press ESC to skip");
 
@@ -1375,7 +1342,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                                                     info!("Skipping key index: {}", &key_index);
                                                                     key_index += 1;
                                                                 } else {
-                                                                    let idx = hwdev.lock().ev_key_to_key_index(code) - 1;
+                                                                    let idx = hwdev.lock().unwrap().ev_key_to_key_index(code) - 1;
 
                                                                     info!("Recorded neighbor with index {} for key: {}", idx, i);
 
@@ -1390,7 +1357,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                                                         a: 0,
                                                                     };
 
-                                                                    hwdev.lock().send_led_map(&led_map)?;
+                                                                    hwdev.lock().unwrap().send_led_map(&led_map)?;
                                                                 }
                                                             } else {
                                                                 // warn!("Event ignored");

@@ -63,7 +63,7 @@ pub fn apply_parameters(
 
     // If the specified profile_file is for the active profile, update that directly.
     {
-        let active_profile = &mut *crate::ACTIVE_PROFILE.write();
+        let active_profile = &mut *crate::ACTIVE_PROFILE.write().unwrap();
         if let Some(active_profile) = active_profile.as_mut() {
             if is_same_file(&active_profile.profile_file, &profile_path) {
                 let new_parameters =
@@ -157,7 +157,7 @@ fn update_parameters_on_active_profile(
     script_path: &Path,
     parameter_values: Vec<PlainParameter>,
 ) -> Result<()> {
-    let lua_txs = crate::LUA_TXS.read();
+    let lua_txs = crate::LUA_TXS.read().unwrap();
     let lua_tx = lua_txs
         .iter()
         .find(|&lua_tx| is_same_file(&lua_tx.script_file, script_path));

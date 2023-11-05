@@ -79,7 +79,7 @@ impl Keyboard for RoccatVulcan1xx {
         context.set_source_pixbuf(pixbuf, BORDER.0, BORDER.1);
         context.paint()?;
 
-        let led_colors = crate::CANVAS.read();
+        let led_colors = crate::CANVAS.read().unwrap();
 
         let len = led_colors.len();
 
@@ -178,7 +178,7 @@ impl Keyboard for RoccatVulcan1xx {
         if !key_def.is_dummy {
             // compute scaling factor
             // let factor =
-            //     ((100.0 - crate::STATE.read().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
+            //     ((100.0 - crate::STATE.read().unwrap().current_brightness.unwrap_or(0) as f64) / 100.0) * 0.15;
 
             // post-process color
             let source_color = LinSrgba::new(

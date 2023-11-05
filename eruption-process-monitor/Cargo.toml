@@ -65,9 +65,9 @@ sensor-gnome-shellext = []
 [dependencies]
 cfg-if = "1.0.0"
 async-trait = "0.1.73"
-byteorder = "1.4.3"
-clap = { version = "4.3.24", features = ["derive"] }
-clap_complete = "4.3.2"
+byteorder = "1.5.0"
+clap = { version = "4.4.7", features = ["derive"] }
+clap_complete = "4.4.4"
 ctrlc = { version = "3.4.1", features = ["termination"] }
 config = "0.13.3"
 dbus = "0.9.7"
@@ -79,23 +79,18 @@ libc = "0.2.148"
 nix = { version = "0.27.1", features = ["fs", "poll"] }
 is-terminal = "0.4.9"
 serde_json = "1.0.107"
-parking_lot = { version = "0.12.1", features = [
-  # "send_guard",
-  "deadlock_detection",
-  "hardware-lock-elision",
-] }
+tracing-mutex = "0.3.0"
 regex = "1.9.5"
 serde = { version = "1.0.188", features = ["derive"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
-tracing-log = { version = "0.1.3", features = ["env_logger"] }
+tracing-log = { version = "0.1.4", features = ["env_logger"] }
 tracing-subscriber = { version = "0.3.17", features = [
-  "parking_lot",
   "registry",
   "env-filter",
 ] }
-console-subscriber = { version = "0.2.0", features = ["parking_lot"] }
+console-subscriber = "0.2.0"
 flume = "0.11.0"
 toml = "0.8.0"
 thiserror = "1.0.48"

@@ -28,11 +28,11 @@ use glib::IsA;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::Justification;
-use parking_lot::RwLock;
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::dbus_client;
 use crate::device;
@@ -122,13 +122,13 @@ pub fn set_application_state(state: ConnectionState, builder: &gtk::Builder) -> 
 
     match state {
         ConnectionState::Initializing => {
-            *crate::CONNECTION_STATE.write() = ConnectionState::Initializing;
+            *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Initializing;
 
             update_main_window(builder)?;
         }
 
         ConnectionState::Disconnected => {
-            *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+            *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Disconnected;
 
             events::LOST_CONNECTION.store(true, Ordering::SeqCst);
             events::GAINED_CONNECTION.store(false, Ordering::SeqCst);
@@ -137,7 +137,7 @@ pub fn set_application_state(state: ConnectionState, builder: &gtk::Builder) -> 
         }
 
         ConnectionState::Connected => {
-            *crate::CONNECTION_STATE.write() = ConnectionState::Connected;
+            *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Connected;
 
             events::LOST_CONNECTION.store(false, Ordering::SeqCst);
             events::GAINED_CONNECTION.store(true, Ordering::SeqCst);
@@ -387,7 +387,7 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     }));
 
     events::ignore_next_ui_events(1);
-    let active_slot = STATE.read().active_slot.unwrap();
+    let active_slot = STATE.read().unwrap().active_slot.unwrap();
 
     match active_slot {
         0 => {
@@ -474,7 +474,7 @@ fn update_slot_indicator_state(builder: &gtk::Builder, active_slot: usize) {
     // let slot4_radio_button: gtk::RadioButton = builder.object("slot4_radio_button").unwrap();
 
     // events::ignore_next_ui_events(1);
-    // let active_slot = STATE.read().active_slot.unwrap();
+    // let active_slot = STATE.read().unwrap().active_slot.unwrap();
 
     match active_slot {
         0 => {
@@ -1141,7 +1141,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                 set_application_state(ConnectionState::Connected, &builder)?;
                 events::GAINED_CONNECTION.store(false, Ordering::SeqCst);
 
-                let mut state = STATE.write();
+                let mut state = STATE.write().unwrap();
 
                 state.active_slot = util::get_active_slot().ok();
                 state.active_profile = util::get_active_profile().ok();
@@ -1152,8 +1152,8 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                 update_main_window(&builder).unwrap_or_else(|e| tracing::error!("Error updating the main window: {e}"));
             }
 
-            if *crate::CONNECTION_STATE.read() == ConnectionState::Initializing ||
-               *crate::CONNECTION_STATE.read() == ConnectionState::Disconnected {
+            if *crate::CONNECTION_STATE.read().unwrap() == ConnectionState::Initializing ||
+               *crate::CONNECTION_STATE.read().unwrap() == ConnectionState::Disconnected {
                 set_application_state(ConnectionState::Initializing, &builder)?;
 
                 // connect to Eruption daemon
@@ -1163,20 +1163,20 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                         if let Err(e) = connection.connect() {
                             tracing::error!("Could not connect to Eruption daemon: {e}");
 
-                            *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+                            *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Disconnected;
                             events::LOST_CONNECTION.store(true, Ordering::SeqCst);
                         } else {
                             let _ = connection
                                 .get_server_status()
                                 .map_err(|e| tracing::error!("{e}"));
 
-                            *crate::CONNECTION.lock() = Some(connection);
+                            *crate::CONNECTION.lock().unwrap() = Some(connection);
 
                             notifications::info(
                                 "Successfully re-established connection to the Eruption daemon",
                             );
 
-                            *crate::CONNECTION_STATE.write() = ConnectionState::Connected;
+                            *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Connected;
                             events::LOST_CONNECTION.store(true, Ordering::SeqCst);
                         }
                     }
@@ -1184,12 +1184,12 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
                     Err(e) => {
                         tracing::error!("Could not connect to Eruption daemon: {}", e);
 
-                        *crate::CONNECTION_STATE.write() = ConnectionState::Disconnected;
+                        *crate::CONNECTION_STATE.write().unwrap() = ConnectionState::Disconnected;
                         events::LOST_CONNECTION.store(true, Ordering::SeqCst);
                     }
                 }
 
-                let mut state = STATE.write();
+                let mut state = STATE.write().unwrap();
 
                 state.active_slot = util::get_active_slot().ok();
                 state.active_profile = util::get_active_profile().ok();
@@ -1220,7 +1220,7 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
             if let Some(window) = main_window.window() {
                 let display = window.display();
 
-                if let Some(cursor_type) = *CURSOR_TYPE.read() {
+                if let Some(cursor_type) = *CURSOR_TYPE.read().unwrap() {
                     window.set_cursor(gdk::Cursor::for_display(&display, cursor_type).as_ref());
                 } else {
                     window.set_cursor(None);
@@ -1303,12 +1303,12 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         }
     }
 
-    if *crate::CONNECTION_STATE.read() == ConnectionState::Initializing {
+    if *crate::CONNECTION_STATE.read().unwrap() == ConnectionState::Initializing {
         outer_stack.set_visible_child_name("connecting");
 
         stack_switcher.set_visible(false);
         brightness_scale.set_visible(false);
-    } else if *crate::CONNECTION_STATE.read() == ConnectionState::Disconnected {
+    } else if *crate::CONNECTION_STATE.read().unwrap() == ConnectionState::Disconnected {
         // outer_stack.set_visible_child_name("no_connection");
         outer_stack.set_visible_child_name("connecting");
 
@@ -1335,7 +1335,7 @@ pub fn update_main_window(builder: &gtk::Builder) -> Result<()> {
         let page: gtk::Grid = no_device_template.object("no_device_template").unwrap();
 
         misc_devices_stack.add_titled(&page, "None", "None");
-    } else if *crate::CONNECTION_STATE.read() == ConnectionState::Connected {
+    } else if *crate::CONNECTION_STATE.read().unwrap() == ConnectionState::Connected {
         outer_stack.set_visible_child_name("eruption_gui");
 
         stack_switcher.set_visible(true);

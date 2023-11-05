@@ -25,8 +25,8 @@ use std::ffi::CString;
 use crate::constants;
 use async_trait::async_trait;
 use byteorder::{ByteOrder, LittleEndian};
-use parking_lot::Mutex;
 use std::sync::Arc;
+use tracing_mutex::stdsync::Mutex;
 use x11rb::connection::Connection;
 use x11rb::protocol::xproto::*;
 use x11rb::x11_utils::TryParse;
@@ -87,6 +87,7 @@ impl X11Sensor {
     pub fn new() -> Self {
         let display = crate::CONFIG
             .lock()
+            .unwrap()
             .as_ref()
             .unwrap()
             .get_string("X11.display")
@@ -117,6 +118,7 @@ impl Sensor for X11Sensor {
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
             .read()
+            .unwrap()
             .contains(&SensorConfiguration::EnableX11)
     }
 
@@ -159,7 +161,7 @@ You may want to use the command line tool `xprop` to find the relevant informati
 
     fn poll(&mut self) -> Result<Box<dyn super::SensorData>> {
         if let Some(conn) = &self.conn {
-            let conn = conn.lock();
+            let conn = conn.lock().unwrap();
 
             let screen = self.screen.unwrap_or(0);
             let root = conn.setup().roots[screen].root;

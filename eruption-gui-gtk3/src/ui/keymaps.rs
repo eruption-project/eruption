@@ -229,7 +229,7 @@ cfg_if::cfg_if! {
 
 //     // let model = profiles_treeview.model().unwrap();
 
-//     // let state = crate::STATE.read();
+//     // let state = crate::STATE.read().unwrap();
 //     // let active_profile = state.active_profile.clone().unwrap_or_default();
 
 //     // model.foreach(|model, path, iter| {

@@ -25,7 +25,6 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use tracing::*;
 
-use crate::constants;
 use crate::{
     hwdevices::{DeviceClass, DeviceHandle},
     scripting::script,
@@ -135,8 +134,8 @@ impl InterfaceAddend for DevicesInterface {
 }
 
 pub fn get_device_specific_ids(handle: &DeviceHandle) -> Result<(u16, u16)> {
-    if let Some(device) = crate::DEVICES.read().get(handle) {
-        let device = device.read_recursive();
+    if let Some(device) = crate::DEVICES.read().unwrap().get(handle) {
+        let device = device.read().unwrap();
 
         let usb_vid = device.get_usb_vid();
         let usb_pid = device.get_usb_pid();
@@ -151,7 +150,7 @@ fn get_device_status_property(
     i: &mut IterAppend,
     _m: &super::PropertyInfo,
 ) -> super::PropertyResult {
-    let device_status = &*crate::DEVICE_STATUS.as_ref().read();
+    let device_status = &*crate::DEVICE_STATUS.as_ref().read().unwrap();
 
     let device_status = device_status
         .iter()
@@ -214,7 +213,7 @@ fn get_device_status(m: &MethodInfo) -> MethodResult {
 
 /// Query the device specific status from the global status store
 fn query_device_specific_status(device: u64) -> Result<String> {
-    let device_status = crate::DEVICE_STATUS.as_ref().read();
+    let device_status = crate::DEVICE_STATUS.as_ref().read().unwrap();
 
     match device_status.get(&device) {
         Some(status) => Ok(serde_json::to_string_pretty(&status.0)?),
@@ -229,9 +228,10 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
 
     let keyboards = crate::DEVICES
         .read()
+        .unwrap()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read_recursive();
+            let device = device.read().unwrap();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Keyboard {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -243,9 +243,10 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
 
     let mice = crate::DEVICES
         .read()
+        .unwrap()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read_recursive();
+            let device = device.read().unwrap();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Mouse {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -257,9 +258,10 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
 
     let misc = crate::DEVICES
         .read()
+        .unwrap()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read_recursive();
+            let device = device.read().unwrap();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Misc {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -293,10 +295,10 @@ fn is_device_enabled(m: &MethodInfo) -> MethodResult {
 fn apply_device_specific_configuration(index: u64, param: &str, value: &str) -> Result<()> {
     let handle = DeviceHandle::from(index);
 
-    if let Some(device) = crate::DEVICES.read().get(&handle) {
+    if let Some(device) = crate::DEVICES.read().unwrap().get(&handle) {
         let mut device = device
-            .try_write_for(constants::LOCK_CONTENDED_WAIT_MILLIS)
-            .ok_or_else(|| DbusApiError::LockingFailed {})?;
+            .write()
+            .map_err(|_e| DbusApiError::LockingFailed {})?;
 
         match device.get_device_class() {
             DeviceClass::Keyboard => {
@@ -402,8 +404,8 @@ fn apply_device_specific_configuration(index: u64, param: &str, value: &str) -> 
 fn query_device_specific_configuration(index: u64, param: &str) -> Result<String> {
     let handle = DeviceHandle::from(index);
 
-    if let Some(device) = crate::DEVICES.read().get(&handle) {
-        let device = device.read_recursive();
+    if let Some(device) = crate::DEVICES.read().unwrap().get(&handle) {
+        let device = device.read().unwrap();
 
         match device.get_device_class() {
             DeviceClass::Keyboard => {

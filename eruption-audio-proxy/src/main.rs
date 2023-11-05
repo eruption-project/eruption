@@ -41,11 +41,11 @@ use i18n_embed::{
 use is_terminal::IsTerminal;
 use lazy_static::lazy_static;
 use nix::poll::{poll, PollFd, PollFlags};
-use parking_lot::{Mutex, RwLock};
 use prost::Message;
 use rust_embed::RustEmbed;
 use socket2::{Domain, SockAddr, Socket, Type};
 use tracing::{debug, error, info, trace, warn};
+use tracing_mutex::stdsync::{Mutex, RwLock};
 
 use protocol::Command;
 use protocol::CommandType;
@@ -80,14 +80,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -212,7 +212,7 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                     if last_device_update.elapsed()
                         >= Duration::from_millis(constants::DEVICE_POLL_INTERVAL)
                     {
-                        let audio_backend = AUDIO_BACKEND.read();
+                        let audio_backend = AUDIO_BACKEND.read().unwrap();
 
                         let volume = audio_backend.get_audio_volume()?;
                         let muted = audio_backend.is_audio_muted()?;
@@ -225,7 +225,7 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
 
                     // record samples to the global sample buffer
                     if RECORDING.load(Ordering::SeqCst) {
-                        let mut audio_backend = AUDIO_BACKEND.write();
+                        let mut audio_backend = AUDIO_BACKEND.write().unwrap();
                         if let Err(e) = audio_backend.record_samples() {
                             error!("An error occurred while recording audio: {}", e);
 
@@ -240,8 +240,8 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                     // play back pending sound effects
                     let mut sfx_played = false;
 
-                    if let Some(sfx_id) = *PENDING_SFX_ID.read() {
-                        let mut audio_backend = AUDIO_BACKEND.write();
+                    if let Some(sfx_id) = *PENDING_SFX_ID.read().unwrap() {
+                        let mut audio_backend = AUDIO_BACKEND.write().unwrap();
 
                         audio_backend.open_playback()?;
                         audio_backend.play_sfx(sfx_id)?;
@@ -250,7 +250,7 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                     }
 
                     if sfx_played {
-                        *PENDING_SFX_ID.write() = None;
+                        *PENDING_SFX_ID.write().unwrap() = None;
                     }
 
                     // wait for socket to be ready
@@ -296,7 +296,8 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                 CommandType::StartRecording => {
                                                     info!("Opening audio device");
 
-                                                    let mut audio_backend = AUDIO_BACKEND.write();
+                                                    let mut audio_backend =
+                                                        AUDIO_BACKEND.write().unwrap();
                                                     audio_backend.open_recorder()?;
 
                                                     RECORDING.store(true, Ordering::SeqCst);
@@ -307,7 +308,8 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                 CommandType::StopRecording => {
                                                     info!("Closing audio device");
 
-                                                    let mut audio_backend = AUDIO_BACKEND.write();
+                                                    let mut audio_backend =
+                                                        AUDIO_BACKEND.write().unwrap();
                                                     audio_backend.close_recorder()?;
 
                                                     RECORDING.store(false, Ordering::SeqCst);
@@ -318,7 +320,8 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                 CommandType::AudioVolume => {
                                                     trace!("Request for audio volume");
 
-                                                    let audio_backend = AUDIO_BACKEND.read();
+                                                    let audio_backend =
+                                                        AUDIO_BACKEND.read().unwrap();
                                                     let volume =
                                                         audio_backend.get_audio_volume()?;
 
@@ -333,7 +336,8 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                 CommandType::AudioMutedState => {
                                                     trace!("Request for audio muted state");
 
-                                                    let audio_backend = AUDIO_BACKEND.read();
+                                                    let audio_backend =
+                                                        AUDIO_BACKEND.read().unwrap();
                                                     let muted = audio_backend.is_audio_muted()?;
 
                                                     response.set_response_type(
@@ -354,7 +358,8 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                                                 id
                                                             );
 
-                                                            *PENDING_SFX_ID.write() = Some(id);
+                                                            *PENDING_SFX_ID.write().unwrap() =
+                                                                Some(id);
                                                         }
 
                                                         _ => {
@@ -376,7 +381,7 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                             response.encode_length_delimited(&mut buf)?;
 
                                             // enqueue the response packet
-                                            PACKET_TX_QUEUE.write().push(buf);
+                                            PACKET_TX_QUEUE.write().unwrap().push(buf);
                                         }
 
                                         Err(e) => {
@@ -396,7 +401,7 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
 
                         if poll_fds[0].revents().unwrap().contains(PollFlags::POLLOUT) {
                             if RECORDING.load(Ordering::SeqCst) {
-                                let samples = audio::AUDIO_BUFFER.read().clone();
+                                let samples = audio::AUDIO_BUFFER.read().unwrap().clone();
 
                                 let mut response = protocol::Response::default();
 
@@ -406,7 +411,7 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 let mut buf = Vec::new();
                                 response.encode_length_delimited(&mut buf)?;
 
-                                PACKET_TX_QUEUE.write().push(buf);
+                                PACKET_TX_QUEUE.write().unwrap().push(buf);
                             }
 
                             // send unsolicited audio state updates every n milliseconds
@@ -422,7 +427,7 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 let mut buf = Vec::new();
                                 response.encode_length_delimited(&mut buf)?;
 
-                                PACKET_TX_QUEUE.write().push(buf);
+                                PACKET_TX_QUEUE.write().unwrap().push(buf);
 
                                 // audio muted state
                                 let muted = AUDIO_MUTED.load(Ordering::SeqCst);
@@ -435,13 +440,13 @@ pub fn run_main_loop(_ctrl_c_rx: &Receiver<bool>) -> Result<()> {
                                 let mut buf = Vec::new();
                                 response.encode_length_delimited(&mut buf)?;
 
-                                PACKET_TX_QUEUE.write().push(buf);
+                                PACKET_TX_QUEUE.write().unwrap().push(buf);
 
                                 last_status_update = Instant::now();
                             }
 
                             // transmit the queue of packets to the Eruption daemon
-                            while let Some(buf) = PACKET_TX_QUEUE.write().pop() {
+                            while let Some(buf) = PACKET_TX_QUEUE.write().unwrap().pop() {
                                 trace!("Sending a protocol packet...");
 
                                 // send data
@@ -563,7 +568,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -582,11 +587,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     if !env::args().any(|a| a.eq_ignore_ascii_case("completions")) && env::args().count() < 2 {
         print_header();
     }
-
-    // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
 
     let opts = Options::parse();
     let _daemon = matches!(opts.command, Subcommands::Daemon);
@@ -622,7 +622,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 });
 
             {
-                let mut sound_fx = SOUND_FX.write();
+                let mut sound_fx = SOUND_FX.write().unwrap();
 
                 sound_fx.insert(0, sample_data_key_down_fx);
                 sound_fx.insert(1, sample_data_key_up_fx);
@@ -649,37 +649,4 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     };
 
     Ok(())
-}
-
-#[cfg(debug_assertions)]
-mod thread_util {
-    use crate::Result;
-    use parking_lot::deadlock;
-    use std::thread;
-    use std::time::Duration;
-    use tracing::*;
-
-    /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() -> Result<()> {
-        thread::Builder::new()
-            .name("deadlockd".to_owned())
-            .spawn(move || loop {
-                thread::sleep(Duration::from_secs(5));
-                let deadlocks = deadlock::check_deadlock();
-                if !deadlocks.is_empty() {
-                    error!("{} deadlocks detected", deadlocks.len());
-
-                    for (i, threads) in deadlocks.iter().enumerate() {
-                        error!("Deadlock #{}", i);
-
-                        for t in threads {
-                            error!("Thread Id {:#?}", t.thread_id());
-                            error!("{:#?}", t.backtrace());
-                        }
-                    }
-                }
-            })?;
-
-        Ok(())
-    }
 }

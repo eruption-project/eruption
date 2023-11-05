@@ -21,11 +21,11 @@
 
 use byteorder::{BigEndian, ByteOrder};
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use std::{cell::RefCell, thread};
+use tracing_mutex::stdsync::Mutex;
 
 #[allow(unused)]
 use crate::{constants, eprintln_v, interact, println_v};
@@ -265,7 +265,7 @@ impl DeviceTrait for RoccatKain2xx {
                 0x00,
             ];
 
-            buf[10] = CRC8.lock().calc(&buf[4..10], 6, 0x32);
+            buf[10] = CRC8.lock().unwrap().calc(&buf[4..10], 6, 0x32);
 
             match ctrl_dev.send_feature_report(&buf) {
                 Ok(_result) => {

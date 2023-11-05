@@ -22,12 +22,12 @@
 use colored::*;
 use eyre::eyre;
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::sync::Arc;
 use std::{collections::HashMap, fmt, fs};
 use std::{num::ParseIntError, path::Path};
+use tracing_mutex::stdsync::Mutex;
 
 use crate::constants;
 

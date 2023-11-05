@@ -21,10 +21,10 @@
 
 use std::{any::Any, collections::HashMap, path::PathBuf, sync::Arc};
 
-use parking_lot::Mutex;
 use serialport::SerialPort;
 use std::time::Duration;
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 
 use crate::hwdevices::{self, DeviceClass, DeviceStatus, DeviceZoneAllocationExt, Zone};
 
@@ -116,7 +116,7 @@ impl DeviceExt for CustomSerialLeds {
             .open();
 
         match port {
-            Ok(port) => *self.port.lock() = Some(port),
+            Ok(port) => *self.port.lock().unwrap() = Some(port),
 
             Err(_e) => return Err(HwDeviceError::DeviceOpenError {}.into()),
         }
@@ -203,7 +203,7 @@ impl DeviceExt for CustomSerialLeds {
     fn send_led_map(&mut self, led_map: &[RGBA]) -> Result<()> {
         trace!("Setting LEDs from supplied map...");
 
-        match *self.port.lock() {
+        match *self.port.lock().unwrap() {
             Some(ref mut port) => {
                 if self.allocated_zone.enabled {
                     const HEADER_OFFSET: usize = 6;
@@ -340,6 +340,14 @@ impl DeviceExt for CustomSerialLeds {
 
     fn as_misc_device_mut(&mut self) -> Option<&mut (dyn MiscDeviceExt + Sync + Send)> {
         Some(self)
+    }
+
+    fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
+        &None
+    }
+
+    fn set_evdev_input_rx(&mut self, _rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
+        // do nothing
     }
 }
 

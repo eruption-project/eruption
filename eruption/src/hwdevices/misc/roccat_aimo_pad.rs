@@ -19,11 +19,12 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use flume::Receiver;
 use hidapi::HidApi;
 use libc::wchar_t;
-use parking_lot::Mutex;
 use std::collections::HashMap;
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 // use std::sync::atomic::Ordering;
 use std::time::Duration;
 use std::{any::Any, thread};
@@ -93,6 +94,8 @@ pub struct DeviceInfo {
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Aimo Pad
 pub struct RoccatAimoPad {
+    pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
+
     pub is_initialized: bool,
 
     pub is_bound: bool,
@@ -115,6 +118,8 @@ impl RoccatAimoPad {
         debug!("Bound driver: ROCCAT Aimo Pad");
 
         Self {
+            evdev_rx: None,
+
             is_initialized: false,
 
             is_bound: true,
@@ -143,7 +148,7 @@ impl RoccatAimoPad {
     //                 let mut buf: [u8; 256] = [0; 256];
     //                 buf[0] = id;
     //
-    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
     //
     //                 match ctrl_dev.get_feature_report(&mut buf) {
@@ -171,7 +176,7 @@ impl RoccatAimoPad {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match id {
@@ -263,7 +268,7 @@ impl RoccatAimoPad {
             // let mut buf: [u8; 24] = [0; 24];
             // buf[0] = 0x00;
             //
-            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            // let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             // let ctrl_dev = ctrl_dev.as_ref().unwrap();
             //
             // match ctrl_dev.read_timeout(&mut buf, 20) {
@@ -317,7 +322,7 @@ impl DeviceInfoExt for RoccatAimoPad {
             let mut buf = [0; size_of::<DeviceInfo>()];
             buf[0] = 0x09; // Query device info (HID report 0x09)
 
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.get_feature_report(&mut buf) {
@@ -386,14 +391,14 @@ impl DeviceExt for RoccatAimoPad {
             trace!("Opening control device...");
 
             match self.ctrl_hiddev_info.as_ref().unwrap().open_device(api) {
-                Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
+                Ok(dev) => *self.ctrl_hiddev.lock().unwrap() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
             // trace!("Opening LED device...");
 
             // match self.led_hiddev_info.as_ref().unwrap().open_device(api) {
-            //     Ok(dev) => *self.led_hiddev.lock() = Some(dev),
+            //     Ok(dev) => *self.led_hiddev.lock().unwrap() = Some(dev),
             //     Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             // };
 
@@ -413,10 +418,10 @@ impl DeviceExt for RoccatAimoPad {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             trace!("Closing control device...");
-            *self.ctrl_hiddev.lock() = None;
+            *self.ctrl_hiddev.lock().unwrap() = None;
 
             // trace!("Closing LED device...");
-            // *self.led_hiddev.lock() = None;
+            // *self.led_hiddev.lock().unwrap() = None;
 
             self.is_opened = false;
 
@@ -517,7 +522,7 @@ impl DeviceExt for RoccatAimoPad {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.write(buf) {
@@ -540,7 +545,7 @@ impl DeviceExt for RoccatAimoPad {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = Vec::new();
@@ -591,7 +596,7 @@ impl DeviceExt for RoccatAimoPad {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else if self.allocated_zone.enabled {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             #[inline]
@@ -728,6 +733,14 @@ impl DeviceExt for RoccatAimoPad {
 
     fn as_misc_device_mut(&mut self) -> Option<&mut (dyn MiscDeviceExt + Sync + Send)> {
         Some(self)
+    }
+
+    fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
+        &self.evdev_rx
+    }
+
+    fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
+        self.evdev_rx = rx;
     }
 }
 

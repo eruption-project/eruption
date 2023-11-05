@@ -23,11 +23,11 @@ use clap::Parser;
 use config::Config;
 use flume::bounded;
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
 use std::env;
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::{process, sync::Arc};
 use tracing::instrument;
+use tracing_mutex::stdsync::RwLock;
 
 mod color_scheme;
 mod constants;
@@ -214,5 +214,5 @@ fn apply_opts(opts: &Options) {
             process::exit(4);
         });
 
-    *CONFIG.write() = Some(config);
+    *CONFIG.write().unwrap() = Some(config);
 }

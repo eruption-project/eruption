@@ -89,7 +89,7 @@ pub fn register_backend<S>(backend: S)
 where
     S: Backend + Clone + 'static,
 {
-    let opts = crate::OPTIONS.read().as_ref().unwrap().clone();
+    let opts = crate::OPTIONS.read().unwrap().as_ref().unwrap().clone();
 
     if opts.verbose > 0 {
         println!("{} - {}", backend.get_name(), backend.get_description());
@@ -100,7 +100,7 @@ where
 
 /// Register all available Backends
 pub fn register_backends() -> Result<()> {
-    let opts = crate::OPTIONS.read().as_ref().unwrap().clone();
+    let opts = crate::OPTIONS.read().unwrap().as_ref().unwrap().clone();
 
     if opts.verbose > 0 {
         println!("Registering backend plugins:");

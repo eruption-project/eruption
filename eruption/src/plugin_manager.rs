@@ -20,10 +20,10 @@
 */
 
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::*;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::plugins::{Plugin, Result};
 

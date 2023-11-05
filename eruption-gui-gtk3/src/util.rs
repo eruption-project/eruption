@@ -24,7 +24,6 @@ use byteorder::{ByteOrder, LittleEndian};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
 use lazy_static::lazy_static;
-use parking_lot::Mutex;
 use std::{
     collections::HashMap,
     convert::TryFrom,
@@ -38,6 +37,7 @@ use std::{
     u8,
 };
 use tracing::warn;
+use tracing_mutex::stdsync::Mutex;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -557,7 +557,7 @@ pub fn set_ambient_effect(enabled: bool) -> Result<()> {
 pub fn get_script_dirs() -> Vec<PathBuf> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.read();
+    let config = crate::CONFIG.read().unwrap();
 
     let script_dirs = config
         .as_ref()
@@ -826,12 +826,12 @@ pub fn get_daemon_status(daemon: Daemon) -> Result<ServiceStatus> {
 /// Provide a simple means to rate-limit log output
 pub mod ratelimited {
     use lazy_static::lazy_static;
-    use parking_lot::RwLock;
     use std::{
         collections::{hash_map::Entry, HashMap},
         sync::Arc,
         time::{Duration, Instant},
     };
+    use tracing_mutex::stdsync::RwLock;
 
     const LIMIT_MSGS_PER_MIN: u64 = 8;
 
@@ -1007,7 +1007,7 @@ pub mod ratelimited {
     pub(crate) use warning as warn;
 
     pub(crate) fn is_within_rate_limit(p: &str) -> (bool, usize) {
-        let mut map = LAST_LOG_MAP.write();
+        let mut map = LAST_LOG_MAP.write().unwrap();
         let e = map.entry(p.to_string());
 
         match e {

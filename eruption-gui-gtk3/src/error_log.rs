@@ -22,7 +22,7 @@
 use std::sync::Arc;
 
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
+use tracing_mutex::stdsync::RwLock;
 
 lazy_static! {
     /// A log of errors
@@ -43,7 +43,7 @@ pub struct LoggedError {
 }
 
 pub fn fatal_error(message: &str, code: i32) {
-    ERRORS.write().push(LoggedError {
+    ERRORS.write().unwrap().push(LoggedError {
         error_type: ErrorType::Fatal,
         message: message.to_owned(),
         code,

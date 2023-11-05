@@ -32,12 +32,12 @@ use nix::poll::{poll, PollFd, PollFlags};
 #[cfg(not(target_os = "windows"))]
 use nix::unistd::unlink;
 
-use parking_lot::RwLock;
 use prost::Message;
 use socket2::{Domain, SockAddr, Socket, Type};
 use std::any::Any;
 use std::io::Cursor;
 use std::mem::MaybeUninit;
+use tracing_mutex::stdsync::RwLock;
 
 #[cfg(not(target_os = "windows"))]
 use std::os::unix::fs::PermissionsExt;
@@ -99,7 +99,6 @@ lazy_static! {
 
 use crate::threads::DbusApiEvent;
 use bincode::{Decode, Encode};
-use flume::bounded;
 
 unsafe fn any_as_u8_slice<T: Sized>(p: &T) -> &[u8] {
     ::core::slice::from_raw_parts((p as *const T) as *const u8, ::core::mem::size_of::<T>())
@@ -119,7 +118,11 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
 #[cfg(not(target_os = "windows"))]
 pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
-    use crate::{hwdevices::DeviceHandle, state, threads};
+    use std::ops::RangeFull;
+
+    use indexmap::IndexMap;
+
+    use crate::{hwdevices::DeviceHandle, state};
 
     if crate::QUIT.load(Ordering::SeqCst) {
         info!("Ignoring device hotplug event since Eruption is shutting down");
@@ -127,55 +130,42 @@ pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
         // enumerate devices
         info!("Enumerating connected devices...");
 
+        let mut connected_devices = IndexMap::new();
+
         if let Ok(devices) = hwdevices::probe_devices() {
-            if let Some(device) = devices.iter().find(|device| {
-                device.read_recursive().get_dev_paths().contains(
+            if let Some(probed_device) = devices.iter().find(|device| {
+                device.read().unwrap().get_dev_paths().contains(
                     &hotplug_info
                         .devpath
                         .clone()
-                        .unwrap_or_else(|| PathBuf::new())
+                        .unwrap_or_default()
                         .to_string_lossy()
                         .to_string(),
                 )
             }) {
                 // we found the hot-plug candidate device
-                let index = crate::DEVICES.read().len();
+                let index = crate::DEVICES.read().unwrap().len();
                 let handle = DeviceHandle::from(index as u64);
 
                 info!("Initializing the plugged device...");
 
-                crate::initialize_device(device.clone())?;
+                let device = &mut **probed_device.write().unwrap();
+
+                crate::initialize_device(handle, device)?;
                 info!("Device initialized successfully");
 
-                let (usb_vid, usb_pid) = (
-                    device.read_recursive().get_usb_vid(),
-                    device.read_recursive().get_usb_pid(),
-                );
-
-                // spawn a thread to handle Linux evdev input
-                info!("Spawning input events thread...");
-
-                let (event_tx, event_rx) = bounded(8);
-                if let Err(e) =
-                    threads::spawn_evdev_input_thread(event_tx, handle, usb_vid, usb_pid)
-                {
-                    error!("Could not spawn the input events thread: {e}");
-
-                    crate::EVENT_RX.write().insert(handle, None);
-                    crate::DEVICES.write().insert(handle, device.clone());
-                } else {
-                    crate::EVENT_RX.write().insert(handle, Some(event_rx));
-                    crate::DEVICES.write().insert(handle, device.clone());
-                }
+                let (usb_vid, usb_pid) = (device.get_usb_vid(), device.get_usb_pid());
 
                 // load and initialize global runtime state (late init)
                 info!("Loading saved device state...");
-                state::init_runtime_state(device.clone())
+                state::init_runtime_state(device)
                     .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+
+                connected_devices.insert(handle, probed_device.clone());
 
                 debug!("Sending device hotplug notification...");
 
-                let dbus_api_tx = crate::DBUS_API_TX.read();
+                let dbus_api_tx = crate::DBUS_API_TX.read().unwrap();
                 let dbus_api_tx = dbus_api_tx.as_ref().unwrap();
 
                 dbus_api_tx
@@ -187,11 +177,16 @@ pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
                     hotplug_info
                         .devpath
                         .clone()
-                        .unwrap_or_else(|| PathBuf::new())
+                        .unwrap_or_default()
                         .to_string_lossy()
                 );
             }
         }
+
+        crate::DEVICES
+            .write()
+            .unwrap()
+            .extend(connected_devices.drain(RangeFull));
     }
 
     Ok(())
@@ -205,15 +200,15 @@ pub fn resume_from_suspend() -> Result<()> {
         info!("Enumerating connected devices...");
 
         // initialize devices
-        for (_handle, device) in crate::DEVICES.read().iter() {
+        for (_handle, device) in crate::DEVICES.read().unwrap().iter() {
             let make = hwdevices::get_device_make(
-                device.read_recursive().get_usb_vid(),
-                device.read_recursive().get_usb_pid(),
+                device.read().unwrap().get_usb_vid(),
+                device.read().unwrap().get_usb_pid(),
             )
             .unwrap_or("<unknown>");
             let model = hwdevices::get_device_model(
-                device.read_recursive().get_usb_vid(),
-                device.read_recursive().get_usb_pid(),
+                device.read().unwrap().get_usb_vid(),
+                device.read().unwrap().get_usb_pid(),
             )
             .unwrap_or("<unknown>");
 
@@ -222,6 +217,7 @@ pub fn resume_from_suspend() -> Result<()> {
             // send initialization handshake
             device
                 .write()
+                .unwrap()
                 .send_init_sequence()
                 .unwrap_or_else(|e| error!("Could not initialize the device: {}", e));
         }
@@ -257,7 +253,7 @@ impl SdkSupportPlugin {
         perms.set_mode(0o666);
         fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
 
-        LISTENER.write().replace(listener);
+        LISTENER.write().unwrap().replace(listener);
 
         Ok(())
     }
@@ -278,7 +274,7 @@ impl SdkSupportPlugin {
         // perms.set_mode(0o666);
         // fs::set_permissions(constants::CONTROL_SOCKET_NAME, perms)?;
 
-        LISTENER.write().replace(listener);
+        LISTENER.write().unwrap().replace(listener);
 
         Ok(())
     }
@@ -320,7 +316,7 @@ impl SdkSupportPlugin {
                 break 'IO_LOOP;
             }
 
-            if let Some(listener) = LISTENER.read().as_ref() {
+            if let Some(listener) = LISTENER.read().unwrap().as_ref() {
                 listener.listen(1)?;
 
                 match listener.accept() {
@@ -457,7 +453,7 @@ impl SdkSupportPlugin {
 
                                                         let profile_file = {
                                                             let active_profile =
-                                                                &*crate::ACTIVE_PROFILE.read();
+                                                                &*crate::ACTIVE_PROFILE.read().unwrap();
                                                             match active_profile {
                                                                 Some(active_profile) => active_profile
                                                                     .profile_file
@@ -593,7 +589,7 @@ impl SdkSupportPlugin {
                                                         }
 
                                                         if !payload_map.is_empty() {
-                                                            let mut local_map = LED_MAP.write();
+                                                            let mut local_map = LED_MAP.write().unwrap();
 
                                                             local_map.copy_from_slice(
                                                                 &payload_map.chunks(4)
@@ -640,7 +636,7 @@ impl SdkSupportPlugin {
                                                     )) => {
                                                         trace!("Get canvas");
 
-                                                        let canvas: Vec<u8> = (*LAST_RENDERED_LED_MAP.read()).iter().flat_map(|val| unsafe { any_as_u8_slice(val).to_owned() }).collect();
+                                                        let canvas: Vec<u8> = (*LAST_RENDERED_LED_MAP.read().unwrap()).iter().flat_map(|val| unsafe { any_as_u8_slice(val).to_owned() }).collect();
 
                                                         let response = protocol::Response {
                                                             response_message: Some(

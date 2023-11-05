@@ -21,9 +21,9 @@
 
 use dbus::{arg::RefArg, arg::Variant, blocking::Connection};
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
 use std::sync::Arc;
 use std::{collections::HashMap, time::Duration};
+use tracing_mutex::stdsync::RwLock;
 
 use crate::constants;
 use crate::dbus_interface::bus;
@@ -54,9 +54,9 @@ pub fn has_permission_cached(permission: Permission, sender: &str) -> Result<boo
 }
 
 pub fn has_monitor_permission_cached(sender: &str) -> Result<bool> {
-    if HAS_MONITOR_PERMISSION.read().is_some() {
+    if HAS_MONITOR_PERMISSION.read().unwrap().is_some() {
         // cache is valid
-        Ok(HAS_MONITOR_PERMISSION.read().unwrap())
+        Ok(HAS_MONITOR_PERMISSION.read().unwrap().unwrap())
     } else {
         // cache is invalid, we need to call out to PolKit
         let result = has_monitor_permission(sender)?;
@@ -64,7 +64,7 @@ pub fn has_monitor_permission_cached(sender: &str) -> Result<bool> {
         if !result.1 {
             if result.0 {
                 // call succeeded, update cached state
-                HAS_MONITOR_PERMISSION.write().replace(result.0);
+                HAS_MONITOR_PERMISSION.write().unwrap().replace(result.0);
             }
 
             Ok(result.0)
@@ -76,9 +76,9 @@ pub fn has_monitor_permission_cached(sender: &str) -> Result<bool> {
 }
 
 pub fn has_settings_permission_cached(sender: &str) -> Result<bool> {
-    if HAS_SETTINGS_PERMISSION.read().is_some() {
+    if HAS_SETTINGS_PERMISSION.read().unwrap().is_some() {
         // cache is valid
-        Ok(HAS_SETTINGS_PERMISSION.read().unwrap())
+        Ok(HAS_SETTINGS_PERMISSION.read().unwrap().unwrap())
     } else {
         // cache is invalid, we need to call out to PolKit
         let result = has_settings_permission(sender)?;
@@ -86,7 +86,7 @@ pub fn has_settings_permission_cached(sender: &str) -> Result<bool> {
         if !result.1 {
             if result.0 {
                 // call succeeded, update cached state
-                HAS_SETTINGS_PERMISSION.write().replace(result.0);
+                HAS_SETTINGS_PERMISSION.write().unwrap().replace(result.0);
             }
 
             Ok(result.0)
@@ -98,9 +98,9 @@ pub fn has_settings_permission_cached(sender: &str) -> Result<bool> {
 }
 
 pub fn has_manage_permission_cached(sender: &str) -> Result<bool> {
-    if HAS_MANAGE_PERMISSION.read().is_some() {
+    if HAS_MANAGE_PERMISSION.read().unwrap().is_some() {
         // cache is valid
-        Ok(HAS_MANAGE_PERMISSION.read().unwrap())
+        Ok(HAS_MANAGE_PERMISSION.read().unwrap().unwrap())
     } else {
         // cache is invalid, we need to call out to PolKit
         let result = has_manage_permission(sender)?;
@@ -108,7 +108,7 @@ pub fn has_manage_permission_cached(sender: &str) -> Result<bool> {
         if !result.1 {
             if result.0 {
                 // call succeeded, update cached state
-                HAS_MANAGE_PERMISSION.write().replace(result.0);
+                HAS_MANAGE_PERMISSION.write().unwrap().replace(result.0);
             }
 
             Ok(result.0)

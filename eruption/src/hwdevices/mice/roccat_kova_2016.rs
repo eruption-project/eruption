@@ -23,11 +23,12 @@ use bitvec::prelude::*;
 use bitvec::view::BitView;
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
+use flume::Receiver;
 use hidapi::HidApi;
 use libc::wchar_t;
-use parking_lot::Mutex;
 use std::{any::Any, collections::HashMap, mem::size_of, sync::Arc};
 use tracing::*;
+use tracing_mutex::stdsync::Mutex;
 
 use crate::{constants, hwdevices::DeviceStatus};
 
@@ -79,6 +80,8 @@ pub struct DeviceInfo {
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Kova 2016 mouse
 pub struct RoccatKova2016 {
+    pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
+
     pub is_initialized: bool,
 
     pub is_bound: bool,
@@ -103,6 +106,8 @@ impl RoccatKova2016 {
         debug!("Bound driver: ROCCAT Kova 2016");
 
         Self {
+            evdev_rx: None,
+
             is_initialized: false,
 
             is_bound: true,
@@ -134,7 +139,7 @@ impl RoccatKova2016 {
     //                 let mut buf: [u8; 256] = [0; 256];
     //                 buf[0] = id;
 
-    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+    //                 let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
     //                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
     //                 match ctrl_dev.get_feature_report(&mut buf) {
@@ -162,7 +167,7 @@ impl RoccatKova2016 {
         } else if !self.is_opened {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match id {
@@ -246,7 +251,7 @@ impl RoccatKova2016 {
                 let mut buf: [u8; 4] = [0; 4];
                 buf[0] = 0x04;
 
-                let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+                let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
                 let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
                 match ctrl_dev.get_feature_report(&mut buf) {
@@ -284,7 +289,7 @@ impl DeviceInfoExt for RoccatKova2016 {
             let mut buf = [0; size_of::<DeviceInfo>()];
             buf[0] = 0x09; // Query device info (HID report 0x09)
 
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.get_feature_report(&mut buf) {
@@ -367,7 +372,7 @@ impl DeviceExt for RoccatKova2016 {
             trace!("Opening control device...");
 
             match self.ctrl_hiddev_info.as_ref().unwrap().open_device(api) {
-                Ok(dev) => *self.ctrl_hiddev.lock() = Some(dev),
+                Ok(dev) => *self.ctrl_hiddev.lock().unwrap() = Some(dev),
                 Err(_) => return Err(HwDeviceError::DeviceOpenError {}.into()),
             };
 
@@ -387,7 +392,7 @@ impl DeviceExt for RoccatKova2016 {
             Err(HwDeviceError::DeviceNotOpened {}.into())
         } else {
             trace!("Closing control device...");
-            *self.ctrl_hiddev.lock() = None;
+            *self.ctrl_hiddev.lock().unwrap() = None;
 
             self.is_opened = false;
 
@@ -464,7 +469,7 @@ impl DeviceExt for RoccatKova2016 {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             match ctrl_dev.write(buf) {
@@ -487,7 +492,7 @@ impl DeviceExt for RoccatKova2016 {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = Vec::new();
@@ -538,7 +543,7 @@ impl DeviceExt for RoccatKova2016 {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else if self.allocated_zone.enabled {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let buf: [u8; 28] = [
@@ -684,6 +689,14 @@ impl DeviceExt for RoccatKova2016 {
     fn as_misc_device_mut(&mut self) -> Option<&mut (dyn hwdevices::MiscDeviceExt + Send + Sync)> {
         None
     }
+
+    fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
+        &self.evdev_rx
+    }
+
+    fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
+        self.evdev_rx = rx;
+    }
 }
 
 impl MouseDeviceExt for RoccatKova2016 {
@@ -774,7 +787,7 @@ impl MouseDeviceExt for RoccatKova2016 {
         } else if !self.is_initialized {
             Err(HwDeviceError::DeviceNotInitialized {}.into())
         } else {
-            let ctrl_dev = self.ctrl_hiddev.as_ref().lock();
+            let ctrl_dev = self.ctrl_hiddev.as_ref().lock().unwrap();
             let ctrl_dev = ctrl_dev.as_ref().unwrap();
 
             let mut buf = [0; 8];
@@ -795,7 +808,7 @@ impl MouseDeviceExt for RoccatKova2016 {
                             let button_mask = button_mask.view_bits::<Lsb0>();
                             let button_mask2 = button_mask2.view_bits::<Lsb0>();
 
-                            let mut button_states = self.button_states.lock();
+                            let mut button_states = self.button_states.lock().unwrap();
 
                             // notify button press events for the buttons 0..7
                             for (index, down) in button_mask.iter().enumerate() {

@@ -33,7 +33,6 @@ use i18n_embed::{
 use is_terminal::IsTerminal;
 
 use lazy_static::lazy_static;
-use parking_lot::{Mutex, RwLock};
 use rust_embed::RustEmbed;
 use std::sync::Arc;
 use std::time::Duration;
@@ -43,6 +42,7 @@ use std::{
     thread,
 };
 use tracing::{debug, error, info};
+use tracing_mutex::stdsync::{Mutex, RwLock};
 
 use eruption_sdk::canvas::Canvas;
 use eruption_sdk::color::Color;
@@ -68,14 +68,14 @@ lazy_static! {
 #[allow(unused)]
 macro_rules! tr {
     ($message_id:literal) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id)
     }};
 
     ($message_id:literal, $($args:expr),*) => {{
-        let loader = $crate::STATIC_LOADER.lock();
+        let loader = $crate::STATIC_LOADER.lock().unwrap();
         let loader = loader.as_ref().unwrap();
 
         i18n_embed_fl::fl!(loader, $message_id, $($args), *)
@@ -326,7 +326,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     let requested_languages = DesktopLanguageRequester::requested_languages();
     i18n_embed::select(&language_loader, &Localizations, &requested_languages)?;
 
-    STATIC_LOADER.lock().replace(language_loader);
+    STATIC_LOADER.lock().unwrap().replace(language_loader);
 
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
@@ -346,13 +346,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         print_header();
     }
 
-    // start the thread deadlock detector
-    #[cfg(debug_assertions)]
-    thread_util::deadlock_detector()
-        .unwrap_or_else(|e| error!("Could not spawn the deadlock detector thread: {}", e));
-
     let opts = Options::parse();
-    *crate::OPTIONS.write() = Some(opts.clone());
+    *crate::OPTIONS.write().unwrap() = Some(opts.clone());
 
     match opts.command {
         Subcommands::Daemon => {
@@ -397,37 +392,4 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     };
 
     Ok(())
-}
-
-#[cfg(debug_assertions)]
-mod thread_util {
-    use crate::Result;
-    use parking_lot::deadlock;
-    use std::thread;
-    use std::time::Duration;
-    use tracing::*;
-
-    /// Creates a background thread which checks for deadlocks every 5 seconds
-    pub(crate) fn deadlock_detector() -> Result<()> {
-        thread::Builder::new()
-            .name("deadlockd".to_owned())
-            .spawn(move || loop {
-                thread::sleep(Duration::from_secs(5));
-                let deadlocks = deadlock::check_deadlock();
-                if !deadlocks.is_empty() {
-                    error!("{} deadlocks detected", deadlocks.len());
-
-                    for (i, threads) in deadlocks.iter().enumerate() {
-                        error!("Deadlock #{}", i);
-
-                        for t in threads {
-                            error!("Thread Id {:#?}", t.thread_id());
-                            error!("{:#?}", t.backtrace());
-                        }
-                    }
-                }
-            })?;
-
-        Ok(())
-    }
 }

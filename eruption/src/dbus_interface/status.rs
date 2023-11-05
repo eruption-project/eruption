@@ -81,6 +81,7 @@ fn set_running(i: &mut Iter, _m: &super::PropertyInfo) -> super::PropertyResult 
 fn get_led_colors(m: &MethodInfo) -> MethodResult {
     let s = script::LAST_RENDERED_LED_MAP
         .read()
+        .unwrap()
         .iter()
         .map(|v| (v.r, v.g, v.b, v.a))
         .collect::<Vec<(u8, u8, u8, u8)>>();
@@ -95,9 +96,10 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
 
     let keyboards = crate::DEVICES
         .read()
+        .unwrap()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read_recursive();
+            let device = device.read().unwrap();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Keyboard {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -109,9 +111,10 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
 
     let mice = crate::DEVICES
         .read()
+        .unwrap()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read_recursive();
+            let device = device.read().unwrap();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Mouse {
                 Some((device.get_usb_vid(), device.get_usb_pid()))
@@ -123,9 +126,10 @@ fn get_managed_devices(m: &MethodInfo) -> MethodResult {
 
     let misc = crate::DEVICES
         .read()
+        .unwrap()
         .iter()
         .filter_map(|(_handle, device)| {
-            let device = device.read_recursive();
+            let device = device.read().unwrap();
 
             if device.get_device_class() == crate::hwdevices::DeviceClass::Misc {
                 Some((device.get_usb_vid(), device.get_usb_pid()))

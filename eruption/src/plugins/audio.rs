@@ -21,7 +21,6 @@
 
 use lazy_static::lazy_static;
 use mlua::prelude::*;
-use parking_lot::RwLock;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::Arc;
 use std::{
@@ -29,6 +28,7 @@ use std::{
     time::{Duration, Instant},
 };
 use tracing::*;
+use tracing_mutex::stdsync::RwLock;
 
 use crate::events;
 use crate::plugins::{self, Plugin};
@@ -89,7 +89,7 @@ pub fn reset_audio_backend() {
     AUDIO_GRABBER_PERFORM_RMS_COMPUTATION.store(false, Ordering::SeqCst);
     AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(false, Ordering::SeqCst);
 
-    *RATE_LIMIT_TIME.write() = Instant::now()
+    *RATE_LIMIT_TIME.write().unwrap() = Instant::now()
         .checked_sub(Duration::from_millis(ERROR_RATE_LIMIT_MILLIS))
         .unwrap();
 }
@@ -98,13 +98,15 @@ fn try_start_audio_backend() -> Result<()> {
     #[cfg(target_os = "windows")]
     AUDIO_BACKEND
         .write()
+        .unwrap()
         .replace(Box::new(backends::NullBackend {}));
 
     #[cfg(not(target_os = "windows"))]
     AUDIO_BACKEND
         .write()
+        .unwrap()
         .replace(Box::new(backends::ProxyBackend::new().map_err(|e| {
-            *RATE_LIMIT_TIME.write() = Instant::now();
+            *RATE_LIMIT_TIME.write().unwrap() = Instant::now();
 
             error!("Could not initialize the audio backend: {}", e);
             e
@@ -114,13 +116,13 @@ fn try_start_audio_backend() -> Result<()> {
 }
 
 fn start_audio_proxy_thread() -> Result<()> {
-    let start_backend = AUDIO_BACKEND.read().is_none();
+    let start_backend = AUDIO_BACKEND.read().unwrap().is_none();
     if start_backend {
         try_start_audio_backend()?;
     }
 
     // start the audio grabber thread
-    if let Some(backend) = AUDIO_BACKEND.read().as_ref() {
+    if let Some(backend) = AUDIO_BACKEND.read().unwrap().as_ref() {
         backend.start_audio_grabber()?;
         Ok(())
     } else {
@@ -150,16 +152,16 @@ impl AudioPlugin {
         AUDIO_GRABBER_RECORD_AUDIO.store(true, Ordering::SeqCst);
         AUDIO_GRABBER_PERFORM_FFT_COMPUTATION.store(true, Ordering::Relaxed);
 
-        AUDIO_SPECTRUM.read().clone()
+        AUDIO_SPECTRUM.read().unwrap().clone()
     }
 
     pub fn get_audio_raw_data() -> Vec<i16> {
         AUDIO_GRABBER_RECORD_AUDIO.store(true, Ordering::SeqCst);
-        AUDIO_GRABBER_BUFFER.read().to_vec()
+        AUDIO_GRABBER_BUFFER.read().unwrap().to_vec()
     }
 
     pub fn get_audio_volume() -> isize {
-        if let Some(backend) = &*AUDIO_BACKEND.read() {
+        if let Some(backend) = &*AUDIO_BACKEND.read().unwrap() {
             backend.get_master_volume().unwrap_or(0) * 100 / u16::MAX as isize
         } else {
             0
@@ -167,7 +169,7 @@ impl AudioPlugin {
     }
 
     pub fn is_audio_muted() -> bool {
-        if let Some(backend) = &*AUDIO_BACKEND.read() {
+        if let Some(backend) = &*AUDIO_BACKEND.read().unwrap() {
             backend.is_audio_muted().unwrap_or(true)
         } else {
             false
@@ -191,7 +193,7 @@ impl Plugin for AudioPlugin {
             match event {
                 events::Event::KeyDown(_index) => {
                     if ENABLE_SFX.load(Ordering::SeqCst) {
-                        if let Some(backend) = AUDIO_BACKEND.read().as_ref() {
+                        if let Some(backend) = AUDIO_BACKEND.read().unwrap().as_ref() {
                             backend.play_sfx(0)?;
                         }
                     }
@@ -199,7 +201,7 @@ impl Plugin for AudioPlugin {
 
                 events::Event::KeyUp(_index) => {
                     if ENABLE_SFX.load(Ordering::SeqCst) {
-                        if let Some(backend) = AUDIO_BACKEND.read().as_ref() {
+                        if let Some(backend) = AUDIO_BACKEND.read().unwrap().as_ref() {
                             backend.play_sfx(1)?;
                         }
                     }
@@ -269,11 +271,11 @@ mod backends {
     #[cfg(not(target_os = "windows"))]
     use nix::unistd::unlink;
 
-    use parking_lot::RwLock;
     use prost::Message;
     use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
     use std::fs;
     use std::io::Cursor;
+    use tracing_mutex::stdsync::RwLock;
 
     #[cfg(not(target_os = "windows"))]
     use std::os::unix::prelude::PermissionsExt;
@@ -374,12 +376,12 @@ mod backends {
                 }
             }
 
-            LISTENER.write().replace(listener);
+            LISTENER.write().unwrap().replace(listener);
 
             let (tx, rx): (Sender<u32>, Receiver<u32>) = bounded(8);
 
-            *SFX_TX.write() = Some(tx);
-            *SFX_RX.write() = Some(rx);
+            *SFX_TX.write().unwrap() = Some(tx);
+            *SFX_RX.write().unwrap() = Some(rx);
 
             Ok(Self {})
         }
@@ -394,7 +396,7 @@ mod backends {
                     break 'IO_LOOP;
                 }
 
-                if let Some(listener) = LISTENER.read().as_ref() {
+                if let Some(listener) = LISTENER.read().unwrap().as_ref() {
                     listener.listen(1)?;
 
                     match listener.accept() {
@@ -436,7 +438,7 @@ mod backends {
                                     break 'EVENT_LOOP;
                                 }
 
-                                let pending_sfx_id = if let Some(ref rx) = *SFX_RX.read() {
+                                let pending_sfx_id = if let Some(ref rx) = *SFX_RX.read().unwrap() {
                                     // do we have any requests to play a sound effect?
                                     match rx.recv_timeout(Duration::from_millis(1)) {
                                         Ok(idx) => {
@@ -508,7 +510,9 @@ mod backends {
                                                                 response.payload
                                                             {
                                                                 let mut buffer =
-                                                                    AUDIO_GRABBER_BUFFER.write();
+                                                                    AUDIO_GRABBER_BUFFER
+                                                                        .write()
+                                                                        .unwrap();
                                                                 buffer.clear();
 
                                                                 buffer.reserve(
@@ -584,7 +588,7 @@ mod backends {
                                                                         .collect();
 
                                                                     for (i, e) in AUDIO_SPECTRUM
-                                                                        .write()
+                                                                        .write().unwrap()
                                                                         .iter_mut()
                                                                         .enumerate()
                                                                     {
@@ -782,7 +786,7 @@ mod backends {
     #[cfg(not(target_os = "windows"))]
     impl AudioBackend for ProxyBackend {
         fn play_sfx(&self, id: u32) -> Result<()> {
-            if let Some(ref tx) = *SFX_TX.read() {
+            if let Some(ref tx) = *SFX_TX.read().unwrap() {
                 tx.send_timeout(id, Duration::from_millis(1))?;
             }
 

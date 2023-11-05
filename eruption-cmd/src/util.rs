@@ -21,7 +21,7 @@
 
 // pub fn get_input(prompt: &str) -> io::Result<String> {
 //     print!("{}", prompt);
-//     io::stdout().lock().flush()?;
+//     io::stdout().lock().unwrap().flush()?;
 //
 //     let mut input = String::new();
 //     io::stdin().read_line(&mut input)?;

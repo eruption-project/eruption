@@ -27,7 +27,7 @@ frequency = "always"
 rustflags = [
   # "--cfg",
   # "-Clink-arg=-fuse-ld=mold",
-  # "-Ctarget-cpu=native",
+  "-Ctarget-cpu=native",
   # "-Zshare-generics=y",
   # "-Clink-arg=-Wl,--no-rosegment",
 ]

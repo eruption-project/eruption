@@ -139,6 +139,7 @@ rules add window-instance gnome-calculator 2
     fn is_enabled(&self) -> bool {
         SENSORS_CONFIGURATION
             .read()
+            .unwrap()
             .contains(&SensorConfiguration::EnableMutter)
     }
 

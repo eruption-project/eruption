@@ -26,7 +26,6 @@ use crate::{constants, profiles};
 use dbus::blocking::stdintf::org_freedesktop_dbus::Properties;
 use dbus::blocking::Connection;
 use lazy_static::lazy_static;
-use parking_lot::RwLock;
 use std::{
     collections::HashMap,
     fs,
@@ -38,6 +37,7 @@ use std::{
     u8,
 };
 use tracing::warn;
+use tracing_mutex::stdsync::RwLock;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
@@ -414,7 +414,7 @@ pub fn set_sound_fx(enabled: bool) -> Result<()> {
 pub fn get_script_dirs() -> Vec<PathBuf> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.read();
+    let config = crate::CONFIG.read().unwrap();
 
     let script_dirs = config
         .as_ref()

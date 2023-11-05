@@ -22,11 +22,11 @@
 use lazy_static::lazy_static;
 // use tracing::*;
 use mlua::prelude::*;
-use parking_lot::RwLock;
 use std::any::Any;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use sysinfo::{ComponentExt, RefreshKind, SystemExt};
+use tracing_mutex::stdsync::RwLock;
 
 use crate::plugins;
 use crate::plugins::Plugin;
@@ -52,7 +52,7 @@ pub struct SensorsPlugin {}
 
 impl SensorsPlugin {
     pub fn new() -> Self {
-        let mut system = SYSTEM.write();
+        let mut system = SYSTEM.write().unwrap();
 
         system.refresh_memory();
         system.refresh_components_list();
@@ -63,7 +63,7 @@ impl SensorsPlugin {
 
     /// Refresh state of sensors
     pub fn refresh() {
-        let mut system = SYSTEM.write();
+        let mut system = SYSTEM.write().unwrap();
 
         system.refresh_memory();
         system.refresh_components();
@@ -73,7 +73,7 @@ impl SensorsPlugin {
     pub fn get_package_temp() -> f32 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.write();
+        let system = SYSTEM.write().unwrap();
 
         let components = system.components();
         if components.len() > 1 {
@@ -91,7 +91,7 @@ impl SensorsPlugin {
     pub fn get_package_max_temp() -> f32 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.write();
+        let system = SYSTEM.write().unwrap();
 
         let components = system.components();
         if components.len() > 1 {
@@ -109,7 +109,7 @@ impl SensorsPlugin {
     pub fn get_mem_total_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.write();
+        let system = SYSTEM.write().unwrap();
         system.total_memory()
     }
 
@@ -117,7 +117,7 @@ impl SensorsPlugin {
     pub fn get_mem_used_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.write();
+        let system = SYSTEM.write().unwrap();
         system.used_memory()
     }
 
@@ -125,7 +125,7 @@ impl SensorsPlugin {
     pub fn get_swap_total_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.write();
+        let system = SYSTEM.write().unwrap();
         system.total_swap()
     }
 
@@ -133,7 +133,7 @@ impl SensorsPlugin {
     pub fn get_swap_used_kb() -> u64 {
         DO_REFRESH.store(true, Ordering::SeqCst);
 
-        let system = SYSTEM.write();
+        let system = SYSTEM.write().unwrap();
         system.used_swap()
     }
 }
