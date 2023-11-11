@@ -1286,6 +1286,13 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                 device.device_file.display()
             );
 
+            {
+                let mut pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
+                *pending_devices += 1;
+
+                crate::DEVICES_PENDING_INIT.1.notify_all();
+            }
+
             let serial_leds = custom_serial_leds::CustomSerialLeds::bind(device.device_file);
 
             // non pnp devices are currently always 'misc' devices
@@ -1363,10 +1370,18 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                                             .to_string(),
                                     );
 
+                                    {
+                                        let mut pending_devices =
+                                            crate::DEVICES_PENDING_INIT.0.lock().unwrap();
+                                        *pending_devices += 1;
+
+                                        crate::DEVICES_PENDING_INIT.1.notify_all();
+                                    }
+
                                     bound_devices.extend(device.get_dev_paths());
                                     devices.push(Arc::new(RwLock::new(device)));
                                 } else {
-                                    debug!(
+                                    trace!(
                                         "Skipping this endpoint since the device '{path}' is already bound by us"
                                     );
                                 }
@@ -1456,7 +1471,7 @@ pub fn probe_devices() -> Result<Vec<Device>> {
                         }
 
                         _ => {
-                            error!("Unknown device class");
+                            warn!("Unknown device class");
                         }
                     }
                 }

@@ -20,7 +20,7 @@
 */
 
 use std::ops::RangeFull;
-use std::sync::Arc;
+use std::sync::{Arc, WaitTimeoutResult};
 use std::time::{Duration, Instant};
 use std::u64;
 use std::{collections::HashMap, env};
@@ -242,6 +242,10 @@ lazy_static! {
     // Is Eruption startup completed and event processing ready?
     pub static ref STARTUP_COMPLETED_CONDITION: Arc<(Mutex<bool>, Condvar)> =
         Arc::new((Mutex::new(false), Condvar::new()));
+
+    // Number of the devices that are pending initialization
+    pub static ref DEVICES_PENDING_INIT: Arc<(Mutex<usize>, Condvar)> =
+    Arc::new((Mutex::new(0), Condvar::new()));
 
     // Color maps of Lua VMs ready?
     pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
@@ -1804,12 +1808,12 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
             // enumerate devices
             info!("Enumerating connected devices...");
 
-            let mut connected_devices = IndexMap::new();
+            let connected_devices = Arc::new(RwLock::new(IndexMap::new()));
 
             if let Ok(devices) = hwdevices::probe_devices() {
                 // initialize the devices
                 devices
-                    .iter()
+                    .par_iter()
                     .enumerate()
                     .for_each(|(index, probed_device)| {
                         let handle = DeviceHandle::from(index as u64);
@@ -1824,21 +1828,59 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                                 .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
                         }
 
-                        connected_devices.insert(handle, probed_device.clone());
+                        {
+                            let mut pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
+                            *pending_devices -= 1;
+
+                            crate::DEVICES_PENDING_INIT.1.notify_all();
+                        }
+
+                        connected_devices
+                            .write()
+                            .unwrap()
+                            .insert(handle, probed_device.clone());
                     });
 
                 crate::DEVICES
                     .write()
                     .unwrap()
-                    .extend(connected_devices.drain(RangeFull));
+                    .extend(connected_devices.write().unwrap().drain(RangeFull));
 
                 info!("Device enumeration completed");
 
-                // optionally, wait a bit for devices to settle; this should
-                // not be technically required it just prevents fast devices
-                // from showing LED lighting long before the slower ones do,
-                // which can lead to an uneven experience on startup
-                // thread::sleep(Duration::from_millis(constants::DEVICE_SETTLE_DELAY));
+                // wait for every detected device to be up and running
+                loop {
+                    let pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
+
+                    if *pending_devices <= 0 {
+                        info!("All supported devices have been initialized");
+                        break;
+                    } else {
+                        info!(
+                            "# devices still pending initialization: {}",
+                            *pending_devices
+                        );
+                    }
+
+                    let result = crate::DEVICES_PENDING_INIT
+                        .1
+                        .wait_timeout(
+                            pending_devices,
+                            Duration::from_millis(constants::TIMEOUT_PENDING_DEVICE_INIT),
+                        )
+                        .unwrap();
+
+                    if result.1.timed_out() {
+                        error!("Timeout while waiting for a device to initialize");
+                    }
+
+                    if *result.0 <= 0 {
+                        info!("All supported devices have been initialized");
+                        break;
+                    } else {
+                        info!("# devices still pending initialization: {}", *result.0);
+                    }
+                }
 
                 if crate::DEVICES.read().unwrap().is_empty() {
                     warn!("No supported devices found!");

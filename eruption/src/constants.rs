@@ -177,6 +177,9 @@ pub const TIMEOUT_MILLIS_SHORT: u64 = 500;
 /// Generic timeout value for slow operations
 pub const TIMEOUT_MILLIS_LONG: u64 = 1000;
 
+/// Timeout used for waiting for a device that is pending initialization
+pub const TIMEOUT_PENDING_DEVICE_INIT: u64 = 4000;
+
 /// Timeout value to use for the D-Bus event loop
 pub const DBUS_WAIT_MILLIS: u32 = 250;
 

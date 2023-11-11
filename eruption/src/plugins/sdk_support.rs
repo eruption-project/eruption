@@ -144,6 +144,7 @@ pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
                 )
             }) {
                 // we found the hot-plug candidate device
+
                 let index = crate::DEVICES.read().unwrap().len();
                 let handle = DeviceHandle::from(index as u64);
 
@@ -162,6 +163,13 @@ pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
                     .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
 
                 connected_devices.insert(handle, probed_device.clone());
+
+                {
+                    let mut pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
+                    *pending_devices = *pending_devices - 1;
+
+                    crate::DEVICES_PENDING_INIT.1.notify_all();
+                }
 
                 debug!("Sending device hotplug notification...");
 
