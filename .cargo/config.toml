@@ -20,17 +20,23 @@
 [alias]
 xtask = "run --manifest-path ./xtask/Cargo.toml --"
 
-[future-incompat-report]
-frequency = "always"
+[unstable]
+codegen-backend = true
+
+[profile.dev]
+codegen-backend = "cranelift"
+
+[profile.dev-optimized]
+codegen-backend = "cranelift"
 
 [build]
 rustflags = [
   # "--cfg",
-  # "-Clink-arg=-fuse-ld=mold",
+  "-Clink-arg=-fuse-ld=mold",
   "-Ctarget-cpu=native",
-  # "-Zshare-generics=y",
-  # "-Clink-arg=-Wl,--no-rosegment",
+  "-Zshare-generics=y",
+  "-Clink-arg=-Wl,--no-rosegment",
 ]
 
-# [target.x86_64-unknown-linux-gnu]
-# linker = "/usr/bin/clang"
+[target.x86_64-unknown-linux-gnu]
+linker = "/usr/bin/clang"
