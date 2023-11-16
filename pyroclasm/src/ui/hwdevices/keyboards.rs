@@ -28,6 +28,7 @@ mod generic_keyboard;
 mod null_keyboard;
 mod roccat_magma;
 mod roccat_vulcan_1xx;
+mod roccat_vulcan_2_max;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
@@ -54,6 +55,13 @@ pub fn get_keyboard_device(
         .get(device_handle as usize)
     {
         Some(device) => match device {
+            // ROCCAT Vulcan II Max series
+            (0x1e7d, 0x2ee2) => Ok(Box::new(roccat_vulcan_2_max::RoccatVulcan2Max::new(
+                device_handle,
+                ui,
+                ctx,
+            ))),
+
             // ROCCAT Vulcan 1xx series
             (0x1e7d, 0x3098) | (0x1e7d, 0x307a) => Ok(Box::new(
                 roccat_vulcan_1xx::RoccatVulcan1xx::new(device_handle, ui, ctx),

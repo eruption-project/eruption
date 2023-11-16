@@ -207,7 +207,7 @@ pub const MAX_MOUSE_BUTTONS: usize = 32;
 pub const EVENTS_UPCALL_RATE_LIMIT_MILLIS: u64 = 16;
 
 /// Limit framerate to n frames per second
-pub const TARGET_FPS_LIMIT: u64 = 48;
+pub const TARGET_FPS_LIMIT: u64 = 60;
 
 /// Timer tick events per second (timer resolution)
 pub const TIMER_TPS: u64 = 60;

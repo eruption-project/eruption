@@ -24,6 +24,7 @@ pub mod generic_keyboard;
 pub mod roccat_magma;
 pub mod roccat_pyro;
 pub mod roccat_vulcan_1xx;
+pub mod roccat_vulcan_2_max;
 pub mod roccat_vulcan_pro;
 pub mod roccat_vulcan_pro_tkl;
 pub mod roccat_vulcan_tkl;

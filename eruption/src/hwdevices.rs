@@ -89,7 +89,7 @@ impl fmt::Display for DeviceHandle {
                 .and_then(|device| {
                     let device_identifier = device.get_support_script_file();
 
-                    let _ = write!(f, "[{:02}:{device_identifier}]", self.0);
+                let _ = write!(f, "[{:02}:{device_identifier}]", self.0);
 
                     Ok(device)
                 })
@@ -100,11 +100,11 @@ impl fmt::Display for DeviceHandle {
                 });
 
             Some(device)
-        })
-        .or_else(|| {
-            let _ = write!(f, "[{:02}:<invalid device>]", self.0);
+            })
+            .or_else(|| {
+                let _ = write!(f, "[{:02}:<invalid device>]", self.0);
 
-            None
+                None
         }); */
 
         Ok(())
@@ -134,7 +134,7 @@ pub struct UsagePage(i32);
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<RwLock<[Box<(dyn DriverMetadataExt + Sync + Send + 'static)>; 30]>> = Arc::new(RwLock::new([
+    pub static ref DRIVERS: Arc<RwLock<[Box<(dyn DriverMetadataExt + Sync + Send + 'static)>; 31]>> = Arc::new(RwLock::new([
         // Supported keyboards
 
         // Wooting
@@ -143,6 +143,9 @@ lazy_static! {
         KeyboardDriver::register("Wooting", "Two HE (ARM)",  0x31e3, 0x1230,&[(Interface(0x00), UsagePage(0x00))], &keyboards::wooting_two_he_arm::bind_hiddev, MaturityLevel::Testing),
 
         // ROCCAT
+
+        // Vulcan II Max
+        KeyboardDriver::register("ROCCAT", "Vulcan II Max",  0x1e7d, 0x2ee2, &[(Interface(0x01), UsagePage(0x01))], &keyboards::roccat_vulcan_2_max::bind_hiddev, MaturityLevel::Experimental),
 
         // Vulcan 100/12x/Pro (TKL) series
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098,&[(Interface(0x00), UsagePage(0x00))], &keyboards::roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),

@@ -34,6 +34,9 @@ SUBSYSTEM=="input", ATTRS{name}=="Eruption Virtual Mouse", ENV{ID_INPUT_TABLET}=
 # Wooting Two HE (ARM)
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="31e3", ATTRS{idProduct}=="1230", TAG+="systemd", PROGRAM="/bin/systemd-escape -p --template=eruption-hotplug-helper@.service $env{DEVNAME}", ENV{SYSTEMD_WANTS}+="'$result'", RUN+="/usr/bin/setfacl -m u:eruption:rw -- '$devnode'"
 
+# ROCCAT Vulcan II Max
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="2ee2", TAG+="systemd", PROGRAM="/bin/systemd-escape -p --template=eruption-hotplug-helper@.service $env{DEVNAME}", ENV{SYSTEMD_WANTS}+="'$result'", RUN+="/usr/bin/setfacl -m u:eruption:rw -- '$devnode'"
+
 # ROCCAT Vulcan 100/120/121
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="307a", TAG+="systemd", PROGRAM="/bin/systemd-escape -p --template=eruption-hotplug-helper@.service $env{DEVNAME}", ENV{SYSTEMD_WANTS}+="'$result'", RUN+="/usr/bin/setfacl -m u:eruption:rw -- '$devnode'"
 ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1e7d", ATTRS{idProduct}=="3098", TAG+="systemd", PROGRAM="/bin/systemd-escape -p --template=eruption-hotplug-helper@.service $env{DEVNAME}", ENV{SYSTEMD_WANTS}+="'$result'", RUN+="/usr/bin/setfacl -m u:eruption:rw -- '$devnode'"

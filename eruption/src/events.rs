@@ -26,8 +26,8 @@ use crate::macros;
 
 use crate::{
     constants, dbus_interface, events, hwdevices, script, switch_profile, DbusApiEvent,
-    FileSystemEvent, KeyboardHidEvent, MouseHidEvent, ACTIVE_SLOT, FAILED_TXS,
-    KEY_STATES, LUA_TXS, MOUSE_MOTION_BUF, MOUSE_MOVE_EVENT_LAST_DISPATCHED, REQUEST_FAILSAFE_MODE,
+    FileSystemEvent, KeyboardHidEvent, MouseHidEvent, ACTIVE_SLOT, FAILED_TXS, KEY_STATES, LUA_TXS,
+    MOUSE_MOTION_BUF, MOUSE_MOVE_EVENT_LAST_DISPATCHED, REQUEST_FAILSAFE_MODE,
     REQUEST_PROFILE_RELOAD, UPCALL_COMPLETED_ON_KEYBOARD_HID_EVENT, UPCALL_COMPLETED_ON_KEY_DOWN,
     UPCALL_COMPLETED_ON_KEY_UP, UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN,
     UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP, UPCALL_COMPLETED_ON_MOUSE_EVENT,
@@ -296,20 +296,16 @@ pub fn process_keyboard_event(
 }
 
 /// Process HID events
-pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
+pub fn process_keyboard_hid_events(
+    device: &(dyn hwdevices::KeyboardDeviceExt + Sync + Send),
+) -> Result<()> {
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
 
     let mut event_processed = false;
 
     'HID_EVENTS_LOOP: loop {
-        match device
-            .read()
-            .unwrap()
-            .as_keyboard_device()
-            .unwrap()
-            .get_next_event_timeout(0)
-        {
+        match device.get_next_event_timeout(0) {
             Ok(result) if result != KeyboardHidEvent::Unknown => {
                 event_processed = true;
 
@@ -364,12 +360,7 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
                 // translate HID event to keyboard event
                 match result {
                     KeyboardHidEvent::KeyDown { code } => {
-                        let index = device
-                            .read()
-                            .unwrap()
-                            .as_keyboard_device()
-                            .unwrap()
-                            .hid_event_code_to_key_index(&code);
+                        let index = device.hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
                                 if let Some(mut v) =
@@ -429,12 +420,7 @@ pub fn process_keyboard_hid_events(device: hwdevices::Device) -> Result<()> {
                     }
 
                     KeyboardHidEvent::KeyUp { code } => {
-                        let index = device
-                            .read()
-                            .unwrap()
-                            .as_keyboard_device()
-                            .unwrap()
-                            .hid_event_code_to_key_index(&code);
+                        let index = device.hid_event_code_to_key_index(&code);
                         if index > 0 {
                             {
                                 if let Some(mut v) =
@@ -831,14 +817,16 @@ pub fn process_mouse_event(
 }
 
 /// Process HID events
-pub fn process_mouse_hid_events(device: &(dyn hwdevices::DeviceExt + Sync + Send)) -> Result<()> {
+pub fn process_mouse_hid_events(
+    device: &(dyn hwdevices::MouseDeviceExt + Sync + Send),
+) -> Result<()> {
     // limit the number of messages that will be processed during this iteration
     let mut loop_counter = 0;
 
     let mut event_processed = false;
 
     'HID_EVENTS_LOOP: loop {
-        match device.as_mouse_device().unwrap().get_next_event_timeout(0) {
+        match device.get_next_event_timeout(0) {
             Ok(result) if result != MouseHidEvent::Unknown => {
                 event_processed = true;
 

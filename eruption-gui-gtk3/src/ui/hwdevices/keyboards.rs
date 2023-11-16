@@ -27,6 +27,7 @@ pub mod null_keyboard;
 pub mod roccat_magma;
 pub mod roccat_pyro;
 pub mod roccat_vulcan_1xx;
+pub mod roccat_vulcan_2_max;
 pub mod roccat_vulcan_pro;
 pub mod roccat_vulcan_pro_tkl;
 pub mod roccat_vulcan_tkl;
@@ -50,6 +51,11 @@ pub fn get_keyboard_device(device_handle: u64) -> Result<Box<dyn Keyboard>> {
         Some(device) => match device {
             // Wooting Two HE (ARM)
             (0x31e3, 0x1230) => Ok(Box::new(wooting_two_he_arm::WootingTwoHeArm::new(
+                device_handle,
+            ))),
+
+            // ROCCAT Vulcan II Max
+            (0x1e7d, 0x2ee2) => Ok(Box::new(roccat_vulcan_2_max::RoccatVulcan2Max::new(
                 device_handle,
             ))),
 

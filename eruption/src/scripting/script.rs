@@ -480,20 +480,11 @@ fn realize_color_map() -> Result<RunningScriptResult> {
 
     if LOCAL_LED_MAP_MODIFIED.with(|f| *f.borrow()) {
         LOCAL_LED_MAP.with(|foreground| {
-            LED_MAP
-                .write()
-                .map(|mut led_map| {
-                    led_map
-                        .chunks_exact_mut(constants::CANVAS_SIZE)
-                        .for_each(|chunks| alpha_blend(&foreground.borrow(), chunks));
-
-                    led_map
-                })
-                .map_err(|e| {
-                    warn!("Locking error during realization of a LED map: {e}");
-
-                    e
-                });
+            let _unused = LED_MAP.write().map(|mut led_map| {
+                led_map
+                    .chunks_exact_mut(constants::CANVAS_SIZE)
+                    .for_each(|chunks| alpha_blend(&foreground.borrow(), chunks));
+            });
         });
     }
 

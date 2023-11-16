@@ -127,7 +127,7 @@ function on_startup(config)
 end
 
 function on_hid_event(event_type, arg1)
-    trace("Macros: HID event: " .. event_type .. " args: " .. arg1)
+    debug("Macros: HID event: " .. event_type .. " args: " .. arg1)
 
     local key_code = arg1
 

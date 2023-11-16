@@ -7,27 +7,30 @@
     - [Mouse Devices](#mouse-devices)
     - [Miscellaneous Devices](#miscellaneous-devices)
   - [Enabling `experimental` drivers](#enabling-experimental-drivers)
-  - [ROCCAT Vulcan 100/12x series keyboard](#roccat-vulcan-10012x-series-keyboard)
+  - [ROCCAT Vulcan II Max](#roccat-vulcan-ii-max)
     - [Support status](#support-status)
     - [Remarks and known Issues](#remarks-and-known-issues)
-  - [ROCCAT Vulcan Pro TKL series keyboard](#roccat-vulcan-pro-tkl-series-keyboard)
+  - [ROCCAT Vulcan 100/12x series keyboard](#roccat-vulcan-10012x-series-keyboard)
     - [Support status](#support-status-1)
     - [Remarks and known Issues](#remarks-and-known-issues-1)
-  - [ROCCAT Vulcan TKL series keyboard](#roccat-vulcan-tkl-series-keyboard)
+  - [ROCCAT Vulcan Pro TKL series keyboard](#roccat-vulcan-pro-tkl-series-keyboard)
     - [Support status](#support-status-2)
     - [Remarks and known Issues](#remarks-and-known-issues-2)
-  - [ROCCAT Vulcan Pro series keyboard](#roccat-vulcan-pro-series-keyboard)
+  - [ROCCAT Vulcan TKL series keyboard](#roccat-vulcan-tkl-series-keyboard)
     - [Support status](#support-status-3)
     - [Remarks and known Issues](#remarks-and-known-issues-3)
-  - [ROCCAT Magma](#roccat-magma)
+  - [ROCCAT Vulcan Pro series keyboard](#roccat-vulcan-pro-series-keyboard)
     - [Support status](#support-status-4)
     - [Remarks and known Issues](#remarks-and-known-issues-4)
-  - [ROCCAT Pyro](#roccat-pyro)
+  - [ROCCAT Magma](#roccat-magma)
     - [Support status](#support-status-5)
     - [Remarks and known Issues](#remarks-and-known-issues-5)
-  - [Corsair Strafe Gaming Keyboard](#corsair-strafe-gaming-keyboard)
+  - [ROCCAT Pyro](#roccat-pyro)
     - [Support status](#support-status-6)
     - [Remarks and known Issues](#remarks-and-known-issues-6)
+  - [Corsair Strafe Gaming Keyboard](#corsair-strafe-gaming-keyboard)
+    - [Support status](#support-status-7)
+    - [Remarks and known Issues](#remarks-and-known-issues-7)
   - [Adalight/Custom serial LEDs](#adalightcustom-serial-leds)
   - [Other Devices](#other-devices)
 
@@ -45,6 +48,7 @@ Hardware feature support matrix
 | Vendor  | Product                | Status                     | Macro Keys | Easy Shift+ Key | Switch Profiles via F1-F4 Keys | Special functions via F5-F8 Keys     | Media keys F9-F12 |
 | ------- | ---------------------- | -------------------------- | ---------- | -------------- | ------------------------------ | ------------------------------------ | ----------------- |
 | Wooting | Two HE (ARM)       | work-in-progress  | No | No | No | No | No | No |
+| ROCCAT  | Vulcan II Max          | work-in-progress    | Yes        | Yes            | Yes                            | Yes                                  | Yes               |
 | ROCCAT  | Vulcan 100/12x         | 100%                       | Yes        | Yes            | Yes                            | Yes                                  | Yes               |
 | ROCCAT  | Vulcan Pro TKL         | 98%                        | No         | Yes            | Yes (\*inofficial)             | No, but may be forced (\*inofficial) | Yes               |
 | ROCCAT  | Vulcan TKL             | work-in-progress, untested | No         | Yes            | Yes (\*inofficial)             | No, but may be forced (\*inofficial) | Yes               |
@@ -108,6 +112,17 @@ After that, please restart the eruption daemon
 ```shell
 sudo systemctl restart eruption.service
 ```
+
+## ROCCAT Vulcan II Max
+
+### Support status
+
+Work-in-progress, as of `0.5.0`.
+
+### Remarks and known Issues
+
+- The default `MODIFIER` key is the **`FN`** key. Use it to switch slots (with `F1-F4`) or execute macros (`M1-M6`).
+- Use the `FN` key to access special function keys
 
 ## ROCCAT Vulcan 100/12x series keyboard
 

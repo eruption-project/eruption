@@ -39,6 +39,7 @@ mod roccat_magma;
 mod roccat_nyth;
 mod roccat_pyro;
 mod roccat_vulcan_1xx;
+mod roccat_vulcan_2_max;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
@@ -140,6 +141,25 @@ pub fn bind_device(
                 .expect("Could not open LED interface");
 
             Ok(Box::new(wooting_two_he_arm::WootingTwoHeArm::bind(
+                hiddev, leddev,
+            )))
+        }
+
+        // ROCCAT Vulcan II Max series
+        (0x1e7d, 0x2ee2) => {
+            let leddev = hidapi
+                .device_list()
+                .find(|dev| {
+                    dev.product_id() == product_id
+                        && dev.vendor_id() == vendor_id
+                        && dev.interface_number() == roccat_vulcan_2_max::LED_INTERFACE
+                        && dev.usage_page() == 0xff00
+                })
+                .expect("Could not bind LED interface")
+                .open_device(hidapi)
+                .expect("Could not open LED interface");
+
+            Ok(Box::new(roccat_vulcan_2_max::RoccatVulcan2Max::bind(
                 hiddev, leddev,
             )))
         }
