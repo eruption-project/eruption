@@ -22,7 +22,7 @@
 /// These functions are intended to be used from within Lua scripts
 use byteorder::{ByteOrder, LittleEndian};
 use colorgrad::BlendMode;
-use mlua::prelude::*;
+use mlua::{prelude::*, ExternalError};
 use noise::NoiseFn;
 use palette::convert::FromColor;
 use palette::{Hsl, LinSrgb};
@@ -30,6 +30,8 @@ use rand::Rng;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::convert::TryFrom;
 use std::fmt::Write;
+use std::fs;
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
@@ -39,7 +41,7 @@ use tracing::*;
 
 use crate::hwdevices::DeviceClass;
 use crate::scripting::script::LAST_RENDERED_LED_MAP;
-use crate::util::ratelimited;
+use crate::util::{file_exists, get_script_dirs, ratelimited};
 
 #[cfg(not(target_os = "windows"))]
 use crate::plugins::macros;
@@ -63,6 +65,11 @@ pub enum CallbacksError {
     #[error("Invalid handle supplied")]
     InvalidHandle {},
 
+    #[error("Could not load a required Lua file")]
+    RequireFileError {},
+
+    // #[error("Invalid parameter value")]
+    // ParamValueError {},
     #[error("Could not parse param value")]
     ParseParamError {},
     // #[error("The specified color map is not valid")]
@@ -153,6 +160,36 @@ pub(crate) fn log_error(x: &str) {
     error!("{}", x);
 }
 
+pub(crate) fn require(lua: &mlua::Lua, file: String) -> Result<()> {
+    let script_dirs = get_script_dirs();
+    let search_paths = vec!["", "lib/", "lib/hwdevices/"];
+
+    // find the Lua file
+    let mut path = None;
+
+    'OUTER_LOOP: for script_dir in script_dirs {
+        for search_path in &search_paths {
+            let filename = PathBuf::from(&script_dir)
+                .join(PathBuf::from(&search_path).join(format!("{file}.lua")));
+
+            if file_exists(&filename) {
+                path = Some(filename);
+
+                break 'OUTER_LOOP;
+            }
+        }
+    }
+
+    if let Some(path) = path {
+        let src = fs::read_to_string(&path)?;
+        lua.load(&src).exec()?;
+
+        Ok(())
+    } else {
+        Err(CallbacksError::RequireFileError {}.into())
+    }
+}
+
 /// Delays the execution of the lua script by `millis` milliseconds.
 pub(crate) fn delay(millis: u64) {
     // TODO: This will totally block the Lua VM, so not very useful currently.
@@ -183,6 +220,7 @@ pub(crate) fn stringify(mut string: &mut String, value: mlua::Value) -> Option<(
             }
             write!(string, "}}")
         }
+        LuaValue::Vector(_v) => todo!(),
     }
     .ok()
 }
@@ -793,7 +831,7 @@ pub(crate) fn get_local_color_map() -> Vec<u32> {
 pub(crate) fn submit_color_map(map: &[u32]) -> Result<()> {
     if map.len() != constants::CANVAS_SIZE {
         ratelimited::warn!(
-            "In submit_color_map: Length {} not exactly matching canvas size {}",
+            "In `submit_color_map()`: Length of {} not exactly matching canvas size {}",
             map.len(),
             constants::CANVAS_SIZE
         );
@@ -875,6 +913,12 @@ pub fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
         Ok(())
     })?;
     globals.set("error", error)?;
+
+    let require = lua_ctx.create_function(move |lua, file: String| {
+        require(lua, file).map_err(|e| ExternalError::into_lua_err(e))?;
+        Ok(())
+    })?;
+    globals.set("require", require)?;
 
     let delay = lua_ctx.create_function(|_, millis: u64| {
         callbacks::delay(millis);
