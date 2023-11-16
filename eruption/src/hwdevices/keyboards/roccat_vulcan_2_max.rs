@@ -456,7 +456,7 @@ impl DeviceExt for RoccatVulcan2Max {
         } else {
             /* match self.get_device_info() {
                 Ok(device_info) => {
-                    /* if device_info.firmware_version < 136 {
+                    if device_info.firmware_version < 1 {
                         warn!(
                             "Outdated firmware version: {}, should be: >= 1.36",
                             format!(
@@ -465,7 +465,7 @@ impl DeviceExt for RoccatVulcan2Max {
                                 device_info.firmware_version % 100
                             )
                         );
-                    } */
+                    }
                 }
 
                 Err(e) => {
