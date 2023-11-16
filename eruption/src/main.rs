@@ -1239,7 +1239,7 @@ fn run_main_loop(
                 // if this tx failed previously, then skip it completely
                 if !FAILED_TXS.read().unwrap().contains(&index) {
                     lua_tx
-                        .send(script::Message::Tick(delta as u32))
+                        .send(script::Message::Tick(delta))
                         .unwrap_or_else(|e| {
                             error!("Send error during timer tick event: {}", e);
                             FAILED_TXS.write().unwrap().insert(index);

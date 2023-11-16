@@ -412,7 +412,7 @@ impl DeviceTrait for RoccatVulcan2Max {
                             let color = led_map[i];
                             let offset = i;
 
-                            buffer[offset + 0] = color.r;
+                            buffer[offset] = color.r;
                             buffer[offset + 1] = color.g;
                             buffer[offset + 2] = color.b;
                         }

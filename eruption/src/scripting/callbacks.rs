@@ -181,7 +181,7 @@ pub(crate) fn require(lua: &mlua::Lua, file: String) -> Result<()> {
     }
 
     if let Some(path) = path {
-        let src = fs::read_to_string(&path)?;
+        let src = fs::read_to_string(path)?;
         lua.load(&src).exec()?;
 
         Ok(())
@@ -915,7 +915,7 @@ pub fn register_support_funcs(lua_ctx: &Lua) -> mlua::Result<()> {
     globals.set("error", error)?;
 
     let require = lua_ctx.create_function(move |lua, file: String| {
-        require(lua, file).map_err(|e| ExternalError::into_lua_err(e))?;
+        require(lua, file).map_err(ExternalError::into_lua_err)?;
         Ok(())
     })?;
     globals.set("require", require)?;

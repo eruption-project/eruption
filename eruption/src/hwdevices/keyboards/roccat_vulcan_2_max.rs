@@ -651,7 +651,7 @@ impl DeviceExt for RoccatVulcan2Max {
 
                                 let offset = i;
 
-                                buffer[offset + 0] =
+                                buffer[offset] =
                                     (color.r as f32 * (self.brightness as f32 / 100.0)).floor()
                                         as u8;
                                 buffer[offset + 1] =
