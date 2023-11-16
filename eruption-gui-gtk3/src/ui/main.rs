@@ -117,7 +117,7 @@ fn initialize_slot_bar(builder: &gtk::Builder) -> Result<()> {
     // slot names
     let names = util::get_slot_names()?;
 
-    slot1_entry.set_text(names.get(0).unwrap_or(&"Profile Slot 1".to_string()));
+    slot1_entry.set_text(names.first().unwrap_or(&"Profile Slot 1".to_string()));
     slot2_entry.set_text(names.get(1).unwrap_or(&"Profile Slot 2".to_string()));
     slot3_entry.set_text(names.get(2).unwrap_or(&"Profile Slot 3".to_string()));
     slot4_entry.set_text(names.get(3).unwrap_or(&"Profile Slot 4".to_string()));
