@@ -366,8 +366,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
                 PathBuf::from(constants::DEFAULT_MACRO_DIR).join(lua_file)
             };
 
-            if let Some(_description) = description {
-            } 
+            if let Some(_description) = description {}
         }
 
         Subcommands::List { lua_path } => {
