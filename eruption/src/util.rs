@@ -203,6 +203,13 @@ pub fn match_script_path<P: AsRef<Path>>(script_file: &P) -> Result<PathBuf> {
 }
 
 /// Provide a simple means to rate-limit log output
+#[cfg(debug_assertions)]
+pub mod ratelimited {
+    #[allow(unused_imports)]
+    pub use tracing::{debug, error, info, trace, warn};
+}
+
+#[cfg(not(debug_assertions))]
 pub mod ratelimited {
     use lazy_static::lazy_static;
     use std::{
