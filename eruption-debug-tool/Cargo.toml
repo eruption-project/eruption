@@ -43,7 +43,7 @@ windows = []
 lazy_static = "1.4.0"
 cfg-if = "1.0.0"
 flume = "0.11.0"
-tracing-mutex = "0.3.0"
+tracing-mutex = { version = "0.3.0", features = ["lock_api"] }
 clap = { version = "4.4.7", features = ["derive"] }
 clap_complete = "4.4.4"
 colored = "2.0.4"

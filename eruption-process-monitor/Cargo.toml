@@ -79,7 +79,7 @@ libc = "0.2.148"
 nix = { version = "0.27.1", features = ["fs", "poll"] }
 is-terminal = "0.4.9"
 serde_json = "1.0.107"
-tracing-mutex = "0.3.0"
+tracing-mutex = { version = "0.3.0", features = ["lock_api"] }
 regex = "1.9.5"
 serde = { version = "1.0.188", features = ["derive"] }
 tracing = "0.1.37"

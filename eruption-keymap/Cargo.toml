@@ -48,7 +48,7 @@ colored = "2.0.4"
 comfy-table = "7.0.1"
 libc = "0.2.148"
 nix = "0.27.1"
-tracing-mutex = "0.3.0"
+tracing-mutex = { version = "0.3.0", features = ["lock_api"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
@@ -87,12 +87,12 @@ icecream = "0.1.0"
 # hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "78f273800a7e9fc7f428e45d2cfebaf7b44862c1", default-features = false, features = ["linux-native"] }
 # mlua = { version = "0.9.1", features = ["luajit"] }
 # lua-src = "546.0.0"
-mlua = { version = "0.9.1", features = ["lua54", "vendored"] }
+mlua = { version = "0.9.1", features = ["luau", "vendored"] }
 
 [target.'cfg(windows)'.dependencies]
 # hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "78f273800a7e9fc7f428e45d2cfebaf7b44862c1" }
 lua-src = "546.0.1"
-mlua = { version = "0.9.1", features = ["lua54", "vendored"] }
+mlua = { version = "0.9.1", features = ["luau", "vendored"] }
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
