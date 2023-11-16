@@ -74,7 +74,7 @@ _driver_maturity_level_ = Allow drivers with this maturity levels: "stable", "te
 
 _keyboard_variant_ = Switch between sub-variants of your device. (Only partially supported)
 
-_enable_mouse_ = Enable support for mouse events. This will allow Eruption to react on mouse events.
+~~_enable_mouse_ = Enable support for mouse events. This will allow Eruption to react on mouse events.~~
 
 ~~_grab_mouse_ = Enable support for the injection of mouse events. This will allow Eruption to extend the Easy Shift+ macros to the mouse. Since the mouse is grabbed exclusively, other software will be prohibited from using the hardware mouse. Set this to `false` if you want Eruption to co-exist with other software, that needs to listen to mouse events, such as 3rd party device drivers.~~
 
