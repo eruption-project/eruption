@@ -54,8 +54,7 @@ use crate::uleds;
 use crate::{
     constants, dbus_interface::DbusApi, dbus_interface::Message, hwdevices, plugins, script,
     scripting::parameters::PlainParameter, sdk_support, DeviceAction, EvdevError, MainError,
-    COLOR_MAPS_READY_CONDITION, FAILED_TXS, LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA,
-    ULEDS_SUPPORT_ACTIVE,
+    COLOR_MAPS_READY, FAILED_TXS, LUA_TXS, QUIT, REQUEST_FAILSAFE_MODE, RGBA, ULEDS_SUPPORT_ACTIVE,
 };
 
 pub type Result<T> = std::result::Result<T, eyre::Error>;
@@ -234,15 +233,15 @@ pub fn spawn_evdev_input_thread(
 
             // wait for Eruption to be up completely so that all devices are initialized and working properly.
             // Otherwise we would fail the devices before they are even fully initialized
-            // loop {
-            //     let guard = crate::STARTUP_COMPLETED_CONDITION.0.lock().unwrap();
-            //     let result = crate::STARTUP_COMPLETED_CONDITION.1.wait(guard).unwrap();
+            loop {
+                let guard = crate::STARTUP_COMPLETED_CONDITION.0.lock().unwrap();
+                let result = crate::STARTUP_COMPLETED_CONDITION.1.wait(guard).unwrap();
 
-            //     if *result  {
-            //         // startup seems to be completed
-            //         break;
-            //     }
-            // }
+                if *result  {
+                    // startup seems to be completed
+                    break;
+                }
+            }
 
             let evdev_device = match hwdevices::get_input_dev_from_udev(usb_vid, usb_pid) {
                 Ok(filename) => match File::open(filename.clone()) {
@@ -317,9 +316,11 @@ pub fn spawn_evdev_input_thread(
 
                                     // update our internal representation of the keyboard state
                                     if let EventCode::EV_KEY(ref code) = k.1.event_code {
+                                        let device = device.read().unwrap();
+
                                         let is_pressed = k.1.value > 0;
                                         let index =
-                                            device.read().unwrap().as_keyboard_device().unwrap().ev_key_to_key_index(*code) as usize;
+                                            device.as_keyboard_device().unwrap().ev_key_to_key_index(*code) as usize;
 
                                         if let Some(mut v) =
                                             crate::KEY_STATES.write().unwrap().get_mut(index)
@@ -337,13 +338,12 @@ pub fn spawn_evdev_input_thread(
                                         );
 
                                         // mark the device as failed
-                                       if let Ok(mut device) = device
-                                            .try_write() { device.fail().map_err(|e| {
-                                                    ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
-                                                }); }
+                                        // let _ =device.fail().map_err(|e| {
+                                        //     ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
+                                        // }); 
 
                                         // we need to terminate and then re-enter the main loop to update all global state
-                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                                        // crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                                         fail = true;
                                     });
@@ -356,10 +356,11 @@ pub fn spawn_evdev_input_thread(
                                     if e.raw_os_error().unwrap() == libc::ENODEV {
                                         warn!("Keyboard device disappeared: {}", e);
 
-                                        if let Ok(mut device) = device
-                                        .try_write() { device.close_all().map_err(|e| {
-                                                ratelimited::error!("An error occurred while closing the device: {e}")
-                                            }); }
+                                        let mut device = device.write().unwrap();
+
+                                        let _ = device.close_all().map_err(|e| {
+                                            ratelimited::error!("An error occurred while closing the device: {e}")
+                                        });
 
                                         // we need to terminate and then re-enter the main loop to update all global state
                                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
@@ -388,29 +389,31 @@ pub fn spawn_evdev_input_thread(
                                     // update our internal representation of the device state
                                     if let EventCode::EV_SYN(code) = k.1.clone().event_code {
                                         if code == EV_SYN::SYN_DROPPED {
-                                            warn!("Device {handle} dropped some events, resyncing...");
-                                            evdev_device.next_event(evdev_rs::ReadFlag::SYNC)?;
-                                        } else {
-                                            // directly mirror SYN events to reduce input lag
-                                  macros::UINPUT_TX
-                                                .read().unwrap()
-                                                .as_ref()
-                                                .unwrap()
-                                                .send(macros::Message::MirrorMouseEventImmediate(
-                                                    k.1.clone(),
-                                                ))
-                                                .unwrap_or_else(|e| {
-                                                    ratelimited::error!(
-                                                                "Could not send a pending mouse event: {}",
-                                                                e
-                                                            )
-                                                });
+                                            warn!("Device {handle} dropped some events");
+                                            // evdev_device.next_event(evdev_rs::ReadFlag::SYNC)?;
                                         }
+
+                                        // directly mirror SYN events to reduce input lag
+                                        macros::UINPUT_TX
+                                            .read().unwrap()
+                                            .as_ref()
+                                            .unwrap()
+                                            .send(macros::Message::MirrorMouseEventImmediate(
+                                                k.1.clone(),
+                                            ))
+                                            .unwrap_or_else(|e| {
+                                                ratelimited::error!(
+                                                            "Could not send a pending mouse event: {}",
+                                                            e
+                                                        )
+                                            });
                                     } else if let EventCode::EV_KEY(code) =
                                         k.1.clone().event_code
                                     {
+                                        let device = device.read().unwrap();
+
                                         let is_pressed = k.1.value > 0;
-                                        match device.read().unwrap().as_mouse_device().unwrap().ev_key_to_button_index(code) {
+                                        match device.as_mouse_device().unwrap().ev_key_to_button_index(code) {
                                             Ok(index) => {
                                                 if let Some(mut v) =
                                                     crate::BUTTON_STATES.write().unwrap().get_mut(index as usize)
@@ -459,13 +462,12 @@ pub fn spawn_evdev_input_thread(
                                                 );
 
                                         // mark the device as failed
-                                       if let Ok(mut device) = device
-                                            .try_write() { device.fail().map_err(|e| {
-                                                    ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
-                                                }); }
+                                        // let _ = device.write().unwrap().fail().map_err(|e| {
+                                        //     ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
+                                        // });
 
                                         // we need to terminate and then re-enter the main loop to update all global state
-                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                                        // crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                                         fail = true;
                                     });
@@ -478,10 +480,11 @@ pub fn spawn_evdev_input_thread(
                                     if e.raw_os_error().unwrap() == libc::ENODEV {
                                         warn!("Mouse device disappeared: {}", e);
 
-                                     if let Ok(mut device) = device
-                                        .try_write() { device.close_all().map_err(|e| {
-                                                ratelimited::error!("An error occurred while closing the device: {e}")
-                                            }); }
+                                        let mut device = device.write().unwrap();
+
+                                        let _ = device.close_all().map_err(|e| {
+                                            ratelimited::error!("An error occurred while closing the device: {e}")
+                                        });
 
                                         // we need to terminate and then re-enter the main loop to update all global state
                                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
@@ -528,13 +531,12 @@ pub fn spawn_evdev_input_thread(
                                             );
 
                                         // mark the device as failed
-                                       if let Ok(mut device) = device
-                                            .try_write() { device.fail().map_err(|e| {
-                                                    ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
-                                                }); }
+                                        // let _ = device.write().unwrap().fail().map_err(|e| {
+                                        //     ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
+                                        // });
 
                                         // we need to terminate and then re-enter the main loop to update all global state
-                                        crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
+                                        // crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
 
                                         fail = true;
                                     });
@@ -544,13 +546,15 @@ pub fn spawn_evdev_input_thread(
                                 }
 
                                 Err(e) => {
+
                                     if e.raw_os_error().unwrap() == libc::ENODEV {
                                         warn!("Misc device disappeared: {}", e);
 
-                                     if let Ok(mut device) = device
-                                        .try_write() { device.close_all().map_err(|e| {
-                                                ratelimited::error!("An error occurred while closing the device: {e}")
-                                            }); }
+                                        let mut device = device.write().unwrap();
+
+                                        let _ = device.close_all().map_err(|e| {
+                                            ratelimited::error!("An error occurred while closing the device: {e}")
+                                        });
 
                                         // we need to terminate and then re-enter the main loop to update all global state
                                         crate::REENTER_MAIN_LOOP.store(true, Ordering::SeqCst);
@@ -606,18 +610,6 @@ pub fn spawn_lua_thread(
     builder.spawn(move || -> Result<()> {
         #[cfg(feature = "profiling")]
         coz::thread_init();
-
-        // wait for Eruption to be up completely so that all devices are initialized and working properly.
-        // Otherwise we would fail the devices before they are even fully initialized
-        // loop {
-        //     let guard = crate::STARTUP_COMPLETED_CONDITION.0.lock().unwrap();
-        //     let result = crate::STARTUP_COMPLETED_CONDITION.1.wait(guard).unwrap();
-
-        //     if *result {
-        //         // startup seems to be completed
-        //         break;
-        //     }
-        // }
 
         loop {
             let result = script::run_script(&script_file, &mut parameter_values, &lua_rx);
@@ -675,18 +667,6 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
         #[allow(clippy::never_loop)]
         loop {
-            // wait for Eruption to be up completely so that all devices are initialized and working properly.
-            // Otherwise we would fail the devices before they are even fully initialized
-            // loop {
-            //     let guard = crate::STARTUP_COMPLETED_CONDITION.0.lock().unwrap();
-            //     let result = crate::STARTUP_COMPLETED_CONDITION.1.wait(guard).unwrap();
-
-            //     if *result {
-            //         // startup seems to be completed
-            //         break;
-            //     }
-            // }
-
             // check if we shall terminate the device I/O thread
             if QUIT.load(Ordering::SeqCst) {
                 break Ok(());
@@ -716,7 +696,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                             // instruct Lua VMs to realize their color maps,
                             // (to blend their local color maps with the canvas)
-                            *COLOR_MAPS_READY_CONDITION.0.lock().unwrap() = LUA_TXS.read().unwrap().len().saturating_sub(FAILED_TXS.read().unwrap().len());
+                            let num_threads = LUA_TXS.read().unwrap().len().saturating_sub(FAILED_TXS.read().unwrap().len());
 
                             let mut failed_txs = Vec::new();
 
@@ -728,7 +708,6 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                         // guarantee the right order of execution for the alpha blend
                                         // operations, so we have to wait for the current Lua VM to
                                         // complete its blending code, before continuing
-                                        let pending = COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
 
                                         let mut errors_present = false;
 
@@ -738,31 +717,29 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                                                 errors_present = true;
 
                                                 // this will happen most likely during switching of profiles
-                                                ratelimited::debug!("Send error during realization of color maps: {}", e);
+                                                ratelimited::warn!("Send error during realization of color maps: {}", e);
                                                 failed_txs.push(index);
                                             });
 
-
                                         if errors_present {
                                             drop_frame = true;
-                                            ratelimited::debug!("Frame dropped: Error while waiting for the color map");
+                                            ratelimited::warn!("Frame dropped: Error during realization of color maps");
                                             break;
                                         }
 
-                                        let result = COLOR_MAPS_READY_CONDITION.1.wait_timeout(
-                                        pending,
-                                            Duration::from_millis(constants::TIMEOUT_REALIZE_COLOR_MAP_CONDITION_MILLIS),
+                                        let result = COLOR_MAPS_READY.1.wait_timeout(
+                                            COLOR_MAPS_READY.0.lock().unwrap(),
+                                            Duration::from_millis(constants::TIMEOUT_REALIZE_COLOR_MAP_MILLIS),
                                         );
 
-                                        if result.is_err() {
-                                            ratelimited::debug!("At least one script skipped submitting an updated color map");
-                                            break;
+                                        if result.unwrap().1.timed_out()  {
+                                            drop_frame = true;
+                                            ratelimited::warn!("Frame dropped: Timed out while waiting for realization of a color map");
                                         }
                                     } else {
                                         drop_frame = true;
                                         break;
                                     }
-
                                 }
                             }
 
@@ -819,14 +796,17 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
 
                             // number of pending blend-ops should have reached zero by now
                             // this condition may occur during switching of profiles
-                            let ops_pending = *COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
-                            if ops_pending > 0 {
-                                ratelimited::trace!(
-                                    "Pending blend-ops before writing LED map to device: {}",
-                                    ops_pending
-                                );
+                            {
+                                let mut num_ready = COLOR_MAPS_READY.0.lock().unwrap();
+                                if *num_ready < num_threads {
+                                    ratelimited::warn!(
+                                        "# pending blend-ops before writing LED map to device: {}",
+                                        num_ready
+                                    );
+                                }
 
-                                drop_frame = true;
+                                // reset counter for the next frame
+                                *num_ready = 0;
                             }
 
                             // apply global post-processing
@@ -839,7 +819,7 @@ pub fn spawn_device_io_thread(dev_io_rx: Receiver<DeviceAction>) -> Result<()> {
                             let lighten_value = hsl.2 / 100.0;
                             let brightness = brightness as f64 / 100.0 * 255.0;
 
-                            script::LED_MAP.write().unwrap().iter_mut().for_each(|color_val| {
+                            script::LED_MAP.write().unwrap().par_iter_mut().for_each(|color_val| {
                                 let color = LinSrgba::new(
                                     color_val.r as f64 / 255.0,
                                     color_val.g as f64 / 255.0,

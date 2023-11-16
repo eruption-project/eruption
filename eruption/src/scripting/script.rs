@@ -58,8 +58,8 @@ pub enum Message {
     Render,
 
     // Keyboard events
-    KeyDown(u8),
-    KeyUp(u8),
+    KeyDown(u8, bool),
+    KeyUp(u8, bool),
 
     // HID events
     KeyboardHidEvent(KeyboardHidEvent),
@@ -257,8 +257,7 @@ pub fn run_script(
 ) -> Result<RunScriptResult> {
     match fs::read_to_string(script_file) {
         Ok(script) => {
-            let lua_ctx =
-                unsafe { Lua::unsafe_new_with(mlua::StdLib::ALL, mlua::LuaOptions::default()) };
+            let lua_ctx = Lua::new_with(mlua::StdLib::ALL_SAFE, mlua::LuaOptions::default())?;
 
             // Prepare the Lua environment and eval the script
             let prepared = register_support_globals(&lua_ctx)
@@ -325,24 +324,24 @@ pub fn run_script(
 fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
 
-    let config = crate::CONFIG.read();
-    let config = config.as_ref().unwrap();
+    // let config = crate::CONFIG.read();
+    // let config = config.as_ref().unwrap();
 
-    let script_dirs = config
-        .as_ref()
-        .unwrap()
-        .get::<Vec<String>>("global.script_dirs")
-        .unwrap_or_else(|_| vec![constants::DEFAULT_SCRIPT_DIR.to_string()]);
+    // let script_dirs = config
+    //     .as_ref()
+    //     .unwrap()
+    //     .get::<Vec<String>>("global.script_dirs")
+    //     .unwrap_or_else(|_| vec![constants::DEFAULT_SCRIPT_DIR.to_string()]);
 
-    let mut path_spec = String::from("package.path = package.path .. '");
+    // let mut path_spec = String::from("package.path = package.path .. '");
 
-    for script_dir in script_dirs {
-        path_spec += &format!(";{0}/lib/?;{0}/lib/?.lua", &script_dir);
-    }
+    // for script_dir in script_dirs {
+    //     path_spec += &format!(";{0}/lib/?;{0}/lib/?.lua", &script_dir);
+    // }
 
-    path_spec += "'";
+    // path_spec += "'";
 
-    lua_ctx.load(&path_spec).exec().unwrap();
+    // lua_ctx.load(&path_spec).exec().unwrap();
 
     let mut config: BTreeMap<&str, &str> = BTreeMap::new();
     config.insert("daemon_name", "eruption");
@@ -393,8 +392,8 @@ fn process_message(
         Message::Tick(param) => on_tick(call_helper, param),
         Message::Render => on_render(call_helper),
         Message::RealizeColorMap => realize_color_map(),
-        Message::KeyDown(param) => on_key_down(call_helper, param),
-        Message::KeyUp(param) => on_key_up(call_helper, param),
+        Message::KeyDown(param, src_hid) => on_key_down(call_helper, param, src_hid),
+        Message::KeyUp(param, src_hid) => on_key_up(call_helper, param, src_hid),
         Message::KeyboardHidEvent(param) => on_keyboard_hid_event(call_helper, param),
         Message::MouseHidEvent(param) => on_mouse_hid_event(call_helper, param),
         Message::MouseButtonDown(param) => on_mouse_button_down(call_helper, param),
@@ -489,18 +488,10 @@ fn realize_color_map() -> Result<RunningScriptResult> {
     }
 
     // signal readiness / notify the main thread that we are done
-    let val = *crate::COLOR_MAPS_READY_CONDITION.0.lock().unwrap();
+    let mut val = crate::COLOR_MAPS_READY.0.lock().unwrap();
+    *val += 1;
 
-    let val = val.checked_sub(1).unwrap_or({
-        // this will happen during switching of profiles
-        // trace!("Incorrect state in locking code detected");
-
-        0
-    });
-
-    *crate::COLOR_MAPS_READY_CONDITION.0.lock().unwrap() = val;
-
-    crate::COLOR_MAPS_READY_CONDITION.1.notify_all();
+    crate::COLOR_MAPS_READY.1.notify_all();
 
     Ok(RunningScriptResult::Continue)
 }
@@ -508,24 +499,37 @@ fn realize_color_map() -> Result<RunningScriptResult> {
 fn on_key_down(
     call_helper: &mut RunningScriptCallHelper,
     param: u8,
+    src_hid: bool,
 ) -> Result<RunningScriptResult> {
     let called = call_helper.call(FUNCTION_ON_KEY_DOWN, param);
 
     let mut val = crate::UPCALL_COMPLETED_ON_KEY_DOWN.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
-    crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
+    if src_hid {
+        crate::UPCALL_COMPLETED_ON_HID_KEY_DOWN.1.notify_all();
+    } else {
+        crate::UPCALL_COMPLETED_ON_KEY_DOWN.1.notify_all();
+    }
 
     continue_if_ok(called)
 }
 
-fn on_key_up(call_helper: &mut RunningScriptCallHelper, param: u8) -> Result<RunningScriptResult> {
+fn on_key_up(
+    call_helper: &mut RunningScriptCallHelper,
+    param: u8,
+    src_hid: bool,
+) -> Result<RunningScriptResult> {
     let called = call_helper.call(FUNCTION_ON_KEY_UP, param);
 
     let mut val = crate::UPCALL_COMPLETED_ON_KEY_UP.0.lock().unwrap();
     *val = val.saturating_sub(1);
 
-    crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
+    if src_hid {
+        crate::UPCALL_COMPLETED_ON_HID_KEY_UP.1.notify_all();
+    } else {
+        crate::UPCALL_COMPLETED_ON_KEY_UP.1.notify_all();
+    }
 
     continue_if_ok(called)
 }

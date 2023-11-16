@@ -20,7 +20,7 @@
 */
 
 use std::ops::RangeFull;
-use std::sync::{Arc, WaitTimeoutResult};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::u64;
 use std::{collections::HashMap, env};
@@ -145,6 +145,9 @@ lazy_static! {
     /// Connected devices managed by Eruption
     pub static ref DEVICES: Arc<RwLock<IndexMap<DeviceHandle, Device>>> = Arc::new(RwLock::new(IndexMap::new()));
 
+    /// Names and description of all connected devices
+    pub static ref DEVICE_NAMES: Arc<RwLock<IndexMap<DeviceHandle, String>>> = Arc::new(RwLock::new(IndexMap::new()));
+
     /// Holds device status information, like e.g: current signal strength or battery levels
     pub static ref DEVICE_STATUS: Arc<RwLock<HashMap<u64, DeviceStatus>>> =
         Arc::new(RwLock::new(HashMap::new()));
@@ -248,7 +251,7 @@ lazy_static! {
     Arc::new((Mutex::new(0), Condvar::new()));
 
     // Color maps of Lua VMs ready?
-    pub static ref COLOR_MAPS_READY_CONDITION: Arc<(Mutex<usize>, Condvar)> =
+    pub static ref COLOR_MAPS_READY: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
 
     // This is the "switch profile fence" condition variable
@@ -262,8 +265,15 @@ lazy_static! {
     pub static ref UPCALL_COMPLETED_ON_KEY_UP: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
 
+        pub static ref UPCALL_COMPLETED_ON_HID_KEY_DOWN: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
+    pub static ref UPCALL_COMPLETED_ON_HID_KEY_UP: Arc<(Mutex<usize>, Condvar)> =
+        Arc::new((Mutex::new(0), Condvar::new()));
+
     pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_DOWN: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
+
     pub static ref UPCALL_COMPLETED_ON_MOUSE_BUTTON_UP: Arc<(Mutex<usize>, Condvar)> =
         Arc::new((Mutex::new(0), Condvar::new()));
 
@@ -516,6 +526,8 @@ pub fn switch_profile(
     if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
         debug!("Preparing to enter failsafe mode...");
 
+        REQUEST_FAILSAFE_MODE.store(false, Ordering::SeqCst);
+
         // request termination of all Lua VMs
 
         for lua_tx in LUA_TXS.read().unwrap().iter() {
@@ -733,7 +745,7 @@ fn run_main_loop(
     // main loop iterations, monotonic counter
     let mut ticks = 0;
     let mut start_time;
-    let _delay_time_hid_poll = Instant::now();
+    let mut delay_time_hid_poll = Instant::now();
     let mut delay_time_tick = Instant::now();
     let mut delay_time_render = Instant::now();
     let mut last_status_poll = Instant::now();
@@ -834,23 +846,6 @@ fn run_main_loop(
                                             });
 
                                     });
-
-                                // events::process_keyboard_hid_events(device.clone())
-                                //     .unwrap_or_else(|e| {
-                                //         device_has_failed = true;
-
-                                //         ratelimited::error!(
-                                //             "Could not process an input event: {}. Trying to close the device...",
-                                //             e
-                                //         );
-
-                                //         device
-                                //             .close_all()
-                                //             .unwrap_or_else(|e| {
-                                //                 ratelimited::error!("An error occurred while closing the device: {e}")
-                                //             });
-
-                                //     });
                             }
 
                             DeviceClass::Mouse => {
@@ -871,23 +866,6 @@ fn run_main_loop(
 
                                     },
                                 );
-
-                                // events::process_mouse_hid_events(device)
-                                //     .unwrap_or_else(|e| {
-                                //         device_has_failed = true;
-
-                                //         ratelimited::error!(
-                                //             "Could not process an input event: {}. Trying to close the device...",
-                                //             e
-                                //         );
-
-                                //         device
-                                //             .close_all()
-                                //             .unwrap_or_else(|e| {
-                                //                 ratelimited::error!("An error occurred while closing the device: {e}")
-                                //             });
-
-                                //     });
                             }
 
                             DeviceClass::Misc => events::process_misc_event(&event, device)
@@ -960,7 +938,7 @@ fn run_main_loop(
 
         {
             if REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst) {
-                warn!("Entering failsafe mode now, due to previous irrecoverable errors");
+                warn!("Entering failsafe mode now due to previous irrecoverable errors");
 
                 // forbid changing of profile and/or slots now
                 *ACTIVE_PROFILE_NAME.write().unwrap() = None;
@@ -1016,31 +994,33 @@ fn run_main_loop(
             saved_brightness = current_brightness;
         }
 
-        // post-processing parameters changed?
-        let current_hsl = *CANVAS_HSL.read().unwrap();
+        {
+            // post-processing parameters changed?
+            let current_hsl = *CANVAS_HSL.read().unwrap();
 
-        if current_hsl.0 != saved_hue {
-            dbus_api_tx
-                .send(DbusApiEvent::HueChanged)
-                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+            if current_hsl.0 != saved_hue {
+                dbus_api_tx
+                    .send(DbusApiEvent::HueChanged)
+                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-            saved_hue = current_hsl.0;
-        }
+                saved_hue = current_hsl.0;
+            }
 
-        if current_hsl.1 != saved_saturation {
-            dbus_api_tx
-                .send(DbusApiEvent::SaturationChanged)
-                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+            if current_hsl.1 != saved_saturation {
+                dbus_api_tx
+                    .send(DbusApiEvent::SaturationChanged)
+                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-            saved_saturation = current_hsl.1;
-        }
+                saved_saturation = current_hsl.1;
+            }
 
-        if current_hsl.2 != saved_lightness {
-            dbus_api_tx
-                .send(DbusApiEvent::LightnessChanged)
-                .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
+            if current_hsl.2 != saved_lightness {
+                dbus_api_tx
+                    .send(DbusApiEvent::LightnessChanged)
+                    .unwrap_or_else(|e| error!("Could not send a pending dbus API event: {}", e));
 
-            saved_lightness = current_hsl.2;
+                saved_lightness = current_hsl.2;
+            }
         }
 
         // user is AFK?
@@ -1129,7 +1109,7 @@ fn run_main_loop(
             let plugins = plugin_manager.get_plugins();
 
             // call main loop hook of each registered plugin
-            for plugin in plugins.iter() {
+            for plugin in plugins {
                 // call the sync main loop hook, intended to be used
                 // for very short running pieces of code
                 plugin.sync_main_loop_hook(ticks);
@@ -1177,12 +1157,54 @@ fn run_main_loop(
             // script::FRAME_GENERATION_COUNTER.fetch_add(1, Ordering::SeqCst);
         }
 
+        if delay_time_hid_poll.elapsed()
+            >= Duration::from_millis(1000 / (constants::TARGET_FPS_LIMIT * 8))
+        {
+            #[cfg(feature = "profiling")]
+            coz::scope!("HID events polling");
+
+            delay_time_hid_poll = Instant::now();
+
+            // poll HID events on all available devices
+            for (handle, device) in devices.iter() {
+                let device = &**device.read().unwrap();
+
+                match device.get_device_class() {
+                    DeviceClass::Keyboard => {
+                        let device = device.as_keyboard_device().unwrap();
+
+                        events::process_keyboard_hid_events(device).unwrap_or_else(|e| {
+                            ratelimited::error!(
+                                "Could not process a keyboard HID event for {handle}: {}",
+                                e
+                            )
+                        })
+                    }
+
+                    DeviceClass::Mouse => {
+                        let device = device.as_mouse_device().unwrap();
+
+                        events::process_mouse_hid_events(device).unwrap_or_else(|e| {
+                            ratelimited::error!(
+                                "Could not process a mouse HID event for {handle}: {}",
+                                e
+                            )
+                        })
+                    }
+
+                    _ => {
+                        // ignore HID events on all other devices
+                    }
+                }
+            }
+        }
+
         // now, process events from all available sources...
         let result = sel.wait_timeout(Duration::from_millis(
             1000 / (constants::TARGET_FPS_LIMIT * 2),
         ));
 
-        let timedout = if let Err(result) = result {
+        let timed_out = if let Err(result) = result {
             match result {
                 SelectError::Timeout => true,
             }
@@ -1198,53 +1220,17 @@ fn run_main_loop(
         }
 
         #[cfg(not(target_os = "windows"))]
-        if device_has_failed || (result.is_err() && !timedout)
+        if device_has_failed || (result.is_err() && !timed_out)
         /* || !failed_event_rxs.read().unwrap().is_empty() */
         {
             return Err(MainError::DeviceFailed {}.into());
         }
 
-        /* if delay_time_hid_poll.elapsed()
-            >= Duration::from_millis(1000 / (constants::TARGET_FPS_LIMIT * 8))
-        {
-            #[cfg(feature = "profiling")]
-            coz::scope!("HID events polling");
-
-            delay_time_hid_poll = Instant::now();
-
-            // poll HID events on all available devices
-            let devices = crate::DEVICES.read().unwrap();
-            for (handle, device) in devices.iter() {
-                match device.get_device_class() {
-                    DeviceClass::Keyboard => events::process_keyboard_hid_events(device)
-                        .unwrap_or_else(|e| {
-                            ratelimited::error!(
-                                "Could not process a keyboard HID event for {handle}: {}",
-                                e
-                            )
-                        }),
-
-                    DeviceClass::Mouse => {
-                        events::process_mouse_hid_events(device).unwrap_or_else(|e| {
-                            ratelimited::error!(
-                                "Could not process a mouse HID event for {handle}: {}",
-                                e
-                            )
-                        })
-                    }
-
-                    _ => {
-                        // ignore HID events on all other devices
-                    }
-                }
-            }
-        } */
-
         if delay_time_tick.elapsed() >= Duration::from_millis(1000 / constants::TIMER_TPS) {
             #[cfg(feature = "profiling")]
             coz::scope!("timer tick code");
 
-            let delta = delay_time_tick.elapsed().as_millis() as u32 / 10;
+            let delta = (delay_time_tick.elapsed().as_millis() / 10) as u32;
 
             delay_time_tick = Instant::now();
 
@@ -1253,7 +1239,7 @@ fn run_main_loop(
                 // if this tx failed previously, then skip it completely
                 if !FAILED_TXS.read().unwrap().contains(&index) {
                     lua_tx
-                        .send(script::Message::Tick(delta))
+                        .send(script::Message::Tick(delta as u32))
                         .unwrap_or_else(|e| {
                             error!("Send error during timer tick event: {}", e);
                             FAILED_TXS.write().unwrap().insert(index);
@@ -1356,6 +1342,8 @@ pub fn remove_failed_devices() -> Result<bool> {
             let usb_id = (device.get_usb_vid(), device.get_usb_pid());
 
             result = true;
+
+            crate::DEVICE_NAMES.write().unwrap().remove(handle);
 
             debug!("Sending device hot-remove notification...");
 
@@ -1562,8 +1550,8 @@ pub fn initialize_device(
         device.open(hidapi).map_err(|e| {
             error!("Error opening the device '{make} {model}': {}", e);
             error!(
-                    "This could be a permission problem, or maybe the device is locked by another process?"
-                    );
+                "This could be a permission problem, or maybe the device is locked by another process?"
+            );
 
             e
         })?;
@@ -1786,9 +1774,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     state::load_color_schemes()
         .unwrap_or_else(|e| warn!("Could not restore previously saved color-schemes: {}", e));
 
-    // enable the mouse?
-    // let enable_mouse = config.get::<bool>("global.enable_mouse").unwrap_or(true);
-
     // create the one and only hidapi instance
     match hidapi::HidApi::new() {
         Ok(hidapi) => {
@@ -1826,6 +1811,13 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                             info!("Loading saved device state...");
                             state::init_runtime_state(device)
                                 .unwrap_or_else(|e| warn!("Could not parse state file: {}", e));
+                        }
+
+                        {
+                            crate::DEVICE_NAMES
+                                .write()
+                                .unwrap()
+                                .insert(handle, device.get_support_script_file());
                         }
 
                         {

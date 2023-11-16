@@ -81,16 +81,6 @@ pub fn init_global_runtime_state() -> Result<()> {
         PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("spectrum-analyzer-swirl.profile"),
     ]);
 
-    let default_slot_names = vec![
-        "Profile Slot 1".to_string(),
-        "Profile Slot 2".to_string(),
-        "Profile Slot 3".to_string(),
-        "Profile Slot 4".to_string(),
-    ];
-
-    let mut slot_names = crate::SLOT_NAMES.write().unwrap();
-    *slot_names = default_slot_names.clone();
-
     // load state file
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
 
@@ -180,18 +170,31 @@ pub fn init_global_runtime_state() -> Result<()> {
         .get::<f64>("canvas_lightness")
         .unwrap_or(0.0);
 
-    *crate::CANVAS_HSL.write().unwrap() = (hue, saturation, lightness);
+    {
+        *crate::CANVAS_HSL.write().unwrap() = (hue, saturation, lightness);
+    }
 
-    *slot_names = STATE
-        .read()
-        .unwrap()
-        .as_ref()
-        .unwrap()
-        .get::<Vec<String>>("slot_names")
-        .unwrap_or_else(|_| default_slot_names.clone());
+    {
+        let default_slot_names = vec![
+            "Profile Slot 1".to_string(),
+            "Profile Slot 2".to_string(),
+            "Profile Slot 3".to_string(),
+            "Profile Slot 4".to_string(),
+        ];
 
-    if slot_names.is_empty() || slot_names.len() < constants::NUM_SLOTS {
-        *slot_names = default_slot_names;
+        let mut slot_names = crate::SLOT_NAMES.write().unwrap();
+
+        *slot_names = STATE
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .get::<Vec<String>>("slot_names")
+            .unwrap_or_else(|_| default_slot_names.clone());
+
+        if slot_names.is_empty() || slot_names.len() < constants::NUM_SLOTS {
+            *slot_names = default_slot_names;
+        }
     }
 
     perform_sanity_checks();
