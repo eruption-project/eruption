@@ -29,7 +29,7 @@ license = "GPL-3.0-or-later"
 [lib]
 
 [dependencies]
-libc = "0.2.149"
+libc = "0.2.150"
 
 [build-dependencies]
 cc = "1.0.83"
