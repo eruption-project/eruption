@@ -165,8 +165,15 @@ pub fn claim_hotplugged_device(hotplug_info: &HotplugInfo) -> Result<()> {
                 connected_devices.insert(handle, probed_device.clone());
 
                 {
+                    crate::DEVICE_NAMES
+                        .write()
+                        .unwrap()
+                        .insert(handle, device.get_support_script_file());
+                }
+
+                {
                     let mut pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
-                    *pending_devices = *pending_devices - 1;
+                    *pending_devices -= 1;
 
                     crate::DEVICES_PENDING_INIT.1.notify_all();
                 }

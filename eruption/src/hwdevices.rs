@@ -74,40 +74,16 @@ impl From<DeviceHandle> for usize {
 
 impl<'lua> IntoLua<'lua> for DeviceHandle {
     fn into_lua(self, _lua: &'lua Lua) -> LuaResult<LuaValue<'lua>> {
-        Ok(LuaValue::Integer(self.0 as i64))
+        Ok(LuaValue::Integer(self.0 as i32))
     }
 }
 
 impl fmt::Display for DeviceHandle {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "[{:02}]", self.0)?;
-
-        /* find_device_by_handle(self)
-        .and_then(|device| {
-            device
-                .try_read()
-                .and_then(|device| {
-                    let device_identifier = device.get_support_script_file();
-
-                let _ = write!(f, "[{:02}:{device_identifier}]", self.0);
-
-                    Ok(device)
-                })
-                .or_else(|e| {
-                    let _ = write!(f, "[{:02}:<unknown device>]", self.0);
-
-                    Err(e)
-                });
-
-            Some(device)
-            })
-            .or_else(|| {
-                let _ = write!(f, "[{:02}:<invalid device>]", self.0);
-
-                None
-        }); */
-
-        Ok(())
+        match crate::DEVICE_NAMES.read().unwrap().get(self) {
+            Some(device_identifier) => write!(f, "[{:02}:{device_identifier}]", self.0),
+            None => write!(f, "[{:02}:<missing device>]", self.0),
+        }
     }
 }
 
