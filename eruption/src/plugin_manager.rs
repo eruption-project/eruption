@@ -32,12 +32,12 @@ lazy_static! {
         Arc::new(RwLock::new(PluginManager::new()));
 }
 
-type PluginType = dyn Plugin + Sync + Send;
+type PluginType = (dyn Plugin + Sync + Send + 'static);
 
 /// Plugin manager
 /// Keeps track of registered plugins
 pub struct PluginManager {
-    registered_plugins: HashMap<String, Box<PluginType>>,
+    registered_plugins: HashMap<String, Arc<Box<PluginType>>>,
 }
 
 #[allow(dead_code)]
@@ -66,27 +66,16 @@ impl PluginManager {
             e
         })?;
 
-        self.registered_plugins.insert(plugin.get_name(), plugin);
+        self.registered_plugins
+            .insert(plugin.get_name(), Arc::new(plugin));
 
         Ok(())
     }
 
-    pub fn get_plugins(&self) -> Vec<&PluginType> {
+    pub fn get_plugins(&self) -> Vec<Arc<Box<PluginType>>> {
         self.registered_plugins
             .values()
-            .map(AsRef::as_ref)
-            .collect()
-    }
-
-    pub fn get_plugins_mut(&mut self) -> Vec<&mut Box<PluginType>> {
-        self.registered_plugins.values_mut().collect()
-    }
-
-    pub fn find_plugin_by_name(&self, name: String) -> Option<&PluginType> {
-        self.registered_plugins.get(&name).map(AsRef::as_ref)
-    }
-
-    pub fn find_plugin_by_name_mut(&mut self, name: String) -> Option<&mut PluginType> {
-        self.registered_plugins.get_mut(&name).map(AsMut::as_mut)
+            .cloned()
+            .collect::<Vec<_>>()
     }
 }
