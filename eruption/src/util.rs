@@ -150,7 +150,7 @@ pub fn write_file<P: AsRef<Path>>(path: &P, data: &String) -> Result<()> {
 pub fn get_script_dirs() -> Vec<PathBuf> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.lock();
+    let config = crate::CONFIG.read();
 
     let script_dirs = config
         .as_ref()

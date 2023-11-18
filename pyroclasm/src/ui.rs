@@ -19,19 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-pub mod about;
-pub mod canvas;
-pub mod color_schemes;
-pub mod debug;
-pub mod keyboards;
-pub mod logs;
-pub mod macros;
-pub mod mice;
-pub mod misc;
-pub mod profiles;
-pub mod rules;
-pub mod settings;
-pub mod start;
+pub mod hwdevices;
+pub mod pages;
 
 #[derive(Debug, Default, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub enum TabPages {

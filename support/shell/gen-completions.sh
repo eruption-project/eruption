@@ -54,7 +54,7 @@ for l in "${languages[@]}"; do
 	gen_completions "eruption-audio-proxy"
 	gen_completions "eruption-process-monitor"
 	gen_completions "eruptionctl"
-	gen_completions "pyroclasm"
+	# gen_completions "pyroclasm"
 done
 
 exit 0

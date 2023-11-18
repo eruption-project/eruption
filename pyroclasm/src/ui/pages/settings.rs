@@ -21,21 +21,17 @@
 
 use egui::CentralPanel;
 
-mod hwdevices;
-
-// pub type Result<T> = std::result::Result<T, eyre::Error>;
-
 #[derive(Default)]
-pub struct MiscPage {}
+pub struct SettingsPage {}
 
-impl MiscPage {
+impl SettingsPage {
     pub fn new() -> Self {
         Self {}
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Misc devices");
+            ui.heading("Eruption global settings");
         });
     }
 }

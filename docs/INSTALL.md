@@ -54,7 +54,7 @@ sudo apt install build-essential cmake acl protobuf-compiler libprotobuf-dev \
 ### Clone the project and build the release binaries
 
 ```shell
-git clone https://github.com/X3n0m0rph59/eruption.git
+git clone https://github.com/eruption-project/eruption.git
 cd eruption
 make
 ```

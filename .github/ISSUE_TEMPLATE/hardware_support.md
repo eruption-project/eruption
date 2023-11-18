@@ -13,4 +13,4 @@ Introductory text.
 Your device, please include `sudo lsusb`.
 
 **Please attach your \*.pcapng file, if possible**
-For further information, please see the [Eruption Wiki](https://github.com/X3n0m0rph59/eruption/wiki).
+For further information, please see the [Eruption Wiki](https://github.com/eruption-project/eruption/wiki).

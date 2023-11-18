@@ -19,9 +19,11 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+#![windows_subsystem = "windows"]
+
 use clap::Parser;
 use config::Config;
-use eframe::{NativeOptions, Theme};
+use eframe::{HardwareAcceleration, NativeOptions, Theme};
 use egui::{Context, Vec2};
 use flume::bounded;
 use i18n_embed::{
@@ -61,6 +63,13 @@ mod ui;
 mod util;
 
 use translations::tr;
+
+#[cfg(feature = "mimalloc_allocator")]
+use mimalloc::MiMalloc;
+
+#[cfg(feature = "mimalloc_allocator")]
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 #[derive(RustEmbed)]
 #[folder = "i18n"] // path to the compiled localization resources
@@ -154,12 +163,12 @@ lazy_static! {
     pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
 
     /// Eruption managed devices
-    pub static ref MANAGED_DEVICES: Arc<Mutex<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>)>> = Arc::new(Mutex::new((Vec::new(), Vec::new(), Vec::new())));
+    pub static ref MANAGED_DEVICES: Arc<RwLock<(Vec<(u16, u16)>, Vec<(u16, u16)>, Vec<(u16, u16)>)>> = Arc::new(RwLock::new((Vec::new(), Vec::new(), Vec::new())));
 }
 
 lazy_static! {
     /// Global configuration
-    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+    pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
 
     /// Global verbosity amount
     pub static ref VERBOSE: AtomicU8 = AtomicU8::new(0);
@@ -201,7 +210,7 @@ pub mod events {
         /// stores how many consecutive events shall be ignored
         static ref IGNORE_NEXT_DBUS_EVENTS: AtomicUsize = AtomicUsize::new(0);
 
-        /// signals whether we should re-initialize the GUI asap (e.g.: used when hot-plugging new devices)
+        /// signals whether we should reinitialize the GUI asap (e.g.: used when hot-plugging new devices)
         pub static ref UPDATE_MAIN_WINDOW: AtomicBool = AtomicBool::new(false);
 
         /// signals whether we have lost the connection to the Eruption daemon
@@ -345,13 +354,6 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
     // i18n/l10n support
     translations::load()?;
 
-    tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()?
-        .block_on(async move { async_main().await })
-}
-
-pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let language_loader: FluentLanguageLoader = fluent_language_loader!();
 
     let requested_languages = DesktopLanguageRequester::requested_languages();
@@ -360,11 +362,11 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     cfg_if::cfg_if! {
         if #[cfg(debug_assertions)] {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .install()?;
         } else {
             color_eyre::config::HookBuilder::default()
-            .panic_section("Please consider reporting a bug at https://github.com/X3n0m0rph59/eruption")
+            .panic_section("Please consider reporting a bug at https://github.com/eruption-project/eruption")
             .display_env_section(false)
             .install()?;
         }
@@ -382,25 +384,26 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
     let opts = Options::parse();
     apply_opts(&opts);
     if let Some(command) = opts.command {
-        subcommands::handle_command(command).await?;
+        subcommands::handle_command(command)?;
     }
 
     if !QUIT.load(Ordering::SeqCst) {
         // spawn our event loop
-        let (events_tx, _events_rx) = bounded(32);
+        let (events_tx, _events_rx) = bounded(8);
         threads::spawn_events_thread(events_tx)?;
 
         // build and map main window
         let native_options = NativeOptions {
-            default_theme: Theme::Dark,
+            default_theme: Theme::Light,
             initial_window_size: Some(Vec2::new(1600.0_f32, 900.0_f32)),
+            hardware_acceleration: HardwareAcceleration::Preferred,
             decorated: false,
             resizable: true,
-            transparent: true,
+            transparent: false,
             ..NativeOptions::default()
         };
 
-        eframe::run_native(
+        let _ = eframe::run_native(
             "pyroclasm",
             native_options,
             Box::new(|cc| {
@@ -409,10 +412,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
                 Box::new(app::Pyroclasm::new(cc))
             }),
-        )
-        .unwrap_or_else(|e| {
-            tracing::error!("{}", e);
-        });
+        );
     }
 
     Ok(())
@@ -420,7 +420,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
 // fn register_sigint_handler() {
 //     // register ctrl-c handler
-//     let (ctrl_c_tx, _ctrl_c_rx) = bounded(32);
+//     let (ctrl_c_tx, _ctrl_c_rx) = bounded(8);
 //     ctrlc::set_handler(move || {
 //         QUIT.store(true, Ordering::SeqCst);
 
@@ -456,5 +456,5 @@ fn apply_opts(opts: &Options) {
             process::exit(4);
         });
 
-    *CONFIG.lock() = Some(config);
+    *CONFIG.write() = Some(config);
 }

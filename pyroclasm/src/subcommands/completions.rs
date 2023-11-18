@@ -26,7 +26,7 @@ use crate::Options;
 
 type Result<T> = std::result::Result<T, eyre::Error>;
 
-pub async fn handle_command(shell: clap_complete::Shell) -> Result<()> {
+pub fn handle_command(shell: clap_complete::Shell) -> Result<()> {
     const BIN_NAME: &str = env!("CARGO_PKG_NAME");
 
     let mut command = Options::command();

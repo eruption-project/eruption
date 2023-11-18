@@ -25,7 +25,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruption-netfx' -ScriptBlock {
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Verbose mode (-v, -vv, -vvv, etc.)')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('-V', 'V ', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('ping', 'ping', [CompletionResultType]::ParameterValue, 'Ping the server')
             [CompletionResult]::new('command', 'command', [CompletionResultType]::ParameterValue, 'Send Network FX raw protocol commands to the server')

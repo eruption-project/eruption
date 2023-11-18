@@ -1838,7 +1838,7 @@ _eruptionctl__color-schemes_commands() {
 'list:List all color schemes known to Eruption' \
 'add:Add a new named color scheme' \
 'remove:Remove a color scheme by name' \
-'import:Import a color scheme from a file, e.g.: like the Pywal configuration' \
+'import:Import a color scheme from a file, e.g.\: like the Pywal configuration' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl color-schemes commands' commands "$@"
@@ -1849,7 +1849,7 @@ _eruptionctl__help__color-schemes_commands() {
 'list:List all color schemes known to Eruption' \
 'add:Add a new named color scheme' \
 'remove:Remove a color scheme by name' \
-'import:Import a color scheme from a file, e.g.: like the Pywal configuration' \
+'import:Import a color scheme from a file, e.g.\: like the Pywal configuration' \
     )
     _describe -t commands 'eruptionctl help color-schemes commands' commands "$@"
 }
@@ -2144,7 +2144,7 @@ _eruptionctl__color-schemes__help_commands() {
 'list:List all color schemes known to Eruption' \
 'add:Add a new named color scheme' \
 'remove:Remove a color scheme by name' \
-'import:Import a color scheme from a file, e.g.: like the Pywal configuration' \
+'import:Import a color scheme from a file, e.g.\: like the Pywal configuration' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'eruptionctl color-schemes help commands' commands "$@"

@@ -17,8 +17,11 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
+cargo-features = ["profile-rustflags"]
+
 [workspace]
 members = [
+  "xtask",
   "eruption",
   "eruptionctl",
   "eruption-hwutil",
@@ -40,6 +43,7 @@ members = [
   "sdk/examples/rust/simple",
 ]
 default-members = [
+  "xtask",
   "eruption",
   "eruptionctl",
   "eruption-hwutil",
@@ -50,7 +54,7 @@ default-members = [
   "eruption-audio-proxy",
   "eruption-fx-proxy",
   "eruption-process-monitor",
-  # "pyroclasm",
+  "pyroclasm",
   "eruption-gui-gtk3",
   "eruption-cmd",
   "eruption-keymap",
@@ -63,22 +67,22 @@ resolver = "2"
 
 [profile.dev]
 opt-level = 0
-debug = true
+debug = "full"
 rpath = false
-lto = false
+lto = "off"
 strip = false
 debug-assertions = true
 overflow-checks = true
 codegen-units = 512
 incremental = true
 panic = "unwind"
-split-debuginfo = "unpacked"
+split-debuginfo = "packed"
 
 [profile.release]
 opt-level = 3
 debug = false
 rpath = false
-lto = true
+lto = "fat"
 strip = true
 debug-assertions = false
 overflow-checks = true
@@ -87,22 +91,14 @@ incremental = false
 panic = "abort"
 split-debuginfo = "unpacked"
 
-[profile.sccache]
-inherits = "dev"
-opt-level = 0
-debug = true
-rpath = false
-lto = false
-strip = false
-debug-assertions = true
-overflow-checks = true
-codegen-units = 512
-incremental = false
-panic = "unwind"
-
 [profile.profiling]
 inherits = "release"
 debug = 1
+
+[profile.sccache]
+inherits = "dev"
+opt-level = 0
+incremental = false
 
 [profile.dev-optimized]
 inherits = "dev"

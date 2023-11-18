@@ -311,7 +311,7 @@ pub fn run_script(
 fn register_support_globals(lua_ctx: &Lua) -> mlua::Result<()> {
     let globals = lua_ctx.globals();
 
-    let config = crate::CONFIG.lock();
+    let config = crate::CONFIG.read();
     let script_dirs = config
         .as_ref()
         .unwrap()

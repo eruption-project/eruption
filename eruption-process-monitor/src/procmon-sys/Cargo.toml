@@ -23,7 +23,10 @@ rust-version = "1.65"
 name = "procmon-sys"
 version = "0.0.3"
 build = "build.rs"
-authors = ["X3n0m0rph59 <x3n0m0rph59@gmail.com>", "The Eruption Development Team"]
+authors = [
+    "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+    "The Eruption Development Team",
+]
 license = "GPL-3.0-or-later"
 
 [lib]

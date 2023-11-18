@@ -1,0 +1,46 @@
+#  SPDX-License-Identifier: GPL-3.0-or-later
+#
+#  This file is part of Eruption.
+#
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#  Copyright (c) 2019-2023, The Eruption Development Team
+
+[package]
+name = "xtask"
+version = "0.0.1"
+authors = [
+  "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+  "The Eruption Development Team",
+]
+edition = "2021"
+rust-version = "1.65"
+description = "Cargo xtask support binary"
+repository = "https://github.com/eruption-project/eruption.git"
+homepage = "https://eruption-project.org"
+keywords = ["eruption", "linux", "led", "driver", "xtask"]
+categories = ["hardware-support"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+resolver = "2"
+
+[dependencies]
+eyre = "0.6.8"
+color-eyre = "0.6.2"
+devx-cmd = "0.5.0"
+xshell = "0.2.5"
+duct = "0.13.6"
+
+[dev-dependencies]
+pretty_assertions = "1.4.0"

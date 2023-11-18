@@ -17,6 +17,8 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
+# Linux x86_64
+
 BUILDFLAGS := --release
 
 TARGET_DIR := /usr
@@ -24,17 +26,10 @@ SOURCE_DIR := target/release
 
 SUDO := sudo
 
-all: build
+all: build xtask
 
 build:
 	@cargo build $(BUILDFLAGS)
-
-	@echo ""
-	@echo "Now please run 'sudo make install' to install Eruption"
-	@echo ""
-	@echo "If Eruption is already running, stop it first.  Consider:"
-	@echo "'make stop && sudo make install && make start'"
-	@echo ""
 
 start:
 	@echo "Notifying system daemons about Eruption..."
@@ -50,6 +45,9 @@ start:
 
 	-@$(SUDO) modprobe uinput
 	-@$(SUDO) udevadm trigger
+
+	-@systemctl --user daemon-reload
+	-@/usr/bin/systemd-tmpfiles --user --create --remove "$(TARGET_DIR)/share/user-tmpfiles.d/eruption-process-monitor.conf"
 
 	@echo "Starting up Eruption daemons..."
 
@@ -77,10 +75,10 @@ stop:
 	-@systemctl --user disable --now eruption-audio-proxy.service
 	-@systemctl --user disable --now eruption-process-monitor.service
 
-	-@$(SUDO) systemctl mask eruption.service
-	-@$(SUDO) systemctl disable --now eruption.service
+	-@$(SUDO) systemctl mask eruption.service > /dev/null 2>&1
+	-@$(SUDO) systemctl disable --now eruption.service > /dev/null 2>&1
 
-install:
+install: install_scripts install_profiles
 	@echo "Please ensure that all Eruption daemons have been shut down completely!"
 	@echo "Otherwise there will probably be errors during installation (file busy)"
 	@echo ""
@@ -90,7 +88,6 @@ install:
 
 	@cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
 	-@systemctl daemon-reload
-	
 	@/usr/bin/systemd-sysusers
 
 	@echo "Commencing installation of Eruption..."
@@ -98,16 +95,9 @@ install:
 
 	@mkdir -p "/etc/eruption"
 	@mkdir -p "$(TARGET_DIR)/share/doc/eruption"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/macros"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/keymaps"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/themes"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/keyboards"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/mice"
-	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/examples"
 	@mkdir -p "$(TARGET_DIR)/share/applications"
 	@mkdir -p "$(TARGET_DIR)/share/icons/hicolor/64x64/apps"
 	@mkdir -p "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas"
-	@mkdir -p "/var/lib/eruption/profiles"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system-preset"
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/user"
@@ -115,6 +105,8 @@ install:
 	@mkdir -p "$(TARGET_DIR)/lib/systemd/system-sleep"
 	@mkdir -p "$(TARGET_DIR)/lib/sysusers.d/"
 	@mkdir -p "$(TARGET_DIR)/lib/udev/rules.d/"
+	@mkdir -p "$(TARGET_DIR)/share/user-tmpfiles.d"
+	@mkdir -p "$(TARGET_DIR)/share/libinput/"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system.d"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/system-services"
 	@mkdir -p "$(TARGET_DIR)/share/dbus-1/session.d"
@@ -129,9 +121,9 @@ install:
 	@mkdir -p "$(TARGET_DIR)/share/eruption/i18n"
 	@mkdir -p "$(TARGET_DIR)/share/eruption/sfx"
 
-	# @cp "support/assets/pyroclasm/pyroclasm.desktop" "$(TARGET_DIR)/share/applications/"
+	@cp "support/assets/pyroclasm/pyroclasm.desktop" "$(TARGET_DIR)/share/applications/"
 	@cp "support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop" "$(TARGET_DIR)/share/applications/"
-	@cp "support/assets/eruption-gui-gtk3/eruption-gui.png" "$(TARGET_DIR)/share/icons/hicolor/64x64/apps/"
+	@cp "support/assets/eruption.png" "$(TARGET_DIR)/share/icons/"
 	@cp "eruption-gui-gtk3/schemas/gschemas.compiled" "$(TARGET_DIR)/share/eruption-gui-gtk3/schemas/"
 	@cp "support/systemd/eruption-suspend.sh" "$(TARGET_DIR)/lib/systemd/system-sleep/eruption"
 	@cp "support/config/eruption.conf" "/etc/eruption/"
@@ -151,7 +143,9 @@ install:
 	@cp "support/systemd/eruption-hotplug-helper.service" "$(TARGET_DIR)/lib/systemd/system/"
 	@cp "support/systemd/eruption-hotplug-helper.preset" "$(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset"
 	# @cp "support/sysusers.d/eruption.conf" "$(TARGET_DIR)/lib/sysusers.d/eruption.conf"
+	# @cp "support/tmpfiles.d/eruption.conf" "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
 	@cp "support/udev/99-eruption.rules" "$(TARGET_DIR)/lib/udev/rules.d/"
+	@cp "support/libinput/eruption.quirks" "$(TARGET_DIR)/share/libinput/60-eruption.quirks"
 	@cp "support/dbus/org.eruption.service" "$(TARGET_DIR)/share/dbus-1/system-services/"
 	@cp "support/dbus/org.eruption.conf" "$(TARGET_DIR)/share/dbus-1/system.d/"
 	@cp "support/dbus/org.eruption.process_monitor.conf" "$(TARGET_DIR)/share/dbus-1/session.d/"
@@ -162,7 +156,7 @@ install:
 	@cp "support/man/eruption-cmd.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption.conf.5" "$(TARGET_DIR)/share/man/man5/"
 	@cp "support/man/process-monitor.conf.5" "$(TARGET_DIR)/share/man/man5/"
-	# @cp "support/man/pyroclasm.1" "$(TARGET_DIR)/share/man/man1/"
+	@cp "support/man/pyroclasm.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/eruptionctl.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/eruption-hwutil.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption-macro.1" "$(TARGET_DIR)/share/man/man1/"
@@ -181,7 +175,7 @@ install:
 	@cp "support/shell/completions/en_US/eruption-audio-proxy.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-audio-proxy"
 	@cp "support/shell/completions/en_US/eruption-process-monitor.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-process-monitor"
 	@cp "support/shell/completions/en_US/eruptionctl.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruptionctl"
-	# @cp "support/shell/completions/en_US/pyroclasm.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/pyroclasm"
+	@cp "support/shell/completions/en_US/pyroclasm.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/pyroclasm"
 	@cp "support/shell/completions/en_US/eruption-cmd.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-cmd.fish"
 	@cp "support/shell/completions/en_US/eruption-hwutil.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-hwutil.fish"
 	@cp "support/shell/completions/en_US/eruption-debug-tool.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-debug-tool.fish"
@@ -192,7 +186,7 @@ install:
 	@cp "support/shell/completions/en_US/eruption-audio-proxy.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-audio-proxy.fish"
 	@cp "support/shell/completions/en_US/eruption-process-monitor.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-process-monitor.fish"
 	@cp "support/shell/completions/en_US/eruptionctl.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruptionctl.fish"
-	# @cp "support/shell/completions/en_US/pyroclasm.fish-completion" "$(TARGET_DIR)/share/fish/completions/pyroclasm.fish"
+	@cp "support/shell/completions/en_US/pyroclasm.fish-completion" "$(TARGET_DIR)/share/fish/completions/pyroclasm.fish"
 	@cp "support/shell/completions/en_US/eruption-cmd.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-cmd"
 	@cp "support/shell/completions/en_US/eruption-hwutil.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-hwutil"
 	@cp "support/shell/completions/en_US/eruption-debug-tool.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-debug-tool"
@@ -203,7 +197,7 @@ install:
 	@cp "support/shell/completions/en_US/eruption-audio-proxy.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-audio-proxy"
 	@cp "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-process-monitor"
 	@cp "support/shell/completions/en_US/eruptionctl.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruptionctl"
-	# @cp "support/shell/completions/en_US/pyroclasm.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_pyroclasm"
+	@cp "support/shell/completions/en_US/pyroclasm.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_pyroclasm"
 	@cp "support/sfx/typewriter1.wav" "$(TARGET_DIR)/share/eruption/sfx/"
 	@cp "support/sfx/phaser1.wav" "$(TARGET_DIR)/share/eruption/sfx/"
 	@cp "support/sfx/phaser2.wav" "$(TARGET_DIR)/share/eruption/sfx/"
@@ -213,31 +207,92 @@ install:
 	@ln -fs "phaser1.wav" "$(TARGET_DIR)/share/eruption/sfx/key-down.wav"
 	@ln -fs "phaser2.wav" "$(TARGET_DIR)/share/eruption/sfx/key-up.wav"
 
-	@cp -r eruption/src/scripts/* $(TARGET_DIR)/share/eruption/scripts/
-	@cp -r support/profiles/* /var/lib/eruption/profiles/
-
-	@cp target/release/eruption $(TARGET_DIR)/bin/
-	@cp target/release/eruptionctl $(TARGET_DIR)/bin/
-	@cp target/release/eruption-cmd $(TARGET_DIR)/bin/
-	@cp target/release/eruption-macro $(TARGET_DIR)/bin/
-	@cp target/release/eruption-keymap $(TARGET_DIR)/bin/
-	@cp target/release/eruption-hwutil $(TARGET_DIR)/bin/
-	@cp target/release/eruption-netfx $(TARGET_DIR)/bin/
-	@cp target/release/eruption-debug-tool $(TARGET_DIR)/bin/
-	@cp target/release/eruption-hotplug-helper $(TARGET_DIR)/bin/
-	@cp target/release/eruption-util $(TARGET_DIR)/bin/
-	@cp target/release/eruption-gui-gtk3 $(TARGET_DIR)/bin/
-	@cp target/release/eruption-fx-proxy $(TARGET_DIR)/bin/
-	@cp target/release/eruption-audio-proxy $(TARGET_DIR)/bin/
-	@cp target/release/eruption-process-monitor $(TARGET_DIR)/bin/
-	# @cp target/release/pyroclasm $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruptionctl $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-cmd $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-macro $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-keymap $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-hwutil $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-netfx $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-debug-tool $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-hotplug-helper $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-util $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-gui-gtk3 $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-fx-proxy $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-audio-proxy $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/eruption-process-monitor $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/pyroclasm $(TARGET_DIR)/bin/
 
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
+
 	@chown -R eruption:eruption /var/lib/eruption
+	@chown -R eruption:eruption $(TARGET_DIR)/share/eruption/
+
+	@chmod -R g+w /var/lib/eruption/profiles
+	@chmod -R g+w $(TARGET_DIR)/share/eruption/scripts
+	@chmod g+s,o+t $(TARGET_DIR)/share/eruption/scripts/lib/macros
+	@chmod g+s,o+t $(TARGET_DIR)/share/eruption/scripts/lib/keymaps
+
+	@cp "support/tmpfiles.d/eruption.conf" "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
+	@cp "support/tmpfiles.d/eruption-process-monitor.conf" "$(TARGET_DIR)/share/user-tmpfiles.d/eruption-process-monitor.conf"
+	-@systemctl daemon-reload
+	@/usr/bin/systemd-tmpfiles --create "$(TARGET_DIR)/lib/tmpfiles.d/eruption.conf"
+	# @/usr/bin/systemd-tmpfiles --user --create --remove "$(TARGET_DIR)/share/user-tmpfiles.d/eruption-process-monitor.conf"
 
 	@echo ""
 	@echo "Successfully installed Eruption!"
 	@echo "Now please run 'make start' to enable Eruption"
+	@echo ""
+
+install_binaries:
+	@echo "Copying Eruption executable files..."
+	@echo ""
+
+	-@cp $(SOURCE_DIR)/eruption $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruptionctl $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-cmd $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-macro $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-keymap $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-hwutil $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-netfx $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-debug-tool $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-hotplug-helper $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-util $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-gui-gtk3 $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-fx-proxy $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-audio-proxy $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/eruption-process-monitor $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/pyroclasm $(TARGET_DIR)/bin/
+
+	-@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
+
+install_scripts:
+	@echo "Installing Lua scripts..."
+	@echo ""
+
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/macros"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/keymaps"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/themes"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/keyboards"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/lib/hwdevices/mice"
+	@mkdir -p "$(TARGET_DIR)/share/eruption/scripts/examples"
+
+	@cp -vr eruption/src/scripts/* $(TARGET_DIR)/share/eruption/scripts/
+
+	@echo ""
+	@echo "Successfully installed Eruption Lua script files!"
+	@echo ""
+
+install_profiles:
+	@echo "Installing profiles..."
+	@echo ""
+
+	@mkdir -p "/var/lib/eruption/profiles"
+
+	@cp -vr support/profiles/* /var/lib/eruption/profiles/
+
+	@echo ""
+	@echo "Successfully installed Eruption profiles!"
 	@echo ""
 
 uninstall:
@@ -258,11 +313,11 @@ uninstall:
 	-@rm $(TARGET_DIR)/bin/eruption-fx-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-audio-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-process-monitor
-	# -@rm $(TARGET_DIR)/bin/pyroclasm
+	-@rm $(TARGET_DIR)/bin/pyroclasm
 
-	# -@rm $(TARGET_DIR)/share/applications/pyroclasm.desktop
+	-@rm $(TARGET_DIR)/share/applications/pyroclasm.desktop
 	-@rm $(TARGET_DIR)/share/applications/eruption-gui-gtk3.desktop
-	-@rm $(TARGET_DIR)/share/icons/hicolor/64x64/apps/eruption-gui-gtk3.png
+	-@rm $(TARGET_DIR)/share/icons/eruption.png
 	-@rm $(TARGET_DIR)/share/eruption-gui-gtk3/schemas/gschemas.compiled
 	-@rm $(TARGET_DIR)/lib/systemd/system-sleep/eruption
 	-@rm $(TARGET_DIR)/lib/systemd/system/eruption.service
@@ -276,7 +331,10 @@ uninstall:
 	-@rm $(TARGET_DIR)/lib/systemd/system/eruption-hotplug-helper.service
 	-@rm $(TARGET_DIR)/lib/systemd/system-preset/50-eruption-hotplug-helper.preset
 	-@rm $(TARGET_DIR)/lib/sysusers.d/eruption.conf
+	-@rm $(TARGET_DIR)/lib/tmpfiles.d/eruption.conf
 	-@rm $(TARGET_DIR)/lib/udev/rules.d/99-eruption.rules
+	-@rm $(TARGET_DIR)/share/user-tmpfiles.d/eruption-process-monitor.conf
+	-@rm $(TARGET_DIR)/share/libinput/60-eruption.quirks
 	-@rm $(TARGET_DIR)/share/dbus-1/system-services/org.eruption.service
 	-@rm $(TARGET_DIR)/share/dbus-1/system.d/org.eruption.conf
 	-@rm $(TARGET_DIR)/share/dbus-1/session.d/org.eruption.process_monitor.conf
@@ -287,7 +345,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/man/man8/eruption-cmd.8
 	-@rm $(TARGET_DIR)/share/man/man5/eruption.conf.5
 	-@rm $(TARGET_DIR)/share/man/man5/process-monitor.conf.5
-	# -@rm $(TARGET_DIR)/share/man/man1/pyroclasm.1
+	-@rm $(TARGET_DIR)/share/man/man1/pyroclasm.1
 	-@rm $(TARGET_DIR)/share/man/man1/eruptionctl.1
 	-@rm $(TARGET_DIR)/share/man/man8/eruption-hwutil.8
 	-@rm $(TARGET_DIR)/share/man/man1/eruption-netfx.1
@@ -307,7 +365,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-audio-proxy
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-process-monitor
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruptionctl
-	# -@rm $(TARGET_DIR)/share/bash-completion/completions/pyroclasm
+	-@rm $(TARGET_DIR)/share/bash-completion/completions/pyroclasm
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-cmd.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-hwutil.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-debug-tool.fish
@@ -329,7 +387,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-audio-proxy
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-process-monitor
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruptionctl
-	# -@rm $(TARGET_DIR)/share/zsh/site-functions/_pyroclasm
+	-@rm $(TARGET_DIR)/share/zsh/site-functions/_pyroclasm
 
 	-@rm $(TARGET_DIR)/share/eruption/sfx/typewriter1.wav
 	-@rm $(TARGET_DIR)/share/eruption/sfx/phaser1.wav
@@ -353,6 +411,16 @@ uninstall:
 	@echo ""
 	@echo "Successfully uninstalled Eruption!"
 
+xtask:
+	@cargo xtask dist
+
+	@echo ""
+	@echo "Now please run 'sudo make install' to install Eruption"
+	@echo ""
+	@echo "If Eruption is already running, stop it first.  Consider:"
+	@echo "'make stop && sudo make install && make start'"
+	@echo ""
+
 check:
 	@cargo check
 
@@ -362,4 +430,7 @@ clean:
 test:
 	@cargo test
 
-.PHONY: check clean all start stop install uninstall build test
+.SILENT: check clean all start stop install install_scripts install_profiles uninstall build test
+.PHONY: check clean all start stop install install_scripts install_profiles \
+		uninstall build test xtask
+

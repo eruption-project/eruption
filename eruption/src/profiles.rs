@@ -393,7 +393,7 @@ impl Default for Profile {
 pub fn get_profile_dirs() -> Vec<PathBuf> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.lock();
+    let config = crate::CONFIG.read();
 
     let profile_dirs = config
         .as_ref()
@@ -669,7 +669,7 @@ mod tests {
             .build()
             .unwrap();
 
-        *crate::CONFIG.lock() = Some(config);
+        crate::CONFIG.write().replace(config);
 
         let profile = super::Profile::load_fully(&profile_path);
         let profile = match profile {

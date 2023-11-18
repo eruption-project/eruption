@@ -181,7 +181,7 @@ lazy_static! {
         Arc::new(RwLock::new(HashMap::new()));
 
     /// Global configuration
-    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+    pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
 
     // Flags
 
@@ -248,7 +248,7 @@ lazy_static! {
 
     // cached value
     static ref GRAB_MOUSE: AtomicBool = {
-        let config = &*crate::CONFIG.lock();
+        let config = &*crate::CONFIG.read();
         let grab_mouse = config
             .as_ref()
             .unwrap()
@@ -584,7 +584,7 @@ pub fn switch_profile(
                     debug!("Switch successful");
 
                     let fade_millis = crate::CONFIG
-                        .lock()
+                        .read()
                         .as_ref()
                         .unwrap()
                         .get_int("global.profile_fade_milliseconds")
@@ -647,7 +647,7 @@ fn run_main_loop(
     events::notify_observers(events::Event::DaemonStartup).unwrap();
 
     let afk_timeout_secs = crate::CONFIG
-        .lock()
+        .read()
         .as_ref()
         .unwrap()
         .get_int("global.afk_timeout_secs")
@@ -930,7 +930,7 @@ fn run_main_loop(
                 info!("Entering AFK mode now...");
 
                 let afk_profile = crate::CONFIG
-                    .lock()
+                    .read()
                     .as_ref()
                     .unwrap()
                     .get::<String>("global.afk_profile")
@@ -1723,7 +1723,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
             process::exit(1);
         });
 
-    *CONFIG.lock() = Some(config.clone());
+    *CONFIG.write() = Some(config.clone());
 
     // enable support for experimental features?
     let enable_experimental_features = config

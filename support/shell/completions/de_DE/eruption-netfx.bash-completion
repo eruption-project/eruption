@@ -273,4 +273,4 @@ _eruption-netfx() {
     esac
 }
 
-complete -F _eruption-netfx -o bashdefault -o default eruption-netfx
+complete -F _eruption-netfx -o nosort -o bashdefault -o default eruption-netfx

@@ -20,22 +20,27 @@
 */
 
 use egui::CentralPanel;
-
-mod hwdevices;
+use tracing::error;
 
 // pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 #[derive(Default)]
-pub struct MicePage {}
+pub struct KeyboardsPage {}
 
-impl MicePage {
+impl KeyboardsPage {
     pub fn new() -> Self {
         Self {}
     }
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Mouse devices");
+            let device = crate::ui::hwdevices::keyboards::get_keyboard_device(0, ui, ctx).unwrap();
+
+            ui.heading("Keyboard devices");
+
+            if let Err(e) = device.draw_keyboard(ui, ctx) {
+                error!("Error rendering the keyboard: {}", e);
+            }
         });
     }
 }

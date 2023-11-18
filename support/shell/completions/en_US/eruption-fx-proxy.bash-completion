@@ -145,4 +145,4 @@ _eruption-fx-proxy() {
     esac
 }
 
-complete -F _eruption-fx-proxy -o bashdefault -o default eruption-fx-proxy
+complete -F _eruption-fx-proxy -o nosort -o bashdefault -o default eruption-fx-proxy

@@ -228,7 +228,7 @@ sudo systemctl enable --now eruption.service
 ### From Source
 
 ```shell
-git clone https://github.com/X3n0m0rph59/eruption.git
+git clone https://github.com/eruption-project/eruption.git
 cd eruption
 make
 sudo make install

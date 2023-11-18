@@ -931,7 +931,7 @@ pub trait MiscSerialDeviceTrait: SerialDeviceTrait {
 
 /// Returns true if the USB device is blacklisted in the global configuration
 pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
-    let config = crate::CONFIG.lock();
+    let config = crate::CONFIG.read();
 
     if let Some(config) = config.as_ref() {
         let devices = config.get_array("devices").unwrap_or_else(|_e| vec![]);
@@ -965,7 +965,7 @@ pub fn is_device_blacklisted(vid: u16, pid: u16) -> Result<bool> {
 pub fn get_non_pnp_devices() -> Result<Vec<NonPnPDevice>> {
     let mut result = vec![];
 
-    let config = crate::CONFIG.lock();
+    let config = crate::CONFIG.read();
 
     if let Some(config) = config.as_ref() {
         let devices = config.get_array("devices").unwrap_or_else(|_e| vec![]);

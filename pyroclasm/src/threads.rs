@@ -35,7 +35,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 
 /// Update the tuple of managed devices
 pub fn update_managed_devices() -> Result<()> {
-    *MANAGED_DEVICES.lock() = dbus_client::get_managed_devices()?;
+    *MANAGED_DEVICES.write() = dbus_client::get_managed_devices()?;
 
     Ok(())
 }
@@ -95,7 +95,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
             update_active_slot()?;
 
             // spawn D-Bus events thread
-            let (dbusevents_tx, dbusevents_rx) = bounded(32);
+            let (dbusevents_tx, dbusevents_rx) = bounded(8);
             spawn_dbus_thread(dbusevents_tx)?;
 
             // enter the event loop
@@ -165,7 +165,7 @@ pub fn spawn_events_thread(_events_tx: Sender<dbus_client::Message>) -> Result<(
 
                 update_color_map()?;
 
-                thread::sleep(Duration::from_millis(25));
+                thread::sleep(Duration::from_millis(15));
             }
 
             Ok(())

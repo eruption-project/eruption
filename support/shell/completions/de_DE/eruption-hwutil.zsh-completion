@@ -192,7 +192,7 @@ esac
 _eruption-hwutil_commands() {
     local commands; commands=(
 'list:List available devices, use this first to find out the index of the device to address' \
-'status:Query device specific status like e.g.: Signal Strength/Battery Level' \
+'status:Query device specific status like e.g.\: Signal Strength/Battery Level' \
 'blackout:Turn off all LEDs, but otherwise leave the device completely usable' \
 'firmware:Firmware related subcommands (DANGEROUS, may brick the device)' \
 'completions:Shell Definitionen für Autovervollständigung erzeugen' \
@@ -270,7 +270,7 @@ _eruption-hwutil__firmware__help__help_commands() {
 _eruption-hwutil__help_commands() {
     local commands; commands=(
 'list:List available devices, use this first to find out the index of the device to address' \
-'status:Query device specific status like e.g.: Signal Strength/Battery Level' \
+'status:Query device specific status like e.g.\: Signal Strength/Battery Level' \
 'blackout:Turn off all LEDs, but otherwise leave the device completely usable' \
 'firmware:Firmware related subcommands (DANGEROUS, may brick the device)' \
 'completions:Shell Definitionen für Autovervollständigung erzeugen' \

@@ -468,4 +468,4 @@ _eruption-process-monitor() {
     esac
 }
 
-complete -F _eruption-process-monitor -o bashdefault -o default eruption-process-monitor
+complete -F _eruption-process-monitor -o nosort -o bashdefault -o default eruption-process-monitor

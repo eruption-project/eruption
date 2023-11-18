@@ -29,7 +29,7 @@ Register-ArgumentCompleter -Native -CommandName 'eruptionctl' -ScriptBlock {
             [CompletionResult]::new('--repeat', 'repeat', [CompletionResultType]::ParameterName, 'Repeat output until ctrl+c is pressed')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Print help')
-            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('-V', 'V ', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Print version')
             [CompletionResult]::new('status', 'status', [CompletionResultType]::ParameterValue, 'Zeigt den Status von Eruption, das aktuell aktive Profil oder den Slot')
             [CompletionResult]::new('switch', 'switch', [CompletionResultType]::ParameterValue, 'Zu einem anderen Profil im aktiven Slot, oder einem anderen Slot wechseln')

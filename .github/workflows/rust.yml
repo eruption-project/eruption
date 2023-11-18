@@ -1,3 +1,22 @@
+#  SPDX-License-Identifier: GPL-3.0-or-later
+#
+#  This file is part of Eruption.
+#
+#  Eruption is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Eruption is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Eruption.  If not, see <http://www.gnu.org/licenses/>.
+#
+#  Copyright (c) 2019-2023, The Eruption Development Team
+
 on: [push, pull_request]
 name: Continuous integration
 jobs:
@@ -5,8 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Dependencies
-        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev liblua5.4-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
-      - uses: actions/checkout@v2
+        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
@@ -15,6 +34,7 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
   tests:
     name: Test Suite
     runs-on: ubuntu-latest
@@ -25,8 +45,8 @@ jobs:
           - nightly
     steps:
       - name: Setup Dependencies
-        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev liblua5.4-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
-      - uses: actions/checkout@v2
+        run: "sudo apt-get update -y -qq; sudo apt-get install -y -qq protobuf-compiler libprotobuf-dev libsystemd-dev libusb-1.0-0-dev libhidapi-dev libevdev-dev libudev-dev libdbus-1-dev libpulse-dev libluajit-5.1-dev libx11-dev libxrandr-dev libgtk-3-dev libgdk-pixbuf2.0-dev libatk1.0-dev libpango1.0-dev libcairo2-dev libgtksourceview-4-dev"
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -34,5 +54,5 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          command: test
+          command: build
           args: --all-features

@@ -394,8 +394,8 @@ _eruption-keymap__help__help_commands() {
 (( $+functions[_eruption-keymap__mapping__help_commands] )) ||
 _eruption-keymap__mapping__help_commands() {
     local commands; commands=(
-'add:Add a mapping rule for `source` that executes `action`' \
-'remove:Remove the mapping rule for `source`' \
+'add:Add a mapping rule for \`source\` that executes \`action\`' \
+'remove:Remove the mapping rule for \`source\`' \
 'enable:Enable a mapping rule' \
 'disable:Disable a mapping rule' \
 'help:Print this message or the help of the given subcommand(s)' \
@@ -430,8 +430,8 @@ _eruption-keymap__macros_commands() {
 (( $+functions[_eruption-keymap__help__mapping_commands] )) ||
 _eruption-keymap__help__mapping_commands() {
     local commands; commands=(
-'add:Add a mapping rule for `source` that executes `action`' \
-'remove:Remove the mapping rule for `source`' \
+'add:Add a mapping rule for \`source\` that executes \`action\`' \
+'remove:Remove the mapping rule for \`source\`' \
 'enable:Enable a mapping rule' \
 'disable:Disable a mapping rule' \
     )
@@ -440,8 +440,8 @@ _eruption-keymap__help__mapping_commands() {
 (( $+functions[_eruption-keymap__mapping_commands] )) ||
 _eruption-keymap__mapping_commands() {
     local commands; commands=(
-'add:Add a mapping rule for `source` that executes `action`' \
-'remove:Remove the mapping rule for `source`' \
+'add:Add a mapping rule for \`source\` that executes \`action\`' \
+'remove:Remove the mapping rule for \`source\`' \
 'enable:Enable a mapping rule' \
 'disable:Disable a mapping rule' \
 'help:Print this message or the help of the given subcommand(s)' \

@@ -394,8 +394,8 @@ _eruption-keymap__help__help_commands() {
 (( $+functions[_eruption-keymap__mapping__help_commands] )) ||
 _eruption-keymap__mapping__help_commands() {
     local commands; commands=(
-'add:Ein Tasten Mapping von `source` nach `action` hinzufügen' \
-'remove:Das Tasten Mapping von `source` entfernen' \
+'add:Ein Tasten Mapping von \`source\` nach \`action\` hinzufügen' \
+'remove:Das Tasten Mapping von \`source\` entfernen' \
 'enable:Aktiviert eine Mapping Regel' \
 'disable:Deaktiviert eine Mapping Regel' \
 'help:Print this message or the help of the given subcommand(s)' \
@@ -430,8 +430,8 @@ _eruption-keymap__macros_commands() {
 (( $+functions[_eruption-keymap__help__mapping_commands] )) ||
 _eruption-keymap__help__mapping_commands() {
     local commands; commands=(
-'add:Ein Tasten Mapping von `source` nach `action` hinzufügen' \
-'remove:Das Tasten Mapping von `source` entfernen' \
+'add:Ein Tasten Mapping von \`source\` nach \`action\` hinzufügen' \
+'remove:Das Tasten Mapping von \`source\` entfernen' \
 'enable:Aktiviert eine Mapping Regel' \
 'disable:Deaktiviert eine Mapping Regel' \
     )
@@ -440,8 +440,8 @@ _eruption-keymap__help__mapping_commands() {
 (( $+functions[_eruption-keymap__mapping_commands] )) ||
 _eruption-keymap__mapping_commands() {
     local commands; commands=(
-'add:Ein Tasten Mapping von `source` nach `action` hinzufügen' \
-'remove:Das Tasten Mapping von `source` entfernen' \
+'add:Ein Tasten Mapping von \`source\` nach \`action\` hinzufügen' \
+'remove:Das Tasten Mapping von \`source\` entfernen' \
 'enable:Aktiviert eine Mapping Regel' \
 'disable:Deaktiviert eine Mapping Regel' \
 'help:Print this message or the help of the given subcommand(s)' \

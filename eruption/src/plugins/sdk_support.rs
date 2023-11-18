@@ -144,7 +144,7 @@ pub fn claim_hotplugged_devices(_hotplug_info: &HotplugInfo) -> Result<()> {
 
             // initialize mouse devices
             for (index, device) in devices.1.iter().enumerate() {
-                let enable_mouse = (*crate::CONFIG.lock())
+                let enable_mouse = (*crate::CONFIG.read())
                     .as_ref()
                     .unwrap()
                     .get::<bool>("global.enable_mouse")

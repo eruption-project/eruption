@@ -18,13 +18,13 @@
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
 [Unit]
-Description=Eruption device hotplug notification daemon
+Description=Device Hotplug Notification for Eruption
 Documentation=man:eruption(8) man:eruption.conf(5) man:eruptionctl(1) man:eruption-netfx(1)
 After=eruption.service
 Wants=multi-user.target
 
 [Service]
-Environment=RUST_LOG=warn
+Environment=RUST_LOG=info
 ExecStart=/usr/bin/eruption-hotplug-helper hotplug
 PIDFile=/run/eruption-hotplug-helper.pid
 # ExecStopPost=-/usr/bin/rm -f /var/lock/eruption-hotplug-helper.lock

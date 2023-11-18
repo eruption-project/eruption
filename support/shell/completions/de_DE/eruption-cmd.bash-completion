@@ -103,4 +103,4 @@ _eruption-cmd() {
     esac
 }
 
-complete -F _eruption-cmd -o bashdefault -o default eruption-cmd
+complete -F _eruption-cmd -o nosort -o bashdefault -o default eruption-cmd

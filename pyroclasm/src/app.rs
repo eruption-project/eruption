@@ -22,9 +22,9 @@
 use std::ops::RangeInclusive;
 
 use egui::{
-    epaint::Shadow, style::Margin, warn_if_debug_build, Align, Button, ComboBox, Direction,
-    FontFamily, FontId, Frame, Id, Layout, RichText, Sense, Slider, TextStyle, TopBottomPanel,
-    Widget,
+    epaint::Shadow, style::Margin, warn_if_debug_build, Align, Button, ComboBox, Context,
+    Direction, FontFamily, FontId, Frame, Id, Layout, RichText, Sense, Slider, TextStyle,
+    TopBottomPanel, Widget,
 };
 use egui_toast::{Toast, ToastKind, ToastOptions};
 use tracing::error;
@@ -124,7 +124,7 @@ impl Pyroclasm {
         Default::default()
     }
 
-    fn setup_modals(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn setup_modals(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
         let modal = egui_modal::Modal::new(ctx, "quit_dialog");
 
         modal.show(|ui| {
@@ -650,79 +650,79 @@ impl eframe::App for Pyroclasm {
 
         match self.active_page {
             ui::TabPages::Start => {
-                let mut page = ui::start::StartPage::new();
+                let mut page = ui::pages::start::StartPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Canvas => {
-                let mut page = ui::canvas::CanvasPage::new();
+                let mut page = ui::pages::canvas::CanvasPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Keyboards => {
-                let mut page = ui::keyboards::KeyboardsPage::new();
+                let mut page = ui::pages::keyboards::KeyboardsPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Mice => {
-                let mut page = ui::mice::MicePage::new();
+                let mut page = ui::pages::mice::MicePage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Misc => {
-                let mut page = ui::misc::MiscPage::new();
+                let mut page = ui::pages::misc::MiscPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Profiles => {
-                let mut page = ui::profiles::ProfilesPage::new();
+                let mut page = ui::pages::profiles::ProfilesPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Macros => {
-                let mut page = ui::macros::MacrosPage::new();
+                let mut page = ui::pages::macros::MacrosPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Rules => {
-                let mut page = ui::rules::RulesPage::new();
+                let mut page = ui::pages::rules::RulesPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::ColorSchemes => {
-                let mut page = ui::color_schemes::ColorSchemesPage::new();
+                let mut page = ui::pages::color_schemes::ColorSchemesPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Settings => {
-                let mut page = ui::settings::SettingsPage::new();
+                let mut page = ui::pages::settings::SettingsPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::About => {
-                let mut page = ui::about::AboutPage::new();
+                let mut page = ui::pages::about::AboutPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Logs => {
-                let mut page = ui::logs::LogsPage::new();
+                let mut page = ui::pages::logs::LogsPage::new();
 
                 page.update(ctx, frame)
             }
 
             ui::TabPages::Debug => {
-                let mut page = ui::debug::DebugPage::new();
+                let mut page = ui::pages::debug::DebugPage::new();
 
                 page.update(ctx, frame)
             }

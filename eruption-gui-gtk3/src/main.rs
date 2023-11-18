@@ -156,7 +156,7 @@ lazy_static! {
     pub static ref COLOR_MAP: Arc<Mutex<Vec<RGBA>>> = Arc::new(Mutex::new(vec![RGBA { r: 0, g: 0, b: 0, a: 0 }; constants::CANVAS_SIZE]));
 
     /// Global configuration
-    pub static ref CONFIG: Arc<Mutex<Option<config::Config>>> = Arc::new(Mutex::new(None));
+    pub static ref CONFIG: Arc<RwLock<Option<config::Config>>> = Arc::new(RwLock::new(None));
 }
 
 /// Event handling utilities
@@ -626,7 +626,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 error_log::fatal_error(&format!("Could not parse configuration file: {e}"), 4);
             });
 
-        *CONFIG.lock() = config.ok();
+        *CONFIG.write() = config.ok();
 
         // request default processing of command line arguments
         -1

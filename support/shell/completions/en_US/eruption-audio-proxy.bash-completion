@@ -145,4 +145,4 @@ _eruption-audio-proxy() {
     esac
 }
 
-complete -F _eruption-audio-proxy -o bashdefault -o default eruption-audio-proxy
+complete -F _eruption-audio-proxy -o nosort -o bashdefault -o default eruption-audio-proxy

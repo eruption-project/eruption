@@ -427,4 +427,4 @@ _eruption-macro() {
     esac
 }
 
-complete -F _eruption-macro -o bashdefault -o default eruption-macro
+complete -F _eruption-macro -o nosort -o bashdefault -o default eruption-macro
