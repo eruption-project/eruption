@@ -54,6 +54,7 @@ mod roccat_kova_aimo;
 mod roccat_magma;
 mod roccat_nyth;
 mod roccat_vulcan_1xx;
+mod roccat_vulcan_2_max;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
@@ -84,7 +85,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 29]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 30]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // Wooting
@@ -93,6 +94,9 @@ lazy_static! {
         KeyboardDriver::register("Wooting", "Two HE (ARM)",  0x31e3, 0x1230, &wooting_two_he_arm::bind_hiddev, MaturityLevel::Testing),
 
         // ROCCAT
+
+        // Vulcan II Max
+        KeyboardDriver::register("ROCCAT", "Vulcan II Max",  0x1e7d, 0x2ee2, &roccat_vulcan_2_max::bind_hiddev, MaturityLevel::Experimental),
 
         // Vulcan 100/12x/Pro (TKL) series
         KeyboardDriver::register("ROCCAT", "Vulcan 100/12x", 0x1e7d, 0x3098, &roccat_vulcan_1xx::bind_hiddev, MaturityLevel::Stable),
