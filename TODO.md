@@ -27,11 +27,13 @@
 _This is a non-exhaustive listing of planned features:_
 
 - GUI support: Improve the GTK+3 based GUI
+- GUI support: Improve the Pyroclasm UI
+- TUI support: Improve the Magma TUI
+- Implement `eruptionpkg` Package manager
 - Improve i18n and l10n: Add more translations
 - Improve the `Eruption SDK` that allows 3rd party applications to communicate with Eruption
 - Add a KDE Plasma widget
 - Add a MATE Desktop Applet
-- GUI support: Improve the Pyroclasm UI
 
 ## Bugs and known Problems
 
