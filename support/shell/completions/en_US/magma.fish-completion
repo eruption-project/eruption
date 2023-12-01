@@ -1,0 +1,12 @@
+complete -c magma -n "__fish_use_subcommand" -s c -l config -d 'Sets the configuration file to use' -r
+complete -c magma -n "__fish_use_subcommand" -s v -l verbose -d 'Verbose mode (-v, -vv, -vvv, etc.)'
+complete -c magma -n "__fish_use_subcommand" -s h -l help -d 'Print help'
+complete -c magma -n "__fish_use_subcommand" -s V -l version -d 'Print version'
+complete -c magma -n "__fish_use_subcommand" -f -a "completions" -d 'Generate shell completions'
+complete -c magma -n "__fish_use_subcommand" -f -a "manpages" -d 'Generate manual pages'
+complete -c magma -n "__fish_use_subcommand" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c magma -n "__fish_seen_subcommand_from completions" -s h -l help -d 'Print help'
+complete -c magma -n "__fish_seen_subcommand_from manpages" -s h -l help -d 'Print help'
+complete -c magma -n "__fish_seen_subcommand_from help; and not __fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from manpages; and not __fish_seen_subcommand_from help" -f -a "completions" -d 'Generate shell completions'
+complete -c magma -n "__fish_seen_subcommand_from help; and not __fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from manpages; and not __fish_seen_subcommand_from help" -f -a "manpages" -d 'Generate manual pages'
+complete -c magma -n "__fish_seen_subcommand_from help; and not __fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from manpages; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'

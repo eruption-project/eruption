@@ -1,0 +1,54 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[magma] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'magma'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'magma'= {
+            cand -c 'Sets the configuration file to use'
+            cand --config 'Sets the configuration file to use'
+            cand -v 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand --verbose 'Verboser Modus (-v, -vv, -vvv, etc.)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand manpages 'Manual pages erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'magma;completions'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'magma;manpages'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'magma;help'= {
+            cand completions 'Shell Definitionen für Autovervollständigung erzeugen'
+            cand manpages 'Manual pages erzeugen'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'magma;help;completions'= {
+        }
+        &'magma;help;manpages'= {
+        }
+        &'magma;help;help'= {
+        }
+    ]
+    $completions[$command]
+}

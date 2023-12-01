@@ -32,6 +32,7 @@ SUDO := sudo
 BUILDFLAGS_WINDOWS := --target=x86_64-pc-windows-gnu \
 	--release --no-default-features --features=windows \
 	-p eruption \
+	-p magma \
 	-p pyroclasm \
 	-p eruption-gui-gtk3 \
 	-p eruption-sdk \
@@ -167,6 +168,7 @@ install: install_scripts install_profiles
 	@mkdir -p "$(TARGET_DIR)/share/eruption/i18n"
 	@mkdir -p "$(TARGET_DIR)/share/eruption/sfx"
 
+	@cp "support/assets/magma/magma.desktop" "$(TARGET_DIR)/share/applications/"
 	@cp "support/assets/pyroclasm/pyroclasm.desktop" "$(TARGET_DIR)/share/applications/"
 	@cp "support/assets/eruption-gui-gtk3/eruption-gui-gtk3.desktop" "$(TARGET_DIR)/share/applications/"
 	@cp "support/assets/eruption.png" "$(TARGET_DIR)/share/icons/"
@@ -202,6 +204,7 @@ install: install_scripts install_profiles
 	@cp "support/man/eruption-cmd.8" "$(TARGET_DIR)/share/man/man8/"
 	@cp "support/man/eruption.conf.5" "$(TARGET_DIR)/share/man/man5/"
 	@cp "support/man/process-monitor.conf.5" "$(TARGET_DIR)/share/man/man5/"
+	@cp "support/man/magma.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/pyroclasm.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/eruptionctl.1" "$(TARGET_DIR)/share/man/man1/"
 	@cp "support/man/eruption-hwutil.8" "$(TARGET_DIR)/share/man/man8/"
@@ -222,6 +225,7 @@ install: install_scripts install_profiles
 	@cp "support/shell/completions/en_US/eruption-process-monitor.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruption-process-monitor"
 	@cp "support/shell/completions/en_US/eruptionctl.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/eruptionctl"
 	@cp "support/shell/completions/en_US/pyroclasm.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/pyroclasm"
+	@cp "support/shell/completions/en_US/magma.bash-completion" "$(TARGET_DIR)/share/bash-completion/completions/magma"
 	@cp "support/shell/completions/en_US/eruption-cmd.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-cmd.fish"
 	@cp "support/shell/completions/en_US/eruption-hwutil.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-hwutil.fish"
 	@cp "support/shell/completions/en_US/eruption-debug-tool.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-debug-tool.fish"
@@ -233,6 +237,7 @@ install: install_scripts install_profiles
 	@cp "support/shell/completions/en_US/eruption-process-monitor.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruption-process-monitor.fish"
 	@cp "support/shell/completions/en_US/eruptionctl.fish-completion" "$(TARGET_DIR)/share/fish/completions/eruptionctl.fish"
 	@cp "support/shell/completions/en_US/pyroclasm.fish-completion" "$(TARGET_DIR)/share/fish/completions/pyroclasm.fish"
+	@cp "support/shell/completions/en_US/magma.fish-completion" "$(TARGET_DIR)/share/fish/completions/magma.fish"
 	@cp "support/shell/completions/en_US/eruption-cmd.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-cmd"
 	@cp "support/shell/completions/en_US/eruption-hwutil.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-hwutil"
 	@cp "support/shell/completions/en_US/eruption-debug-tool.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-debug-tool"
@@ -244,6 +249,7 @@ install: install_scripts install_profiles
 	@cp "support/shell/completions/en_US/eruption-process-monitor.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruption-process-monitor"
 	@cp "support/shell/completions/en_US/eruptionctl.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_eruptionctl"
 	@cp "support/shell/completions/en_US/pyroclasm.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_pyroclasm"
+	@cp "support/shell/completions/en_US/magma.zsh-completion" "$(TARGET_DIR)/share/zsh/site-functions/_magma"
 	@cp "support/sfx/typewriter1.wav" "$(TARGET_DIR)/share/eruption/sfx/"
 	@cp "support/sfx/phaser1.wav" "$(TARGET_DIR)/share/eruption/sfx/"
 	@cp "support/sfx/phaser2.wav" "$(TARGET_DIR)/share/eruption/sfx/"
@@ -268,6 +274,7 @@ install: install_scripts install_profiles
 	@cp $(SOURCE_DIR)/eruption-audio-proxy $(TARGET_DIR)/bin/
 	@cp $(SOURCE_DIR)/eruption-process-monitor $(TARGET_DIR)/bin/
 	@cp $(SOURCE_DIR)/pyroclasm $(TARGET_DIR)/bin/
+	@cp $(SOURCE_DIR)/magma $(TARGET_DIR)/bin/
 
 	@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
 
@@ -309,6 +316,7 @@ install_binaries:
 	-@cp $(SOURCE_DIR)/eruption-audio-proxy $(TARGET_DIR)/bin/
 	-@cp $(SOURCE_DIR)/eruption-process-monitor $(TARGET_DIR)/bin/
 	-@cp $(SOURCE_DIR)/pyroclasm $(TARGET_DIR)/bin/
+	-@cp $(SOURCE_DIR)/magma $(TARGET_DIR)/bin/
 
 	-@setcap CAP_NET_ADMIN+ep $(TARGET_DIR)/bin/eruption-process-monitor
 
@@ -360,6 +368,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/bin/eruption-audio-proxy
 	-@rm $(TARGET_DIR)/bin/eruption-process-monitor
 	-@rm $(TARGET_DIR)/bin/pyroclasm
+	-@rm $(TARGET_DIR)/bin/magma
 
 	-@rm $(TARGET_DIR)/share/applications/pyroclasm.desktop
 	-@rm $(TARGET_DIR)/share/applications/eruption-gui-gtk3.desktop
@@ -391,6 +400,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/man/man8/eruption-cmd.8
 	-@rm $(TARGET_DIR)/share/man/man5/eruption.conf.5
 	-@rm $(TARGET_DIR)/share/man/man5/process-monitor.conf.5
+	-@rm $(TARGET_DIR)/share/man/man1/magma.1
 	-@rm $(TARGET_DIR)/share/man/man1/pyroclasm.1
 	-@rm $(TARGET_DIR)/share/man/man1/eruptionctl.1
 	-@rm $(TARGET_DIR)/share/man/man8/eruption-hwutil.8
@@ -412,6 +422,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruption-process-monitor
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/eruptionctl
 	-@rm $(TARGET_DIR)/share/bash-completion/completions/pyroclasm
+	-@rm $(TARGET_DIR)/share/bash-completion/completions/magma
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-cmd.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-hwutil.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-debug-tool.fish
@@ -422,7 +433,8 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-audio-proxy.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruption-process-monitor.fish
 	-@rm $(TARGET_DIR)/share/fish/completions/eruptionctl.fish
-	# -@rm $(TARGET_DIR)/share/fish/completions/pyroclasm.fish
+	-@rm $(TARGET_DIR)/share/fish/completions/pyroclasm.fish
+	-@rm $(TARGET_DIR)/share/fish/completions/magma.fish
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-cmd
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-hwutil
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-debug-tool
@@ -434,6 +446,7 @@ uninstall:
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruption-process-monitor
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_eruptionctl
 	-@rm $(TARGET_DIR)/share/zsh/site-functions/_pyroclasm
+	-@rm $(TARGET_DIR)/share/zsh/site-functions/_magma
 
 	-@rm $(TARGET_DIR)/share/eruption/sfx/typewriter1.wav
 	-@rm $(TARGET_DIR)/share/eruption/sfx/phaser1.wav

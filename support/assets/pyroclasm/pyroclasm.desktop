@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Encoding=UTF-8
-Name=Pyroclasm UI
+Name=Pyroclasm UI for Eruption
 Comment=Pyroclasm UI for Eruption
 Exec=/usr/bin/pyroclasm
 Icon=eruption.png
