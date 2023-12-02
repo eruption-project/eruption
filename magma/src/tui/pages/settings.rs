@@ -22,9 +22,9 @@
 use crate::themes::THEME;
 use crate::tui::pages::Page;
 use crossterm::event::Event;
-use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Clear, Paragraph, Widget};
+use ratatui::Frame;
 
 #[derive(Default)]
 pub struct SettingsPage {}
@@ -36,7 +36,9 @@ impl SettingsPage {
 }
 
 impl Page for SettingsPage {
-    fn render(&self, area: Rect, buf: &mut Buffer) {
+    fn render(&mut self, frame: &mut Frame<'_>, area: Rect) {
+        let buf = frame.buffer_mut();
+
         Clear.render(area, buf);
 
         Paragraph::new("Settings")

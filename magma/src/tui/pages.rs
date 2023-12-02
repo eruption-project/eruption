@@ -20,8 +20,9 @@
 */
 
 use crossterm::event::Event;
-use ratatui::buffer::Buffer;
+
 use ratatui::layout::Rect;
+use ratatui::Frame;
 
 mod about;
 pub mod canvas;
@@ -53,6 +54,6 @@ pub use rules::*;
 pub use settings::*;
 
 pub trait Page {
-    fn render(&self, area: Rect, buf: &mut Buffer);
+    fn render(&mut self, frame: &mut Frame<'_>, area: Rect);
     fn handle_event(&mut self, event: &Event);
 }

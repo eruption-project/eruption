@@ -19,7 +19,7 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
-use ndarray::{ArrayView2};
+use ndarray::ArrayView2;
 use std::rc::Rc;
 
 // use palette::{
@@ -29,8 +29,8 @@ use std::rc::Rc;
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Color},
-    widgets::{Widget},
+    style::Color,
+    widgets::Widget,
 };
 
 use resize::Pixel::RGB8;

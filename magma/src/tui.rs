@@ -20,7 +20,7 @@
 */
 
 use crate::themes::THEME;
-use crate::{custom_widgets, switch_to_slot, ConnectionState, STATE};
+use crate::{custom_widgets, switch_to_slot, util, ConnectionState, STATE};
 use crossterm::event;
 use crossterm::event::{Event, KeyCode, KeyModifiers};
 use itertools::Itertools;
@@ -28,7 +28,9 @@ use ratatui::layout::{Alignment, Layout, Margin};
 use ratatui::layout::{Constraint, Direction, Rect};
 use ratatui::style::{Color, Stylize};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, BorderType, Borders, Clear, Padding, Paragraph, Tabs, Widget, Wrap};
+use ratatui::widgets::{
+    Block, BorderType, Borders, Clear, Gauge, Padding, Paragraph, Tabs, Widget, Wrap,
+};
 use ratatui::Frame;
 use std::io;
 use std::sync::atomic::Ordering;
@@ -45,9 +47,11 @@ pub(crate) fn handle_events() -> io::Result<bool> {
     if event::poll(std::time::Duration::from_millis(15))? {
         let event = event::read()?;
 
+        // call the event handler of the active page
         let page = &mut crate::PAGES.write().unwrap()[crate::ACTIVE_PAGE.load(Ordering::SeqCst)];
         page.handle_event(&event);
 
+        // global event processing
         let connection_state = *crate::CONNECTION_STATE.read().unwrap();
 
         match connection_state {
@@ -116,6 +120,46 @@ pub(crate) fn handle_events() -> io::Result<bool> {
                     }
                     if key.code == KeyCode::F(4) {
                         switch_to_slot(3).unwrap();
+                    }
+
+                    // adjust brightness
+                    if key.code == KeyCode::F(8) {
+                        let mut brightness = crate::STATE
+                            .read()
+                            .unwrap()
+                            .current_brightness
+                            .unwrap_or_else(|| 0);
+
+                        if key.modifiers == KeyModifiers::SHIFT {
+                            brightness -= 1;
+                        } else {
+                            brightness -= 5;
+                        }
+
+                        brightness = brightness.clamp(0, 100);
+
+                        util::set_brightness(brightness).unwrap_or_else(|e| {
+                            tracing::error!("Could not adjust brightness: {e}")
+                        });
+                    }
+                    if key.code == KeyCode::F(9) {
+                        let mut brightness = crate::STATE
+                            .read()
+                            .unwrap()
+                            .current_brightness
+                            .unwrap_or_else(|| 0);
+
+                        if key.modifiers == KeyModifiers::SHIFT {
+                            brightness += 1;
+                        } else {
+                            brightness += 5;
+                        }
+
+                        brightness = brightness.clamp(0, 100);
+
+                        util::set_brightness(brightness).unwrap_or_else(|e| {
+                            tracing::error!("Could not adjust brightness: {e}")
+                        });
                     }
 
                     // select tab N
@@ -205,9 +249,9 @@ fn render_tab_bar(frame: &mut Frame, area: Rect) {
         " Keyboards ",
         "   Mice   ",
         "   Misc   ",
-        "Color Schemes",
-        "Automation Rules",
-        "Profiles & Scripts",
+        " Color Schemes ",
+        " Automation Rules ",
+        " Profiles & Scripts ",
         "  Macros  ",
         "  Keymaps  ",
         " Settings ",
@@ -224,8 +268,8 @@ fn render_tab_bar(frame: &mut Frame, area: Rect) {
 
 fn render_client_area(frame: &mut Frame, area: Rect) {
     // render client area
-    let page = &crate::PAGES.read().unwrap()[crate::ACTIVE_PAGE.load(Ordering::SeqCst)];
-    page.render(area, frame.buffer_mut());
+    let page = &mut crate::PAGES.write().unwrap()[crate::ACTIVE_PAGE.load(Ordering::SeqCst)];
+    page.render(frame, area);
 }
 
 fn render_effects_area(frame: &mut Frame, area: Rect) {
@@ -352,23 +396,42 @@ fn render_slot_bar(frame: &mut Frame, area: &Vec<Rect>) {
 
 fn render_footer(frame: &mut Frame, area: Rect) {
     // render footer bar
+    let layout = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Length(12),
+            Constraint::Length(5),
+            Constraint::Min(20),
+            Constraint::Length(5),
+            Constraint::Length(107),
+            Constraint::Percentage(30),
+        ])
+        .split(area);
+
+    let state = STATE.read().unwrap();
+
+    // let active_slot = state.active_slot;
+    let active_profile = &state.active_profile;
+    let brightness = state.current_brightness.unwrap_or_else(|| 0);
 
     // render logo string and title
-    let title =
-        Paragraph::new(Span::styled("Magma TUI", THEME.app_title)).alignment(Alignment::Left);
-    frame.render_widget(title, area);
+    let title = Paragraph::new("Magma TUI")
+        .style(THEME.app_title)
+        .alignment(Alignment::Left);
+    frame.render_widget(title, layout[0]);
 
-    // let active_slot = STATE.read().unwrap().active_slot;
-    let active_profile = &STATE.read().unwrap().active_profile;
+    let separator = Clear::default();
+    frame.render_widget(separator, layout[1]);
 
-    let indicator = Paragraph::new(Span::styled(
-        active_profile
-            .clone()
-            .unwrap_or_else(|| "<unknown>".to_string()),
-        THEME.app_title,
-    ))
-    .alignment(Alignment::Right);
-    frame.render_widget(indicator, area);
+    let brightness_indicator = Gauge::default()
+        .label(format!("{brightness}%"))
+        .style(THEME.content)
+        .gauge_style(THEME.description)
+        .percent(brightness as u16);
+    frame.render_widget(brightness_indicator, layout[2]);
+
+    let separator = Clear::default();
+    frame.render_widget(separator, layout[3]);
 
     // help text
     let keys = [
@@ -376,12 +439,10 @@ fn render_footer(frame: &mut Frame, area: Rect) {
         ("Tab", "Next Tab"),
         ("Backspace", "Previous Tab"),
         ("F1-F4", "Switch slots"),
-        ("↑/k", "Up"),
-        ("↓/j", "Down"),
-        ("←/h", "Left"),
-        ("→/l", "Right"),
-        ("?", "help"),
+        ("F8-F9", "Adjust brightness"),
+        ("?", "Help"),
     ];
+
     let spans = keys
         .iter()
         .flat_map(|(key, desc)| {
@@ -391,11 +452,20 @@ fn render_footer(frame: &mut Frame, area: Rect) {
         })
         .collect_vec();
 
-    let footer = Paragraph::new(Line::from(spans))
+    let keybindings = Paragraph::new(Line::from(spans))
         .alignment(Alignment::Center)
         .fg(Color::Indexed(236))
         .bg(Color::Indexed(232));
-    frame.render_widget(footer, area);
+    frame.render_widget(keybindings, layout[4]);
+
+    let indicator = Paragraph::new(Span::styled(
+        active_profile
+            .clone()
+            .unwrap_or_else(|| "<unknown>".to_string()),
+        THEME.app_title,
+    ))
+    .alignment(Alignment::Right);
+    frame.render_widget(indicator, layout[5]);
 }
 
 fn render_alternate_footer(frame: &mut Frame, area: Rect) {
@@ -407,7 +477,11 @@ fn render_alternate_footer(frame: &mut Frame, area: Rect) {
     frame.render_widget(title, area);
 
     // help text
-    let keys = [("Esc", "Quit"), ("?", "help")];
+    let keys = [
+        ("Esc", "Quit"),
+        // ("?", "Help")
+    ];
+
     let spans = keys
         .iter()
         .flat_map(|(key, desc)| {
@@ -417,11 +491,11 @@ fn render_alternate_footer(frame: &mut Frame, area: Rect) {
         })
         .collect_vec();
 
-    let footer = Paragraph::new(Line::from(spans))
+    let keybindings = Paragraph::new(Line::from(spans))
         .alignment(Alignment::Center)
         .fg(Color::Indexed(236))
         .bg(Color::Indexed(232));
-    frame.render_widget(footer, area);
+    frame.render_widget(keybindings, area);
 }
 
 pub(crate) fn clear_screen(frame: &mut Frame) {
@@ -455,7 +529,7 @@ pub(crate) fn render_ui(frame: &mut Frame) {
             render_message_area(frame, effects_area[0]);
 
             render_slot_bar(frame, &slots_area);
-            render_footer(frame, footer_area.inner(&Margin::new(2, 0)));
+            render_footer(frame, footer_area.inner(&Margin::new(1, 0)));
         }
 
         ConnectionState::Initializing | ConnectionState::Disconnected => {
@@ -490,7 +564,7 @@ pub(crate) fn render_ui(frame: &mut Frame) {
                 .wrap(Wrap { trim: false });
             frame.render_widget(p, layout[1].inner(&Margin::new(2, 1)));
 
-            render_alternate_footer(frame, footer_area.inner(&Margin::new(2, 0)));
+            render_alternate_footer(frame, footer_area.inner(&Margin::new(1, 0)));
         }
     }
 }

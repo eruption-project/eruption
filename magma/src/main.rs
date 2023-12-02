@@ -332,6 +332,7 @@ pub async fn async_main() -> std::result::Result<(), eyre::Error> {
 
     let opts = Options::parse();
     apply_opts(&opts);
+    load_config(opts.config)?;
 
     if let Some(command) = opts.command {
         subcommands::handle_command(command).await?;
@@ -456,26 +457,28 @@ fn register_sigint_handler() {
 
 fn apply_opts(opts: &Options) {
     VERBOSE.store(opts.verbose, Ordering::SeqCst);
+}
 
+fn load_config(config: Option<String>) -> Result<()> {
     // process configuration file
-    let config_file = opts
-        .config
-        .as_deref()
-        .unwrap_or(constants::DEFAULT_CONFIG_FILE);
+    let config_file = config.unwrap_or_else(|| constants::DEFAULT_CONFIG_FILE.to_string());
 
     let config = Config::builder()
-        .add_source(config::File::new(config_file, config::FileFormat::Toml))
+        .add_source(config::File::new(&config_file, config::FileFormat::Toml))
         .build()
         .unwrap_or_else(|e| {
             tracing::error!("{}", tr!("could-not-parse-config", message = e.to_string()));
             process::exit(4);
         });
 
-    *CONFIG.write().unwrap() = Some(config);
+    *crate::CONFIG.write().unwrap() = Some(config);
+
+    Ok(())
 }
 
 /// initialize global state
 pub fn initialize_global_state_and_connection() {
+    // initialize tab pages
     let mut pages = PAGES.write().unwrap();
 
     pages.push(Box::new(pages::CanvasPage::new()));
@@ -492,12 +495,21 @@ pub fn initialize_global_state_and_connection() {
     pages.push(Box::new(pages::HelpPage::new()));
     pages.push(Box::new(pages::AboutPage::new()));
 
+    // initialize global application state
+
+    // fetch values via the D-Bus API
     let mut state = STATE.write().unwrap();
 
     state.slot_names = util::get_slot_names().ok();
     state.active_slot = util::get_active_slot().ok();
     state.active_profile = util::get_active_profile().ok();
     state.profiles = util::enumerate_profiles().ok();
+    state.current_brightness = util::get_brightness().ok();
+    state.canvas_hue = util::get_canvas_hue().ok();
+    state.canvas_saturation = util::get_canvas_saturation().ok();
+    state.canvas_lightness = util::get_canvas_lightness().ok();
+
+    // fetch values via the Eruption SDK
 
     // connect to Eruption daemon
     match Connection::new(ConnectionType::Local) {

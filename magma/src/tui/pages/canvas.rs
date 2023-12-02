@@ -22,9 +22,10 @@
 use crate::custom_widgets;
 use crate::themes::THEME;
 use crossterm::event::Event;
-use ratatui::buffer::Buffer;
-use ratatui::layout::{Rect};
+
+use ratatui::layout::Rect;
 use ratatui::widgets::{Clear, Paragraph, Widget};
+use ratatui::Frame;
 
 use super::Page;
 
@@ -38,7 +39,9 @@ impl CanvasPage {
 }
 
 impl Page for CanvasPage {
-    fn render(&self, area: Rect, buf: &mut Buffer) {
+    fn render(&mut self, frame: &mut Frame<'_>, area: Rect) {
+        let buf = frame.buffer_mut();
+
         Clear.render(area, buf);
 
         Paragraph::new("Canvas")

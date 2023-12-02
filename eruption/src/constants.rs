@@ -30,6 +30,9 @@ mod linux {
     /// Default path of eruption master configuration file
     pub const DEFAULT_CONFIG_FILE: &str = "/etc/eruption/eruption.conf";
 
+    /// Default path of the Magma TUI configuration file
+    pub const DEFAULT_MAGMA_CONFIG_FILE: &str = "~/.config/eruption/magma.conf";
+
     /// Default effect script
     pub const DEFAULT_EFFECT_SCRIPT: &str = "solid.lua";
 
@@ -274,5 +277,11 @@ pub const WATCHDOG_NOTIFY_MILLIS: u64 = 1499;
 
 /// eruption-gui: The time to wait before an external process is spawned, after the profile has been switched
 pub const PROCESS_SPAWN_WAIT_MILLIS: u64 = 800;
+
+/// The number of lines to scroll on cursor up or down
+pub const SCROLL_LINES: usize = 1;
+
+/// The number of lines to scroll on page up or page down
+pub const PAGE_SCROLL_LINES: usize = 10;
 
 // ****************************************************************************

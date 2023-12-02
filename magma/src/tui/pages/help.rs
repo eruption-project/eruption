@@ -19,13 +19,13 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+use crate::constants;
 use crate::themes::THEME;
 
 use crate::tui::pages::Page;
 use crossterm::event::Event;
 use crossterm::event::KeyCode;
 use itertools::Itertools;
-use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::prelude::*;
 use ratatui::widgets::*;
@@ -33,21 +33,23 @@ use ratatui::widgets::*;
 #[derive(Default)]
 pub struct HelpPage {
     vertical_scroll: usize,
+    scroll_extents: (usize, usize),
 }
 
 impl HelpPage {
     pub fn new() -> Self {
-        Self { vertical_scroll: 0 }
+        Self {
+            vertical_scroll: 0,
+            scroll_extents: (0, 0),
+        }
     }
 }
 
 impl Page for HelpPage {
-    fn render(&self, area: Rect, buf: &mut Buffer) {
-        Clear.render(area, buf);
+    fn render(&mut self, frame: &mut Frame<'_>, area: Rect) {
+        frame.render_widget(Clear::default(), area);
 
-        Paragraph::new("Key Bindings")
-            .style(THEME.title)
-            .render(area, buf);
+        frame.render_widget(Paragraph::new("Key Bindings").style(THEME.title), area);
 
         let area = area.inner(
             &(Margin {
@@ -59,9 +61,9 @@ impl Page for HelpPage {
         let layout = Layout::new(
             Direction::Horizontal,
             [
-                Constraint::Percentage(25),
-                Constraint::Percentage(50),
-                Constraint::Percentage(25),
+                Constraint::Percentage(15),
+                Constraint::Percentage(70),
+                Constraint::Percentage(15),
             ],
         )
         .split(area);
@@ -72,10 +74,29 @@ impl Page for HelpPage {
             ("Tab", "Next Tab"),
             ("Backspace", "Previous Tab"),
             ("F1-F4", "Switch slots"),
-            ("↑/k", "Up"),
-            ("↓/j", "Down"),
-            ("←/h", "Left"),
-            ("→/l", "Right"),
+            ("F5-F6", "Toggle effects settings"),
+            ("F8-F9", "Adjust global brightness"),
+            (
+                "Shift+F8-Shift+F9",
+                "Adjust global brightness (fine grained)",
+            ),
+            (
+                "Ctrl+F8-Ctrl+F9",
+                "Adjust brightness of the currently visible device",
+            ),
+            ("Ctrl+Tab", "Next Tab on the currently active page"),
+            (
+                "Ctrl+Backspace",
+                "Previous Tab on the currently active page",
+            ),
+            ("Return", "Confirm/Edit value"),
+            ("Space", "Toggle"),
+            ("↑", "Up/Increase value"),
+            ("↓", "Down/Decrease value"),
+            ("Page↑", "Page Up"),
+            ("Page↓", "Page Down"),
+            ("←", "Left"),
+            ("→", "Right"),
             ("?/h", "help"),
         ];
 
@@ -111,12 +132,22 @@ impl Page for HelpPage {
 
         let mut state = TableState::default();
 
-        StatefulWidget::render(
+        frame.render_stateful_widget(
             Table::new(rows.clone())
                 .header(header)
-                .widths([Constraint::Percentage(25), Constraint::Percentage(75)]),
+                .widths([Constraint::Percentage(20), Constraint::Percentage(80)])
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .border_style(THEME.borders)
+                        .padding(Padding {
+                            left: 2,
+                            right: 2,
+                            top: 0,
+                            bottom: 0,
+                        }),
+                ),
             layout[1],
-            buf,
             &mut state,
         );
 
@@ -135,20 +166,35 @@ impl Page for HelpPage {
         //     .scroll((self.vertical_scroll as u16, 0))
         //     .render(layout[1], buf);
 
+        self.scroll_extents = (rows.len(), 0);
+
         let scrollbar = Scrollbar::default().orientation(ScrollbarOrientation::VerticalRight);
 
-        let mut scrollbar_state =
-            ScrollbarState::new(rows.clone().len()).position(self.vertical_scroll);
+        let mut scrollbar_state = ScrollbarState::new(rows.len()).position(self.vertical_scroll);
 
-        scrollbar.render(area, buf, &mut scrollbar_state);
+        frame.render_stateful_widget(scrollbar, layout[1], &mut scrollbar_state);
     }
 
     fn handle_event(&mut self, event: &Event) {
         if let Event::Key(key) = event {
             if key.code == KeyCode::Up {
-                let _ = self.vertical_scroll.saturating_sub(1);
+                self.vertical_scroll = self.vertical_scroll.saturating_sub(constants::SCROLL_LINES);
+                self.vertical_scroll = self.vertical_scroll.clamp(0, self.scroll_extents.0)
             } else if key.code == KeyCode::Down {
-                let _ = self.vertical_scroll.saturating_add(1);
+                self.vertical_scroll = self.vertical_scroll.saturating_add(constants::SCROLL_LINES);
+                self.vertical_scroll = self.vertical_scroll.clamp(0, self.scroll_extents.0)
+            }
+
+            if key.code == KeyCode::PageUp {
+                self.vertical_scroll = self
+                    .vertical_scroll
+                    .saturating_sub(constants::PAGE_SCROLL_LINES);
+                self.vertical_scroll = self.vertical_scroll.clamp(0, self.scroll_extents.0)
+            } else if key.code == KeyCode::PageDown {
+                self.vertical_scroll = self
+                    .vertical_scroll
+                    .saturating_add(constants::PAGE_SCROLL_LINES);
+                self.vertical_scroll = self.vertical_scroll.clamp(0, self.scroll_extents.0)
             }
         }
     }
