@@ -31,7 +31,7 @@ impl CanvasPage {
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Unified Canvas");
+            ui.heading("Canvas");
         });
     }
 }

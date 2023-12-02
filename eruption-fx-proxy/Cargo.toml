@@ -68,7 +68,7 @@ tempfile = "3.8.0"
 tracing = "0.1.37"
 tracing-futures = "0.2.5"
 # tracing-flame = "0.2.0"
-tracing-log = { version = "0.1.4", features = ["env_logger"] }
+tracing-log = "0.2.0"
 tracing-journald = "0.3.0"
 tracing-subscriber = { version = "0.3.17", features = [
   "registry",

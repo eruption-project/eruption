@@ -24,7 +24,7 @@
 use clap::Parser;
 use config::Config;
 use eframe::{HardwareAcceleration, NativeOptions, Theme};
-use egui::{Context, Vec2};
+use egui::{Context};
 use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},
@@ -395,11 +395,8 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
         // build and map main window
         let native_options = NativeOptions {
             default_theme: Theme::Light,
-            initial_window_size: Some(Vec2::new(1600.0_f32, 900.0_f32)),
+            centered: true,
             hardware_acceleration: HardwareAcceleration::Preferred,
-            decorated: false,
-            resizable: true,
-            transparent: false,
             ..NativeOptions::default()
         };
 

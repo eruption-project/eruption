@@ -124,7 +124,7 @@ impl Pyroclasm {
         Default::default()
     }
 
-    fn setup_modals(&mut self, ctx: &Context, frame: &mut eframe::Frame) {
+    fn setup_modals(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         let modal = egui_modal::Modal::new(ctx, "quit_dialog");
 
         modal.show(|ui| {
@@ -142,10 +142,10 @@ impl Pyroclasm {
 
             modal.buttons(ui, |ui| {
                 // After clicking, the modal is automatically closed
-                if modal.suggested_button(ui, "Quit").clicked() {
+                /* if modal.suggested_button(ui, "Quit").clicked() {
                     frame.set_visible(false);
                     frame.close();
-                };
+                }; */
 
                 // After clicking, the modal is automatically closed
                 if modal.caution_button(ui, "Cancel").clicked() {};
@@ -156,7 +156,7 @@ impl Pyroclasm {
     }
 
     /// Render the window title bar
-    fn title_bar(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn title_bar(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let global_state = crate::STATE.read().unwrap();
 
         egui::TopBottomPanel::top("title").show(ctx, |ui| {
@@ -285,12 +285,12 @@ impl Pyroclasm {
             // support dragging the window via the title bar
             let title_bar_rect = ui.max_rect();
 
-            let title_bar_response =
+            let _title_bar_response =
                 ui.interact(title_bar_rect, Id::new("title_bar"), Sense::click());
 
-            if title_bar_response.is_pointer_button_down_on() {
+            /* if title_bar_response.is_pointer_button_down_on() {
                 frame.drag_window();
-            }
+            } */
         });
     }
 

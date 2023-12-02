@@ -58,7 +58,7 @@ indexmap = { version = "2.0.0", features = ["serde"] }
 tracing = "0.1.37"
 tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
-tracing-log = { version = "0.1.4", features = ["env_logger"] }
+tracing-log = "0.2.0"
 tracing-subscriber = { version = "0.3.17", features = [
   "registry",
   "env-filter",
