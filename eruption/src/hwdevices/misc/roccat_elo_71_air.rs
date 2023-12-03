@@ -33,8 +33,9 @@ use std::{mem::size_of, sync::Arc};
 use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
-    DeviceZoneAllocationExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt, Result, Zone, RGBA,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
+    DeviceStatus, DeviceZoneAllocationExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt, Result,
+    Zone, RGBA,
 };
 
 // pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device
@@ -441,6 +442,10 @@ impl DeviceInfoExt for RoccatElo71Air {
             Capability::Headset,
             Capability::RgbLighting,
         ])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

@@ -32,8 +32,8 @@ use tracing_mutex::stdsync::Mutex;
 use crate::{constants, hwdevices, hwdevices::DeviceStatus};
 
 use crate::hwdevices::{
-    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceZoneAllocationExt,
-    HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
+    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
+    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
 };
 
 pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to
@@ -303,6 +303,10 @@ impl DeviceZoneAllocationExt for RoccatKoneAimoRemastered {
 impl DeviceInfoExt for RoccatKoneAimoRemastered {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

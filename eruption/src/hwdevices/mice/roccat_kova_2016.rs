@@ -33,7 +33,7 @@ use tracing_mutex::stdsync::Mutex;
 use crate::{constants, hwdevices::DeviceStatus};
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
     DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
 };
 
@@ -274,6 +274,10 @@ impl RoccatKova2016 {
 impl DeviceInfoExt for RoccatKova2016 {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

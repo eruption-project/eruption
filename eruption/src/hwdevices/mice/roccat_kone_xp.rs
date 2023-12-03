@@ -36,7 +36,7 @@ use crate::{constants, hwdevices};
 
 use crate::hwdevices::{
     Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
-    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
+    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA, DeviceQuirks,
 };
 
 pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
@@ -325,6 +325,10 @@ impl RoccatKoneXp {
 impl DeviceInfoExt for RoccatKoneXp {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

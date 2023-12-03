@@ -36,7 +36,7 @@ use crate::constants;
 use crate::hwdevices::{
     self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
     DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
-    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA,
+    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA, DeviceQuirks,
 };
 
 pub const NUM_KEYS: usize = 143;
@@ -423,6 +423,10 @@ impl RoccatMagma {
 impl DeviceInfoExt for RoccatMagma {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Keyboard, Capability::RgbLighting])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

@@ -39,8 +39,8 @@ use tracing_mutex::stdsync::Mutex;
 use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
-    DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
+    DeviceStatus, DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
     KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA,
 };
 
@@ -48,8 +48,8 @@ pub const NUM_KEYS: usize = 143;
 
 pub const NUM_ROWS: usize = 6 + 2;
 pub const NUM_COLS: usize = 22;
-#[allow(unused)]
-pub const NUM_LEDS: usize = 540;
+
+pub const NUM_LEDS: usize = 180;
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
@@ -303,7 +303,15 @@ impl RoccatVulcan2Max {
 
 impl DeviceInfoExt for RoccatVulcan2Max {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
-        DeviceCapabilities::from([Capability::Keyboard, Capability::RgbLighting])
+        DeviceCapabilities::from([
+            Capability::Keyboard,
+            Capability::RgbLighting,
+            Capability::HardwareProfiles,
+        ])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
@@ -635,7 +643,7 @@ impl DeviceExt for RoccatVulcan2Max {
                                 self.allocated_zone.width as usize,
                                 self.allocated_zone.height as usize,
                             );
-                            let (w2, h2) = (NUM_COLS, NUM_ROWS);
+                            let (w2, h2) = (22, 8);
 
                             let canvas = canvas.map(|v| RGB8::new(v.r, v.g, v.b));
                             let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
@@ -645,23 +653,20 @@ impl DeviceExt for RoccatVulcan2Max {
 
                             let mut buffer: [u8; 64 * 9] = [0; 64 * 9];
 
-                            let mut cntr = 0;
-                            for i in (0..NUM_LEDS).step_by(3) {
-                                let color = led_map.get(cntr).unwrap_or(&RGB8 { r: 0, g: 0, b: 0 });
+                            for (cntr, i) in (0..192 * 3).into_iter().step_by(3).enumerate() {
+                                let index = cntr; // cntr / 22 + cntr % 22;
+                                let color =
+                                    led_map.get(index).unwrap_or(&RGB8 { r: 0, g: 0, b: 0 });
 
                                 let offset = i;
-
-                                buffer[offset] =
-                                    (color.r as f32 * (self.brightness as f32 / 100.0)).floor()
-                                        as u8;
+                                buffer[offset] = (color.r as f32 * (self.brightness as f32 / 100.0))
+                                    .floor() as u8;
                                 buffer[offset + 1] =
                                     (color.g as f32 * (self.brightness as f32 / 100.0)).floor()
                                         as u8;
                                 buffer[offset + 2] =
                                     (color.b as f32 * (self.brightness as f32 / 100.0)).floor()
                                         as u8;
-
-                                cntr += 1;
                             }
 
                             for (cntr, bytes) in buffer.chunks(60).take(9).enumerate() {

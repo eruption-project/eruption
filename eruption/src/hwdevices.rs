@@ -805,10 +805,29 @@ pub enum Capability {
     AngleSnapping,
 }
 
+/// Represents the quirks a specific device has
+#[derive(Debug, Clone)]
+pub struct DeviceQuirks(HashSet<Quirk>);
+
+impl<const N: usize> From<[Quirk; N]> for DeviceQuirks {
+    fn from(quirks: [Quirk; N]) -> Self {
+        DeviceQuirks(HashSet::from(quirks))
+    }
+}
+
+/// Quirks that hardware may have
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum Quirk {
+    LedDeviceSpamsKeys,
+}
+
 /// Information about a generic device
 pub trait DeviceInfoExt {
     /// Get device capabilities
     fn get_device_capabilities(&self) -> DeviceCapabilities;
+
+    /// Get device capabilities
+    fn get_device_quirks(&self) -> DeviceQuirks;
 
     /// Get device specific information
     fn get_device_info(&self) -> Result<DeviceInfo>;

@@ -30,7 +30,7 @@ use tracing::*;
 use crate::hwdevices::{
     self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
     DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
-    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA,
+    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA, DeviceQuirks,
 };
 
 /// Binds the driver to a device
@@ -86,6 +86,10 @@ impl GenericKeyboard {
 impl DeviceInfoExt for GenericKeyboard {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Keyboard])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

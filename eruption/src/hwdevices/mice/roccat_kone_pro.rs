@@ -35,8 +35,9 @@ use std::collections::HashMap;
 use std::{mem::size_of, sync::Arc};
 
 use crate::hwdevices::{
-    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
-    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
+    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
+    DeviceStatus, DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result,
+    Zone, RGBA,
 };
 
 pub const SUB_DEVICE: i32 = 2; // USB HID sub-device to bind to
@@ -280,6 +281,10 @@ impl RoccatKonePro {
 impl DeviceInfoExt for RoccatKonePro {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

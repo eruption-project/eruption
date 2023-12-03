@@ -26,7 +26,7 @@ use std::time::Duration;
 use tracing::*;
 use tracing_mutex::stdsync::Mutex;
 
-use crate::hwdevices::{self, DeviceClass, DeviceStatus, DeviceZoneAllocationExt, Zone};
+use crate::hwdevices::{self, DeviceClass, DeviceStatus, DeviceZoneAllocationExt, Zone, DeviceQuirks};
 
 use crate::hwdevices::{
     DeviceCapabilities, DeviceExt, DeviceInfoExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt,
@@ -70,6 +70,10 @@ impl CustomSerialLeds {
 impl DeviceInfoExt for CustomSerialLeds {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

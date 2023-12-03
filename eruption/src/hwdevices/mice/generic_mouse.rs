@@ -21,7 +21,7 @@
 
 use std::{any::Any, collections::HashMap};
 
-use crate::hwdevices::{self, DeviceZoneAllocationExt, Zone};
+use crate::hwdevices::{self, DeviceZoneAllocationExt, Zone, DeviceQuirks};
 use crate::hwdevices::{DeviceClass, DeviceStatus};
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
@@ -81,6 +81,10 @@ impl GenericMouse {
 impl DeviceInfoExt for GenericMouse {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

@@ -39,9 +39,9 @@ use tracing_mutex::stdsync::Mutex;
 use crate::constants::{self, DEVICE_SETTLE_MILLIS};
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
-    DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
-    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
+    DeviceStatus, DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
+    KeyboardHidEventCode, LedKind, MouseDeviceExt, Quirk, Result, Zone, RGBA,
 };
 
 pub const NUM_KEYS: usize = 143;
@@ -508,6 +508,10 @@ impl RoccatVulcan1xx {
 impl DeviceInfoExt for RoccatVulcan1xx {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Keyboard, Capability::RgbLighting])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([Quirk::LedDeviceSpamsKeys])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {

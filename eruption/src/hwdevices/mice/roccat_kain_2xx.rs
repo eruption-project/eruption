@@ -40,7 +40,7 @@ use crate::{constants, hwdevices, hwdevices::DeviceStatus};
 
 use crate::hwdevices::{
     Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceZoneAllocationExt,
-    HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
+    HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA, DeviceQuirks,
 };
 
 pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device
@@ -286,6 +286,10 @@ impl RoccatKain2xx {
 impl DeviceInfoExt for RoccatKain2xx {
     fn get_device_capabilities(&self) -> DeviceCapabilities {
         DeviceCapabilities::from([Capability::Mouse, Capability::RgbLighting])
+    }
+
+    fn get_device_quirks(&self) -> hwdevices::DeviceQuirks {
+        DeviceQuirks::from([])
     }
 
     fn get_device_info(&self) -> Result<hwdevices::DeviceInfo> {
