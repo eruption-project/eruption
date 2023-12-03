@@ -41,18 +41,18 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
+- Simplify handling of internal data structures for representation of devices; maybe use a slotmap of Box<dyn Device> instead of integer-indices
 - keyboard and misc gui pages: make battery/signal-strength controls the same as on mice page
+- Add Lua event: function on_hotplug(new_device) on_update_zones(...)
 - Improve 2D-primitives drawing/rasterization API
 - Improve hardware acceleration with Vulkan/WebGPU (GPGPU)
 - eruptionctl: Add new `zones` subcommand to define zone allocations via the CLI
 - eruptionctl: implement effects CLI
 - Allocated Zones: Don't poll zones via DBus, use a signal instead?
 - Allocated Zones: Add allocated zones support to scripts where applicable
-- Add Lua event: function on_hotplug(new_device) on_update_zones(...)
 - Fix directory/file permissions in packaging (for the `eruption` user)
 - Update Python SDK (get_canvas)
 - Implement Undo/redo ops in the GUI?
-- Simplify handling of internal data structures for representation of devices; maybe use a slotmap of Box<dyn Device> instead of integer-indices
 - Improve wording of identifiers: e.g: LED_MAP -> CANVAS
 - System Plugin: Add time of day API
 - Improve driver code: provide default implementations and routines
