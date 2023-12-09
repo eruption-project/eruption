@@ -37,7 +37,6 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-# default = ["dbus-ipc", "udev", "evdev-rs", "mimalloc_allocator", "hwaccel"]
 default = ["dbus-ipc", "udev", "evdev-rs"]
 windows = [
   "dbus-ipc",
@@ -48,7 +47,7 @@ windows = [
 ]
 dbus-ipc = ["dbus", "dbus-tree"]
 mimalloc_allocator = ["mimalloc"]
-hwaccel = ["gpgpu", "shaderc"]
+hwaccel = ["raw-window-handle", "drm", "wgpu", "shaderc"]
 profiling = ["coz"]
 
 [dependencies]
@@ -129,7 +128,12 @@ icecream = "0.1.0"
 same-file = "1"
 bytemuck = "1.14.0"
 bitfield-struct = "0.5.4"
-gpgpu = { git = "https://github.com/UpsettingBoy/gpgpu-rs.git", branch = "dev", optional = true }
+raw-window-handle = { version = "0.6", optional = true }
+drm = { version = "0.11", optional = true }
+wgpu = { version = "0.18.0", features = [
+  "spirv",
+  "vulkan-portability",
+], optional = true }
 shaderc = { version = "0.8.2", optional = true }
 
 [target.'cfg(target_os = "linux")'.dependencies]
