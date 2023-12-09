@@ -38,9 +38,9 @@ codegen-backend = true
 [build]
 rustflags = [
   # "--cfg",
-  "-Zthreads=8",
+  # "-Zthreads=8",
   "-Clink-arg=-fuse-ld=mold",
-  "-Ctarget-cpu=native",
+  # "-Ctarget-cpu=native",
   "-Zshare-generics=y",
   "-Clink-arg=-Wl,--no-rosegment",
   # "-Zsanitizer=thread",
@@ -58,9 +58,9 @@ codegen-backend = "llvm"
 codegen-backend = "llvm"
 rustflags = [
   # "--cfg",
-  "-Zthreads=8",
+  # "-Zthreads=8",
   # "-Clink-arg=-fuse-ld=mold",
-  "-Ctarget-cpu=native",
+  # "-Ctarget-cpu=native",
   # "-Zshare-generics=y",
   # "-Clink-arg=-Wl,--no-rosegment",
   # "-Zsanitizer=thread",
