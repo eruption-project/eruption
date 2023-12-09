@@ -39,8 +39,8 @@ use std::{mem::size_of, sync::Arc};
 use crate::{constants, hwdevices, hwdevices::DeviceStatus};
 
 use crate::hwdevices::{
-    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceZoneAllocationExt,
-    HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA, DeviceQuirks,
+    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
+    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
 };
 
 pub const CTRL_INTERFACE: i32 = 0; // Control USB sub device

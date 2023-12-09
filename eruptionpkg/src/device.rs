@@ -39,7 +39,7 @@ pub struct DeviceInfo {
     pub usb_pid: u16,
 }
 
-lazy_static! { 
+lazy_static! {
     #[rustfmt::skip]
     pub static ref DEVICE_INFO: &'static [DeviceInfo; 31] = &[
         // Wooting

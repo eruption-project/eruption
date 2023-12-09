@@ -26,7 +26,9 @@ use std::time::Duration;
 use tracing::*;
 use tracing_mutex::stdsync::Mutex;
 
-use crate::hwdevices::{self, DeviceClass, DeviceStatus, DeviceZoneAllocationExt, Zone, DeviceQuirks};
+use crate::hwdevices::{
+    self, DeviceClass, DeviceQuirks, DeviceStatus, DeviceZoneAllocationExt, Zone,
+};
 
 use crate::hwdevices::{
     DeviceCapabilities, DeviceExt, DeviceInfoExt, HwDeviceError, MiscDeviceExt, MouseDeviceExt,

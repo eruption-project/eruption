@@ -24,7 +24,7 @@
 use clap::Parser;
 use config::Config;
 use eframe::{HardwareAcceleration, NativeOptions, Theme};
-use egui::{Context};
+use egui::Context;
 use flume::bounded;
 use i18n_embed::{
     fluent::{fluent_language_loader, FluentLanguageLoader},

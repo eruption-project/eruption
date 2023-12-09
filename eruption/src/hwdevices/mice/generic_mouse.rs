@@ -21,7 +21,7 @@
 
 use std::{any::Any, collections::HashMap};
 
-use crate::hwdevices::{self, DeviceZoneAllocationExt, Zone, DeviceQuirks};
+use crate::hwdevices::{self, DeviceQuirks, DeviceZoneAllocationExt, Zone};
 use crate::hwdevices::{DeviceClass, DeviceStatus};
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;

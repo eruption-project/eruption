@@ -32,8 +32,8 @@ use tracing_mutex::stdsync::Mutex;
 use crate::{constants, hwdevices, hwdevices::DeviceStatus};
 
 use crate::hwdevices::{
-    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceZoneAllocationExt,
-    HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA, DeviceQuirks,
+    Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
+    DeviceZoneAllocationExt, HwDeviceError, MouseDeviceExt, MouseHidEvent, Result, Zone, RGBA,
 };
 
 pub const SUB_DEVICE: i32 = 1; // USB HID sub-device to bind to

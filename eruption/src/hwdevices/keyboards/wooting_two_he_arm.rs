@@ -39,9 +39,9 @@ use tracing_mutex::stdsync::Mutex;
 use crate::constants;
 
 use crate::hwdevices::{
-    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceStatus,
-    DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
-    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA, DeviceQuirks,
+    self, Capability, DeviceCapabilities, DeviceClass, DeviceExt, DeviceInfoExt, DeviceQuirks,
+    DeviceStatus, DeviceZoneAllocationExt, HwDeviceError, KeyboardDeviceExt, KeyboardHidEvent,
+    KeyboardHidEventCode, LedKind, MouseDeviceExt, Result, Zone, RGBA,
 };
 
 pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
