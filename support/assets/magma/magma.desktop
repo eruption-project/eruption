@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Magma TUI for Eruption
+Comment=Magma TUI for Eruption
+Exec=/usr/bin/magma
+Icon=eruption.png
+Terminal=true
