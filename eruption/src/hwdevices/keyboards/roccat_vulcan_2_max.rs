@@ -653,7 +653,7 @@ impl DeviceExt for RoccatVulcan2Max {
 
                             let mut buffer: [u8; 64 * 9] = [0; 64 * 9];
 
-                            for (cntr, i) in (0..192 * 3).into_iter().step_by(3).enumerate() {
+                            for (cntr, i) in (0..192 * 3).step_by(3).enumerate() {
                                 let index = cntr; // cntr / 22 + cntr % 22;
                                 let color =
                                     led_map.get(index).unwrap_or(&RGB8 { r: 0, g: 0, b: 0 });

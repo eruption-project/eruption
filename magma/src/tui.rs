@@ -128,7 +128,7 @@ pub(crate) fn handle_events() -> io::Result<bool> {
                             .read()
                             .unwrap()
                             .current_brightness
-                            .unwrap_or_else(|| 0);
+                            .unwrap_or(0);
 
                         if key.modifiers == KeyModifiers::SHIFT {
                             brightness -= 1;
@@ -147,7 +147,7 @@ pub(crate) fn handle_events() -> io::Result<bool> {
                             .read()
                             .unwrap()
                             .current_brightness
-                            .unwrap_or_else(|| 0);
+                            .unwrap_or(0);
 
                         if key.modifiers == KeyModifiers::SHIFT {
                             brightness += 1;
@@ -297,7 +297,7 @@ fn render_effects_area(frame: &mut Frame, area: Rect) {
 
     let effects = Paragraph::new(lines).alignment(Alignment::Left).block(
         Block::new()
-            .title(format!(" Effects "))
+            .title(" Effects ".to_string())
             .title_alignment(Alignment::Left)
             .borders(Borders::ALL)
             .border_style(THEME.borders)
@@ -412,7 +412,7 @@ fn render_footer(frame: &mut Frame, area: Rect) {
 
     // let active_slot = state.active_slot;
     let active_profile = &state.active_profile;
-    let brightness = state.current_brightness.unwrap_or_else(|| 0);
+    let brightness = state.current_brightness.unwrap_or(0);
 
     // render logo string and title
     let title = Paragraph::new("Magma TUI")
@@ -420,7 +420,7 @@ fn render_footer(frame: &mut Frame, area: Rect) {
         .alignment(Alignment::Left);
     frame.render_widget(title, layout[0]);
 
-    let separator = Clear::default();
+    let separator = Clear;
     frame.render_widget(separator, layout[1]);
 
     let brightness_indicator = Gauge::default()
@@ -430,7 +430,7 @@ fn render_footer(frame: &mut Frame, area: Rect) {
         .percent(brightness as u16);
     frame.render_widget(brightness_indicator, layout[2]);
 
-    let separator = Clear::default();
+    let separator = Clear;
     frame.render_widget(separator, layout[3]);
 
     // help text

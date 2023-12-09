@@ -47,7 +47,7 @@ impl HelpPage {
 
 impl Page for HelpPage {
     fn render(&mut self, frame: &mut Frame<'_>, area: Rect) {
-        frame.render_widget(Clear::default(), area);
+        frame.render_widget(Clear, area);
 
         frame.render_widget(Paragraph::new("Key Bindings").style(THEME.title), area);
 
