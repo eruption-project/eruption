@@ -133,20 +133,22 @@ impl Page for HelpPage {
         let mut state = TableState::default();
 
         frame.render_stateful_widget(
-            Table::new(rows.clone())
-                .header(header)
-                .widths([Constraint::Percentage(20), Constraint::Percentage(80)])
-                .block(
-                    Block::default()
-                        .borders(Borders::ALL)
-                        .border_style(THEME.borders)
-                        .padding(Padding {
-                            left: 2,
-                            right: 2,
-                            top: 0,
-                            bottom: 0,
-                        }),
-                ),
+            Table::new(
+                rows.clone(),
+                [Constraint::Percentage(20), Constraint::Percentage(80)],
+            )
+            .header(header)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(THEME.borders)
+                    .padding(Padding {
+                        left: 2,
+                        right: 2,
+                        top: 0,
+                        bottom: 0,
+                    }),
+            ),
             layout[1],
             &mut state,
         );

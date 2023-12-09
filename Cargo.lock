@@ -2376,19 +2376,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "env_logger"
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a19187fea3ac7e84da7dacf48de0c45d63c6a76f9490dae389aead16c243fce3"
-dependencies = [
- "atty",
- "humantime",
- "log",
- "regex",
- "termcolor",
-]
-
-[[package]]
 name = "epaint"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2517,7 +2504,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "transpose",
@@ -2567,7 +2554,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -2599,7 +2586,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -2641,7 +2628,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "udev 0.8.0",
@@ -2683,7 +2670,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -2750,7 +2737,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "transpose",
@@ -2783,7 +2770,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "udev 0.8.0",
@@ -2826,7 +2813,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "udev 0.8.0",
@@ -2871,7 +2858,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -2919,7 +2906,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "udev 0.8.0",
@@ -2960,7 +2947,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -3008,7 +2995,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -3068,7 +3055,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "udev 0.8.0",
@@ -3101,7 +3088,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -3146,7 +3133,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -3196,7 +3183,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.1.4",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -5242,7 +5229,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.1.4",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "tui-textarea",
@@ -6670,7 +6657,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-journald",
- "tracing-log 0.2.0",
+ "tracing-log",
  "tracing-mutex",
  "tracing-subscriber",
  "unic-langid",
@@ -8439,18 +8426,6 @@ dependencies = [
 
 [[package]]
 name = "tracing-log"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f751112709b4e791d8ce53e32c4ed2d353565a795ce84da2285393f41557bdf2"
-dependencies = [
- "env_logger",
- "log",
- "once_cell",
- "tracing-core",
-]
-
-[[package]]
-name = "tracing-log"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee855f1f400bd0e5c02d150ae5de3840039a3f54b025156404e34c23c03f47c3"
@@ -8484,7 +8459,7 @@ dependencies = [
  "thread_local",
  "tracing",
  "tracing-core",
- "tracing-log 0.2.0",
+ "tracing-log",
 ]
 
 [[package]]
