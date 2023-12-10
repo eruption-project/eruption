@@ -32,7 +32,7 @@ use super::{DeviceTrait, HwDeviceError, RGBA};
 pub type Result<T> = super::Result<T>;
 
 // pub const NUM_KEYS: usize = 143;
-pub const NUM_LEDS: usize = 180 * 3;
+pub const NUM_LEDS: usize = 192 * 3;
 
 // pub const CTRL_INTERFACE: i32 = 1; // Control USB sub device
 pub const LED_INTERFACE: i32 = 3; // LED USB sub device
