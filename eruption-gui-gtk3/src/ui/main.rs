@@ -603,7 +603,10 @@ pub fn initialize_main_window<A: IsA<gtk::Application>>(application: &A) -> Resu
     // enable custom CSS support
     let screen = gtk::prelude::GtkWindowExt::screen(&main_window).unwrap();
     let style = gtk::CssProvider::new();
-    gtk::CssProvider::load_from_resource(&style, "/org/eruption/eruption-gui-gtk3/styles/app.css");
+    gtk::CssProvider::load_from_resource(
+        &style,
+        "/org/eruption/eruption-gui-gtk3/styles/default.css",
+    );
     gtk::StyleContext::add_provider_for_screen(&screen, &style, gtk::STYLE_PROVIDER_PRIORITY_USER);
 
     // configure main window
