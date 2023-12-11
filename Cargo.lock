@@ -2108,7 +2108,7 @@ dependencies = [
 
 [[package]]
 name = "eruption"
-version = "0.3.5"
+version = "0.3.6"
 dependencies = [
  "async-trait",
  "bincode 2.0.0-rc.3",
@@ -2324,7 +2324,7 @@ dependencies = [
 
 [[package]]
 name = "eruption-gui-gtk3"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "byteorder",
  "cairo-rs",

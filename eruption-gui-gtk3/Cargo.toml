@@ -20,11 +20,11 @@
 
 [package]
 name = "eruption-gui-gtk3"
-version = "0.1.9"
+version = "0.1.10"
 build = "build.rs"
 authors = [
-    "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
-    "The Eruption Development Team",
+  "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+  "The Eruption Development Team",
 ]
 edition = "2021"
 description = "A GUI for the Eruption Linux user-mode driver"
@@ -57,9 +57,9 @@ tracing-journald = "0.3.0"
 tracing-futures = "0.2.5"
 tracing-log = { version = "0.1.4", features = ["env_logger"] }
 tracing-subscriber = { version = "0.3.18", features = [
-    "parking_lot",
-    "registry",
-    "env-filter",
+  "parking_lot",
+  "registry",
+  "env-filter",
 ] }
 console-subscriber = { version = "0.1.10", features = ["parking_lot"] }
 config = "0.13.3"
@@ -91,8 +91,8 @@ pangocairo = "0.17.10"
 sourceview4 = { version = "0.4.0", optional = true }
 # sourceview4 = { git = "https://gitlab.gnome.org/World/Rust/sourceview4-rs", optional = true }
 i18n-embed = { version = "0.13.9", features = [
-    "fluent-system",
-    "desktop-requester",
+  "fluent-system",
+  "desktop-requester",
 ] }
 i18n-embed-fl = "0.6.7"
 rust-embed = { version = "6.8.1", features = ["compression"] }

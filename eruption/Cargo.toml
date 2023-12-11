@@ -20,11 +20,11 @@
 
 [package]
 name = "eruption"
-version = "0.3.5"
+version = "0.3.6"
 build = "build.rs"
 authors = [
-    "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
-    "The Eruption Development Team",
+  "X3n0m0rph59 <x3n0m0rph59@gmail.com>",
+  "The Eruption Development Team",
 ]
 edition = "2021"
 description = "Realtime RGB LED Driver for Linux"
@@ -70,7 +70,7 @@ clap = "4.4.8"
 hotwatch = "0.4.6"
 config = "0.13.3"
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = [
-    "linux-static-libusb",
+  "linux-static-libusb",
 ] }
 udev = "0.8.0"
 evdev-rs = "0.6.1"
@@ -103,8 +103,8 @@ bytes = "1.5.0"
 prost = "0.12.1"
 prost-types = "0.12.1"
 i18n-embed = { version = "0.13.9", features = [
-    "fluent-system",
-    "desktop-requester",
+  "fluent-system",
+  "desktop-requester",
 ] }
 rust-embed = { version = "6.8.1", features = ["compression"] }
 unic-langid = "0.9.1"
