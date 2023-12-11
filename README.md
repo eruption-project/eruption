@@ -1,10 +1,14 @@
-![Eruption logo](docs/assets/eruption.webp)
+<div align="center">
+  <a href="#"><img src="docs/assets/eruption.jpg" alt="Eruption on a ROCCAT Vulcan 12x" /></a>&nbsp;&nbsp;
+</div>
 
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
 ![License](https://img.shields.io/github/license/X3n0m0rph59/eruption?style=flat-square)
 ![Stars](https://img.shields.io/github/stars/X3n0m0rph59/eruption?style=flat-square)
 ![Crates.io](https://img.shields.io/crates/v/eruption-sdk?style=flat-square)
 ![Downloads](https://img.shields.io/crates/d/eruption-sdk?style=flat-square)
+
+[![Continuous integration](https://github.com/eruption-project/eruption/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/eruption-project/eruption/actions/workflows/rust.yml)
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/x3n0m0rph59/eruption/package/eruption/)
 
 <div align="center">
   <br></br>
@@ -16,7 +20,6 @@
   </a>&nbsp;&nbsp;
   <a href="https://kernel.org/">
     <img src="docs/assets/tux.svg" height="50" alt="Linux Tux" />
-  </a>&nbsp;&nbsp;
   <br></br>
 </div>
 
@@ -59,13 +62,13 @@ For a list of recent news and noteworthy changes, please refer to [CHANGES.md](C
 
 ### Image and Video Gallery
 
-[![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](<https://www.youtube.com/watch?v=ig_71zg14nQ>)
+[![Eruption Video](https://img.youtube.com/vi/ig_71zg14nQ/0.jpg)](https://www.youtube.com/watch?v=ig_71zg14nQ)
 
-![Eruption GUI screenshot](<docs/assets/screenshot-01.png>)
+![Eruption GUI screenshot](docs/assets/screenshot-01.png)
 
-![Eruption GUI screenshot](<docs/assets/screenshot-02.png>)
+![Eruption GUI screenshot](docs/assets/screenshot-02.png)
 
-![Eruption GUI screenshot](<docs/assets/screenshot-03.png>)
+![Eruption GUI screenshot](docs/assets/screenshot-03.png)
 
 ---
 
@@ -73,11 +76,14 @@ For a list of recent news and noteworthy changes, please refer to [CHANGES.md](C
 
 ### Keyboards
 
+- [ ] Wooting Two HE (ARM) series keyboard (work-in-progress, as of version `0.4.0`, experimental)
+- [ ] ROCCAT Vulcan II Max series keyboard (work-in-progress, as of version `0.5.0`, experimental)
 - [x] ROCCAT Vulcan 100/12x series keyboard (fully supported, stable)
 - [x] ROCCAT Vulcan Pro TKL series keyboard (98% supported as of version `0.1.19`, testing)
 - [ ] ROCCAT Vulcan TKL series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
 - [ ] ROCCAT Vulcan Pro series keyboard (work-in-progress, as of version `0.1.20`, experimental, untested)
 - [ ] ROCCAT Magma series keyboard (work-in-progress, as of version `0.1.23`, experimental)
+- [ ] ROCCAT Pyro series keyboard (work-in-progress, as of version `0.5.0`, experimental)
 - [ ] Corsair Strafe Gaming Keyboard (non-RGB/monochrome only, as of version `0.1.20`, experimental)
 
 ### Mice
@@ -103,7 +109,7 @@ For a list of recent news and noteworthy changes, please refer to [CHANGES.md](C
 
 Please see [DEVICES.md](DEVICES.md) for further information
 
-> __NOTE__
+> **NOTE**
 >
 > **Experimental** drivers are `disabled` in the default configuration!
 >
@@ -121,9 +127,9 @@ Please see [DEVICES.md](DEVICES.md) for further information
 
 ## Important Information
 
-This project is still in the early stages of development, and thus may contain some possibly serious bugs.
+⚠️ This project is still in the early stages of development, and thus may contain some possibly serious bugs. ⚠️
 
-For a more mature RGB lighting solution please also consider the following alternatives:
+**For a more mature RGB lighting solution please also consider the following alternatives**
 
 **OpenRGB** - OPEN SOURCE RGB LIGHTING CONTROL THAT DOESN'T DEPEND ON MANUFACTURER SOFTWARE \
 <https://openrgb.org/>\
@@ -134,6 +140,13 @@ For configuring gaming mice you may want to consider:
 **libratbag/piper** -
 libratbag A DBus daemon to configure input devices, mainly gaming mice
 <https://github.com/libratbag>
+
+**For key remapping without LED specific features**
+
+If you are more interested in simply remapping your keys at the input level, or even require application-specific key remapping you should consider:
+
+**Keyd** - A key remapping daemon for linux
+<https://github.com/rvaiya/keyd>
 
 ### Troubleshooting
 
@@ -174,9 +187,9 @@ that performs an alpha blending step on each 'color map' before it finally gets 
 ### Systems Architecture
 
 Eruption is split into multiple independent processes: `eruption`, the core daemon that handles hardware access running
-as `root`, and multiple session daemons, most notably `eruption-audio-proxy` that provides audio related functionality
-to the core daemon, and `eruption-process-monitor` that is able to automatically switch profiles based on system
-usage. Both of these session daemons run as the respective logged-in user.
+as the `eruption` user, and multiple session daemons, most notably `eruption-audio-proxy` that provides audio related
+functionality to the core daemon, and `eruption-process-monitor` that is able to automatically switch profiles based
+on system usage. Both of these session daemons run as the respective logged-in user.
 
 ---
 
@@ -195,7 +208,6 @@ systemctl --user enable --now eruption-process-monitor.service
 
 sudo systemctl enable --now eruption.service
 ```
-Additionally, [Chaotic-AUR](https://aur.chaotic.cx) is providing pre-compiled binaries for those who don't want to go through the compilation process with every update.
 
 ### Fedora based
 
@@ -210,7 +222,7 @@ systemctl --user enable --now eruption-process-monitor.service
 sudo systemctl enable --now eruption.service
 ```
 
-### Ubuntu or Pop!_OS
+### Ubuntu or Pop!\_OS
 
 ```shell
 sudo add-apt-repository ppa:x3n0m0rph59/eruption
@@ -227,7 +239,7 @@ sudo systemctl enable --now eruption.service
 ### From Source
 
 ```shell
-git clone https://github.com/X3n0m0rph59/eruption.git
+git clone https://github.com/eruption-project/eruption.git
 cd eruption
 make
 sudo make install
@@ -249,8 +261,8 @@ able to successfully build Eruption from source.
 ## After Setup
 
 > You may want to try the
-[Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
-GNOME Shell extension that enables easy switching of profiles on the fly
+> [Eruption Profile Switcher](https://extensions.gnome.org/extension/2621/eruption-profile-switcher/)
+> GNOME Shell extension that enables easy switching of profiles on the fly
 
 ![eruption-profile-switcher screenshot](docs/assets/screenshot-profile-switcher-01.jpg)
 
@@ -260,8 +272,8 @@ GNOME Shell extension that enables easy switching of profiles on the fly
 
 Eruption currently has built-in support for the following audio APIs:
 
-* `PipeWire` (via the `PulseAudio` interface of `PipeWire`)
-* `PulseAudio`
+- `PipeWire` (via the `PulseAudio` interface of `PipeWire`)
+- `PulseAudio`
 
 Audio support is provided by `eruption-audio-proxy.service`.
 
@@ -286,6 +298,7 @@ eruptionctl switch profile spectrum-analyzer-swirl.profile
 Then use `pavucontrol` to assign a monitor of an audio device to the Eruption audio grabber.
 
 ![audio-grabber pavucontrol](docs/assets/screenshot-audio-grabber-pavucontrol.png)
+
 > NOTE: You have to select a profile that makes use auf the audio grabber first, otherwise the
 > `eruption-audio-proxy` will not open an audio device for recording, and therefore will not be listed
 
@@ -320,4 +333,4 @@ Please find a list of frequently asked questions and their respective answers at
 Contributions are always welcome!
 Please find information on how to contribute at [CONTRIBUTING.md](CONTRIBUTING.md)
 
-Please see `eruption/src/scripts/examples/*.lua` directory for Lua scripting examples.
+Please see `support/scripts/examples/*.lua` directory for Lua scripting examples.
