@@ -4,6 +4,8 @@ Table of new and noteworthy changes:
 
 | Since  | Description                                                                                                                                                                                                                                                         |
 |--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.6 | __New Release__ |
+| 0.3.6 | Update most dependencies to their latest releases |
 | 0.3.5 | __New Release__ |
 | 0.3.5 | Update most dependencies to their latest releases |
 | 0.3.4 | __New Release__ |
