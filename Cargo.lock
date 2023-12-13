@@ -8557,18 +8557,18 @@ dependencies = [
 
 [[package]]
 name = "unic-langid"
-version = "0.9.3"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "887622f8e7b723780c5e64b04dcc0c9b8f426ada7cca6790cd3ea3bf0f08037a"
+checksum = "238722e6d794ed130f91f4ea33e01fcff4f188d92337a21297892521c72df516"
 dependencies = [
  "unic-langid-impl",
 ]
 
 [[package]]
 name = "unic-langid-impl"
-version = "0.9.3"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5adeb847e35eed4efbffd9fb2e4d078b91ece56e4d6a3c0d2df55b3a1dac07d5"
+checksum = "4bd55a2063fdea4ef1f8633243a7b0524cbeef1905ae04c31a1c9b9775c55bc6"
 dependencies = [
  "serde",
  "tinystr",
