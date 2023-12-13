@@ -33,11 +33,8 @@ jobs:
     steps:
       - name: Setup Base System
         run: "sudo apt-get update -y -qq; sudo apt-get install --assume-yes nsis"
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
       - name: Install cross Build Tool
         run: "cargo install cross"
       - name: Run make windows-installer
