@@ -124,11 +124,8 @@ pub(crate) fn handle_events() -> io::Result<bool> {
 
                     // adjust brightness
                     if key.code == KeyCode::F(8) {
-                        let mut brightness = crate::STATE
-                            .read()
-                            .unwrap()
-                            .current_brightness
-                            .unwrap_or(0);
+                        let mut brightness =
+                            crate::STATE.read().unwrap().current_brightness.unwrap_or(0);
 
                         if key.modifiers == KeyModifiers::SHIFT {
                             brightness -= 1;
@@ -143,11 +140,8 @@ pub(crate) fn handle_events() -> io::Result<bool> {
                         });
                     }
                     if key.code == KeyCode::F(9) {
-                        let mut brightness = crate::STATE
-                            .read()
-                            .unwrap()
-                            .current_brightness
-                            .unwrap_or(0);
+                        let mut brightness =
+                            crate::STATE.read().unwrap().current_brightness.unwrap_or(0);
 
                         if key.modifiers == KeyModifiers::SHIFT {
                             brightness += 1;
