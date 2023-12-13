@@ -69,7 +69,7 @@ rustflags = [
 ]
 
 [target.x86_64-unknown-linux-gnu]
-linker = "/usr/bin/clang"
+linker = "/usr/bin/lld"
 
 [target.x86_64-pc-windows-gnu]
 linker = "/usr/bin/lld"
