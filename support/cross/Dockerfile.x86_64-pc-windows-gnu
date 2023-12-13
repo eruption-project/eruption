@@ -1,4 +1,4 @@
-FROM fedora:38
+FROM fedora:39
 
 # Install cross compiled libs and build dependencies
 RUN dnf update -y && dnf install -y \
