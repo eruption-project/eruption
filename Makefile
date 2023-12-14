@@ -19,6 +19,7 @@
 
 # Linux x86_64
 
+BUILDENV := stable
 BUILDFLAGS := --release
 
 TARGET_DIR := /usr
@@ -59,6 +60,7 @@ CROSS := cross
 all: build xtask
 
 build:
+	@-./build-env.sh $(BUILDENV)
 	@cargo build $(BUILDFLAGS)
 
 windows-installer: windows

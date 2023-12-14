@@ -17,7 +17,8 @@
 #
 #  Copyright (c) 2019-2023, The Eruption Development Team
 
-cargo-features = ["profile-rustflags"]
+# Do not edit manually; please enable or disable using `./build-env.sh`
+# cargo-features = ["codegen-backend", "profile-rustflags"]
 
 [workspace]
 members = [
