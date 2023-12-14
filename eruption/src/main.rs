@@ -2010,7 +2010,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                     constants::SHUTDOWN_TIMEOUT_MILLIS as u64,
                 ));
 
-                // set LEDs of all keyboards to a known final state, then close all associated devices
+                // set LEDs of all managed devices to a known final state, then close all devices
                 for device in devices.iter() {
                     let mut device = device.write().unwrap();
 
