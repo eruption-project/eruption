@@ -15,7 +15,7 @@
 ### Status of the Eruption porting effort to Microsoft Windows
 
 - WIP support code for Microsoft Windows has been merged recently to the `unified-canvas` branch
-- Cross-compilation on Linux host (in a Fedora 38 `podman` container) for Windows x86_64 is up and running
+- Cross-compilation on Linux host (in a Fedora 39 `podman` container) for Windows x86_64 is up and running
 - Successful compilation of selected binaries has been achieved
 - Deployment to Windows via an NSIS-based installer binary is working
 - Eruption daemon is able to drive LED lighting on Windows; most devices that are supported under Linux work as well
@@ -26,6 +26,7 @@
 
 _This is a non-exhaustive listing of planned features:_
 
+- Implement support for OpenRGB using the OpenRGB SDK
 - GUI support: Improve the GTK+3 based GUI
 - GUI support: Improve the Pyroclasm UI
 - TUI support: Improve the Magma TUI
@@ -43,7 +44,7 @@ _This is a non-exhaustive listing of planned features:_
 
 ## TODO
 
-- Simplify handling of internal data structures for representation of devices; maybe use a slotmap of Box<dyn Device> instead of integer-indices
+- Try to implement support for OpenRGB using the OpenRGB SDK / openrgb-rs crate
 - keyboard and misc gui pages: make battery/signal-strength controls the same as on mice page
 - Add Lua event: function on_hotplug(new_device) on_update_zones(...)
 - Improve 2D-primitives drawing/rasterization API
@@ -54,14 +55,12 @@ _This is a non-exhaustive listing of planned features:_
 - Allocated Zones: Add allocated zones support to scripts where applicable
 - Fix directory/file permissions in packaging (for the `eruption` user)
 - Update Python SDK (get_canvas)
-- Implement Undo/redo ops in the GUI?
+- Implement Undo/redo ops in the GUI
 - Improve wording of identifiers: e.g: LED_MAP -> CANVAS
 - System Plugin: Add time of day API
 - Improve driver code: provide default implementations and routines
 - Add LED count, description, position, and names to each driver
 - Add type of device to capabilities: HID or RAWUSB
 - Device pixel format: RGB BGR LRGB in capabilities
-- Device endpoint in capabilities
-- Add shutdown routines to all drivers, to put devices into a known good state on exit of Eruption
 - Provide an easy way/standalone application to disable all LED lighting
 - Implement an API that can query the state of plugins, e.g. Audio Plugin initialized, or is HWACCEL available?
