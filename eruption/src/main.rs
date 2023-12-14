@@ -1844,7 +1844,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                 loop {
                     let pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
 
-                    if *pending_devices <= 0 {
+                    if *pending_devices == 0 {
                         info!("All supported devices have been initialized");
                         break;
                     } else {
@@ -1866,7 +1866,7 @@ pub fn main() -> std::result::Result<(), eyre::Error> {
                         error!("Timeout while waiting for a device to initialize");
                     }
 
-                    if *result.0 <= 0 {
+                    if *result.0 == 0 {
                         info!("All supported devices have been initialized");
                         break;
                     } else {
