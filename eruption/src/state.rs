@@ -73,13 +73,15 @@ struct State {
 
 pub fn init_global_runtime_state() -> Result<()> {
     // initialize runtime state to sane defaults
-    let mut profiles = crate::SLOT_PROFILES.write().unwrap();
-    profiles.replace(vec![
-        PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("blue-fx-swirl-perlin.profile"),
-        PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("red-wave.profile"),
-        PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("swirl-perlin.profile"),
-        PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("spectrum-analyzer-swirl.profile"),
-    ]);
+    {
+        let mut profiles = crate::SLOT_PROFILES.write().unwrap();
+        profiles.replace(vec![
+            PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("blue-fx-swirl-perlin.profile"),
+            PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("red-wave.profile"),
+            PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("swirl-perlin.profile"),
+            PathBuf::from(constants::DEFAULT_PROFILE_DIR).join("spectrum-analyzer-swirl.profile"),
+        ]);
+    }
 
     // load state file
     let state_path = PathBuf::from(constants::STATE_DIR).join("eruption.state");
@@ -100,7 +102,9 @@ pub fn init_global_runtime_state() -> Result<()> {
             description: format!("{e}"),
         })?;
 
-    *STATE.write().unwrap() = Some(state);
+    {
+        *STATE.write().unwrap() = Some(state);
+    }
 
     audio::ENABLE_SFX.store(
         STATE
@@ -113,16 +117,19 @@ pub fn init_global_runtime_state() -> Result<()> {
         Ordering::SeqCst,
     );
 
-    STATE
-        .read()
-        .unwrap()
-        .as_ref()
-        .unwrap()
-        .get("profiles")
-        .map(|p| {
-            profiles.replace(p);
-        })
-        .unwrap_or_else(|_| warn!("Invalid saved state: profiles"));
+    {
+        let mut profiles = crate::SLOT_PROFILES.write().unwrap();
+        STATE
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .get("profiles")
+            .map(|p| {
+                profiles.replace(p);
+            })
+            .unwrap_or_else(|_| warn!("Invalid saved state: profiles"));
+    }
 
     crate::ACTIVE_SLOT.store(
         STATE
@@ -146,29 +153,33 @@ pub fn init_global_runtime_state() -> Result<()> {
         Ordering::SeqCst,
     );
 
-    let hue = STATE
-        .read()
-        .unwrap()
-        .as_ref()
-        .unwrap()
-        .get::<f64>("canvas_hue")
-        .unwrap_or(0.0);
+    let (hue, saturation, lightness) = {
+        let hue = STATE
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .get::<f64>("canvas_hue")
+            .unwrap_or(0.0);
 
-    let saturation = STATE
-        .read()
-        .unwrap()
-        .as_ref()
-        .unwrap()
-        .get::<f64>("canvas_saturation")
-        .unwrap_or(0.0);
+        let saturation = STATE
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .get::<f64>("canvas_saturation")
+            .unwrap_or(0.0);
 
-    let lightness = STATE
-        .read()
-        .unwrap()
-        .as_ref()
-        .unwrap()
-        .get::<f64>("canvas_lightness")
-        .unwrap_or(0.0);
+        let lightness = STATE
+            .read()
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .get::<f64>("canvas_lightness")
+            .unwrap_or(0.0);
+
+        (hue, saturation, lightness)
+    };
 
     {
         *crate::CANVAS_HSL.write().unwrap() = (hue, saturation, lightness);
@@ -264,6 +275,7 @@ pub fn save_runtime_state(devices: &[hwdevices::Device]) -> Result<()> {
         .as_ref()
         .unwrap()
         .clone();
+
     let slot_names = crate::SLOT_NAMES.read().unwrap().clone();
 
     let config = State {
