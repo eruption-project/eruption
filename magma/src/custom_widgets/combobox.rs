@@ -57,7 +57,7 @@ impl<'a> ComboBox<'a> {
         self.is_open = !self.is_open;
     }
 
-    pub fn handle_input(&mut self, key: Key) {
+    pub fn _handle_input(&mut self, key: Key) {
         match key {
             Key::Enter => self.toggle_open(),
 

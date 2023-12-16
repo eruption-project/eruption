@@ -19,6 +19,8 @@
     Copyright (c) 2019-2023, The Eruption Development Team
 */
 
+#![allow(dead_code)]
+
 use lazy_static::lazy_static;
 use std::cell::RefCell;
 use std::sync::atomic::AtomicBool;
