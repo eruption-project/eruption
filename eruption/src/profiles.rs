@@ -685,7 +685,7 @@ mod tests {
 
         let profile_path = assets_path.join("manifest_test.profile").canonicalize()?;
 
-        let mut config = config::Config::builder()
+        let config = config::Config::builder()
             .set_override(
                 "global.script_dirs",
                 vec![assets_path.to_string_lossy().to_string()],
@@ -693,7 +693,7 @@ mod tests {
             .build()
             .unwrap();
 
-        crate::CONFIG.write().unwrap().as_mut().replace(&mut config);
+        *crate::CONFIG.write().unwrap() = Some(config);
 
         let profile = super::Profile::load_fully(&profile_path);
         let profile = match profile {
