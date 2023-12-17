@@ -85,6 +85,7 @@ pub struct DeviceInfo {
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Kone Pure Ultra mouse
 pub struct RoccatKonePureUltra {
+    #[cfg(not(target_os = "windows"))]
     pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
 
     pub is_initialized: bool,
@@ -114,6 +115,7 @@ impl RoccatKonePureUltra {
         debug!("Bound driver: ROCCAT Kone Pure Ultra");
 
         Self {
+            #[cfg(not(target_os = "windows"))]
             evdev_rx: None,
 
             is_initialized: false,
@@ -707,10 +709,12 @@ impl DeviceExt for RoccatKonePureUltra {
         None
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
         &self.evdev_rx
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
         self.evdev_rx = rx;
     }

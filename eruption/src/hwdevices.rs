@@ -26,6 +26,7 @@ use std::u8;
 use std::{any::Any, sync::Arc, thread};
 use std::{path::PathBuf, time::Duration};
 
+use cfg_if::cfg_if;
 #[cfg(not(target_os = "windows"))]
 use evdev_rs::enums::EV_KEY;
 use eyre::eyre;
@@ -41,6 +42,7 @@ use udev::Enumerator;
 
 use crate::constants;
 use crate::hwdevices::{keyboards::*, mice::*, misc::*};
+use crate::util::ratelimited;
 
 mod util;
 
@@ -1058,7 +1060,9 @@ pub trait DeviceExt: DeviceInfoExt + DeviceZoneAllocationExt {
     /// Get the device status
     fn device_status(&self) -> Result<DeviceStatus>;
 
+    #[cfg(not(target_os = "windows"))]
     fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>>;
+    #[cfg(not(target_os = "windows"))]
     fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>);
 
     fn get_device_class(&self) -> DeviceClass;
@@ -1285,27 +1289,33 @@ pub fn probe_devices() -> Result<Vec<Device>> {
 
     for device in declared_devices {
         if device.class == "openrgb" {
-            info!(
-                "Binding device: {} ({})",
-                device.name,
-                device.device_file.display()
-            );
+            cfg_if! {
+                if #[cfg(openrgb_bridge )] {
+                    info!(
+                        "Binding device: {} ({})",
+                        device.name,
+                        device.device_file.display()
+                    );
 
-            {
-                let mut pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
-                *pending_devices += 1;
+                    {
+                        let mut pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
+                        *pending_devices += 1;
 
-                crate::DEVICES_PENDING_INIT.1.notify_all();
+                        crate::DEVICES_PENDING_INIT.1.notify_all();
+                    }
+
+                    let device = openrgb_bridge::OpenRgbBridge::bind(
+                        device.device_file.to_string_lossy().to_string(),
+                    );
+
+                    // non pnp devices are currently always 'misc' devices
+                    devices.push(Arc::new(RwLock::new(
+                        Box::new(device) as Box<dyn DeviceExt + Sync + Send>
+                    )));
+                } else {
+                    ratelimited::warn!("The OpenRGB virtual bridge device is not available in this build of Eruption");
+                }
             }
-
-            let device = openrgb_bridge::OpenRgbBridge::bind(
-                device.device_file.to_string_lossy().to_string(),
-            );
-
-            // non pnp devices are currently always 'misc' devices
-            devices.push(Arc::new(RwLock::new(
-                Box::new(device) as Box<dyn DeviceExt + Sync + Send>
-            )));
         } else if device.class == "serial" {
             info!(
                 "Binding non-pnp serial LEDs device: {} ({})",

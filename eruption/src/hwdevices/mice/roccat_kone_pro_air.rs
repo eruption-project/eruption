@@ -112,6 +112,7 @@ pub struct DeviceInfo {
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Kone Pro Air mouse
 pub struct RoccatKoneProAir {
+    #[cfg(not(target_os = "windows"))]
     pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
 
     pub is_initialized: bool,
@@ -145,6 +146,7 @@ impl RoccatKoneProAir {
         debug!("Bound driver: ROCCAT Kone Pro Air");
 
         Self {
+            #[cfg(not(target_os = "windows"))]
             evdev_rx: None,
 
             is_initialized: false,
@@ -1077,10 +1079,12 @@ impl DeviceExt for RoccatKoneProAir {
         None
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
         &self.evdev_rx
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
         self.evdev_rx = rx;
     }

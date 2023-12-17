@@ -348,10 +348,12 @@ impl DeviceExt for CustomSerialLeds {
         Some(self)
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
         &None
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn set_evdev_input_rx(&mut self, _rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
         // do nothing
     }

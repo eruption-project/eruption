@@ -86,6 +86,7 @@ Section "!Eruption"
     SetOutPath $INSTDIR
 
     File "${SOURCEDIR}\eruption.exe"
+    File "${SOURCEDIR}\magma.exe"
     File "..\shell\windows\*.bat"
 
     # create the uninstaller

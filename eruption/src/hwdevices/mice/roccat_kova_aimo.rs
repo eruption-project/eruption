@@ -79,6 +79,7 @@ pub struct DeviceInfo {
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Kova AIMO mouse
 pub struct RoccatKovaAimo {
+    #[cfg(not(target_os = "windows"))]
     pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
 
     pub is_initialized: bool,
@@ -105,6 +106,7 @@ impl RoccatKovaAimo {
         debug!("Bound driver: ROCCAT Kova AIMO");
 
         Self {
+            #[cfg(not(target_os = "windows"))]
             evdev_rx: None,
 
             is_initialized: false,
@@ -662,10 +664,12 @@ impl DeviceExt for RoccatKovaAimo {
         None
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
         &self.evdev_rx
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
         self.evdev_rx = rx;
     }

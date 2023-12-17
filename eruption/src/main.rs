@@ -774,6 +774,7 @@ fn run_main_loop(
 
         let mut device_has_failed = false;
 
+        #[cfg(not(target_os = "windows"))]
         let mut evdev_rxs: IndexMap<
             hwdevices::DeviceHandle,
             flume::Receiver<std::option::Option<evdev_rs::InputEvent>>,
@@ -783,6 +784,7 @@ fn run_main_loop(
         let devices = crate::DEVICES.read().unwrap();
 
         // build a Vec of all the rxs we are about to wait on
+        #[cfg(not(target_os = "windows"))]
         for (handle, device) in devices.iter() {
             if let Some(rx) = device.read().unwrap().get_evdev_input_rx().clone() {
                 evdev_rxs.insert(*handle, rx);
@@ -913,6 +915,7 @@ fn run_main_loop(
                     }
                 };
 
+                #[cfg(not(target_os = "windows"))]
                 if let Some(rx) = evdev_rxs.get(handle) {
                     sel = sel.recv(rx, mapper);
                 }
@@ -1522,6 +1525,7 @@ pub fn initialize_device(
                     }
                 }
             } else {
+                #[cfg(not(target_os = "windows"))]
                 device.set_evdev_input_rx(None);
             }
         }
@@ -1529,6 +1533,7 @@ pub fn initialize_device(
         _ => {
             error!("Unsupported device class");
 
+            #[cfg(not(target_os = "windows"))]
             device.set_evdev_input_rx(None);
         }
     };

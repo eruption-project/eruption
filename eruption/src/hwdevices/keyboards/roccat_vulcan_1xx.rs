@@ -106,6 +106,7 @@ pub enum DialMode {
 #[derive(Clone)]
 /// Device specific code for the ROCCAT Vulcan 100/12x series keyboards
 pub struct RoccatVulcan1xx {
+    #[cfg(not(target_os = "windows"))]
     pub evdev_rx: Option<Receiver<Option<evdev_rs::InputEvent>>>,
 
     pub is_initialized: bool,
@@ -135,6 +136,7 @@ impl RoccatVulcan1xx {
         debug!("Bound driver: ROCCAT Vulcan 100/12x AIMO");
 
         Self {
+            #[cfg(not(target_os = "windows"))]
             evdev_rx: None,
 
             is_initialized: false,
@@ -1042,10 +1044,12 @@ impl DeviceExt for RoccatVulcan1xx {
         None
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn get_evdev_input_rx(&self) -> &Option<flume::Receiver<Option<evdev_rs::InputEvent>>> {
         &self.evdev_rx
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn set_evdev_input_rx(&mut self, rx: Option<flume::Receiver<Option<evdev_rs::InputEvent>>>) {
         self.evdev_rx = rx;
     }

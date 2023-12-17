@@ -38,13 +38,7 @@ resolver = "2"
 
 [features]
 default = ["dbus-ipc", "openrgb_bridge", "udev", "evdev-rs"]
-windows = [
-  "dbus-ipc",
-  "winapi",
-  "usb_enumeration",
-  "windows-named-pipe",
-  "hwaccel",
-]
+windows = ["dbus-ipc", "winapi", "usb_enumeration", "windows-named-pipe"]
 dbus-ipc = ["dbus", "dbus-tree"]
 mimalloc_allocator = ["mimalloc"]
 openrgb_bridge = ["openrgb"]
