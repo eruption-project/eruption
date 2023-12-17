@@ -37,7 +37,7 @@ readme = "README.md"
 resolver = "2"
 
 [features]
-default = ["dbus-ipc", "udev", "evdev-rs"]
+default = ["dbus-ipc", "openrgb_bridge", "udev", "evdev-rs"]
 windows = [
   "dbus-ipc",
   "winapi",
@@ -47,6 +47,7 @@ windows = [
 ]
 dbus-ipc = ["dbus", "dbus-tree"]
 mimalloc_allocator = ["mimalloc"]
+openrgb_bridge = ["openrgb"]
 hwaccel = ["raw-window-handle", "drm", "wgpu", "shaderc"]
 profiling = ["coz"]
 
@@ -112,6 +113,7 @@ dbus = { version = "0.9.7", optional = true }
 dbus-tree = { version = "0.9.2", optional = true }
 paste = "1.0.14"
 bitvec = "1.0.1"
+openrgb = { version = "0.1.2", optional = true }
 serialport = "4.2.2"
 crc8 = "0.1.1"
 crc16 = "0.4.0"
@@ -135,6 +137,8 @@ wgpu = { version = "0.18.0", features = [
   "vulkan-portability",
 ], optional = true }
 shaderc = { version = "0.8.2", optional = true }
+tokio = { version = "1.35.0", features = ["full"] }
+mio = { version = "0.8.10" }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "78f273800a7e9fc7f428e45d2cfebaf7b44862c1", default-features = false, features = [

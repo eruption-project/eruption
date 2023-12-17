@@ -41,7 +41,7 @@ pub struct DeviceInfo {
 
 lazy_static! {
     #[rustfmt::skip]
-    pub static ref DEVICE_INFO: &'static [DeviceInfo; 31] = &[
+    pub static ref DEVICE_INFO: &'static [DeviceInfo; 32] = &[
         // Wooting
 
         // Wooting Two HE (ARM) series
@@ -102,6 +102,11 @@ lazy_static! {
         DeviceInfo { make: "ROCCAT/Turtle Beach", model: "Elo 7.1 Air", usb_vid: 0x1e7d, usb_pid: 0x3a37, },
 
         DeviceInfo { make: "ROCCAT", model: "Sense AIMO XXL", usb_vid: 0x1e7d, usb_pid: 0x343b, },
+
+
+        // Eruption internal / Special devices
+
+        DeviceInfo { make: "Eruption", model: "OpenRGB bridge", usb_vid: 0x0E00, usb_pid: 0x0001, },
     ];
 }
 

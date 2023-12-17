@@ -92,6 +92,10 @@ pub fn spawn_dbus_event_multiplexer_thread(
             let mut event_received = false;
 
             loop {
+                if crate::QUIT.load(Ordering::SeqCst) {
+                    break Ok(());
+                }
+
                 let timeout = if event_received { 0 } else { 5 };
 
                 // process events, destined for the dbus api
@@ -338,7 +342,7 @@ pub fn spawn_evdev_input_thread(
                                         );
 
                                         // mark the device as failed
-                                        // let _ =device.fail().map_err(|e| {
+                                        // let _ = device.fail().map_err(|e| {
                                         //     ratelimited::error!("An error occurred while trying to mark the device as failed: {e}")
                                         // }); 
 
@@ -390,7 +394,8 @@ pub fn spawn_evdev_input_thread(
                                     if let EventCode::EV_SYN(code) = k.1.clone().event_code {
                                         if code == EV_SYN::SYN_DROPPED {
                                             warn!("Device {handle} dropped some events");
-                                            // evdev_device.next_event(evdev_rs::ReadFlag::SYNC)?;
+
+                                            // TODO: Implement events re-syncing
                                         }
 
                                         // directly mirror SYN events to reduce input lag
@@ -439,7 +444,7 @@ pub fn spawn_evdev_input_thread(
                                         {
                                             // immediately mirror pointer motion events to reduce input-lag.
                                             // This currently prohibits further manipulation of pointer motion events
-                                  macros::UINPUT_TX
+                                            macros::UINPUT_TX
                                                 .read().unwrap()
                                                 .as_ref()
                                                 .unwrap()

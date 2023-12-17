@@ -21,6 +21,7 @@
 
 BUILDENV := stable
 BUILDFLAGS := --release
+# FEATURES := --features openrgb_bridge,hwaccel
 
 TARGET_DIR := /usr
 SOURCE_DIR := target/release
@@ -61,7 +62,7 @@ all: build xtask
 
 build:
 	@-./build-env.sh $(BUILDENV)
-	@cargo build $(BUILDFLAGS)
+	@cargo build $(BUILDFLAGS) $(FEATURES)
 
 windows-installer: windows
 	@makensis "support/nsis/eruption.nsi"

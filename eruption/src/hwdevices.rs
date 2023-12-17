@@ -192,6 +192,10 @@ lazy_static! {
 
         // Eruption Custom Hardware
         // MiscSerialDriver::register("Eruption", "Custom Serial LEDs", &custom_serial_leds::bind_serial, Status::Testing),
+        
+        // Eruption internal / Special devices
+
+        // MiscVirtualDriver::register("Eruption", "OpenRGB bridge", &openrgb_bridge::bind_virtual, Status::Testing),
     ]));
 }
 
@@ -212,6 +216,8 @@ pub enum HwDeviceError {
     #[error("Could not open the device file")]
     DeviceOpenError {},
 
+    // #[error("Invalid device or address")]
+    // InvalidDevice {},
     #[error("Device not bound")]
     DeviceNotBound {},
 
@@ -793,6 +799,7 @@ pub enum Capability {
     Misc,
     Headset,
     MousePad,
+    Virtual,
 
     // Features
     RgbLighting,
@@ -1277,7 +1284,29 @@ pub fn probe_devices() -> Result<Vec<Device>> {
     let declared_devices = get_non_pnp_devices()?;
 
     for device in declared_devices {
-        if device.class == "serial" {
+        if device.class == "openrgb" {
+            info!(
+                "Binding device: {} ({})",
+                device.name,
+                device.device_file.display()
+            );
+
+            {
+                let mut pending_devices = crate::DEVICES_PENDING_INIT.0.lock().unwrap();
+                *pending_devices += 1;
+
+                crate::DEVICES_PENDING_INIT.1.notify_all();
+            }
+
+            let device = openrgb_bridge::OpenRgbBridge::bind(
+                device.device_file.to_string_lossy().to_string(),
+            );
+
+            // non pnp devices are currently always 'misc' devices
+            devices.push(Arc::new(RwLock::new(
+                Box::new(device) as Box<dyn DeviceExt + Sync + Send>
+            )));
+        } else if device.class == "serial" {
             info!(
                 "Binding non-pnp serial LEDs device: {} ({})",
                 device.name,

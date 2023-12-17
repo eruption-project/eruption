@@ -1214,15 +1214,7 @@ fn run_main_loop(
 
         // terminate the main loop (and later re-enter it) on device failure
         // in most cases eruption should better be restarted
-        #[cfg(target_os = "windows")]
-        if device_has_failed || (result.is_err() && !timedout) {
-            return Err(MainError::DeviceFailed {}.into());
-        }
-
-        #[cfg(not(target_os = "windows"))]
-        if device_has_failed || (result.is_err() && !timed_out)
-        /* || !failed_event_rxs.read().unwrap().is_empty() */
-        {
+        if device_has_failed || (result.is_err() && !timed_out) {
             return Err(MainError::DeviceFailed {}.into());
         }
 

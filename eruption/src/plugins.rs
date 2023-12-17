@@ -28,6 +28,8 @@ pub mod introspection;
 pub mod keyboard;
 pub mod macros;
 pub mod mouse;
+#[cfg(feature = "openrgb_bridge")]
+pub mod openrgb_bridge;
 pub mod persistence;
 pub mod plugin;
 pub mod profiles;
@@ -49,6 +51,8 @@ pub use canvas::CanvasPlugin;
 pub use hwaccel::HwAccelPlugin;
 pub use introspection::IntrospectionPlugin;
 pub use keyboard::KeyboardPlugin;
+#[cfg(feature = "openrgb_bridge")]
+pub use openrgb_bridge::OpenRgbBridgePlugin;
 
 #[cfg(not(target_os = "windows"))]
 pub use macros::MacrosPlugin;
@@ -146,6 +150,11 @@ pub fn register_plugins() -> Result<()> {
     #[cfg(feature = "hwaccel")]
     let _ = plugin_manager
         .register_plugin(Box::new(HwAccelPlugin::new()))
+        .map_err(|_e| error!("An error occurred during initialization of the plugin"));
+
+    #[cfg(feature = "openrgb_bridge")]
+    let _ = plugin_manager
+        .register_plugin(Box::new(OpenRgbBridgePlugin::new()))
         .map_err(|_e| error!("An error occurred during initialization of the plugin"));
 
     // Additional plugins

@@ -208,20 +208,20 @@ pub const TIMER_TPS: u64 = 60;
 
 /// The width of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_WIDTH: usize = 64; // 86;
+pub const CANVAS_WIDTH: usize = 64;
 
 /// The height of the canvas (max. reasonable value approx. 128)
 /// NOTE: Values considerably larger than 128 currently lead to stuttering in the Eruption GUI
-pub const CANVAS_HEIGHT: usize = 48; // 64;
+pub const CANVAS_HEIGHT: usize = 48;
 
 /// The number of "pixels" on the canvas
 pub const CANVAS_SIZE: usize = CANVAS_WIDTH * CANVAS_HEIGHT;
 
 /// Timeout for waiting on condition variables of Lua upcalls
-pub const TIMEOUT_UPCALL_MILLIS: u64 = 250;
+pub const TIMEOUT_UPCALL_MILLIS: u64 = 64;
 
 /// Timeout for waiting on ready condition after the RealizeColorMap upcall
-pub const TIMEOUT_REALIZE_COLOR_MAP_MILLIS: u64 = 40;
+pub const TIMEOUT_REALIZE_COLOR_MAP_MILLIS: u64 = 42;
 
 /// Max number of events that will be processed in each iteration of the main loop
 pub const MAX_EVENTS_PER_ITERATION: u64 = 1024;

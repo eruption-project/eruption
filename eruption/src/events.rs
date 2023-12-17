@@ -589,22 +589,22 @@ pub fn process_mouse_event(
                         return Ok(());
                     }
 
-                    let result = UPCALL_COMPLETED_ON_MOUSE_MOVE
-                        .1
-                        .wait_timeout(
-                            UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock().unwrap(),
-                            Duration::from_millis(constants::TIMEOUT_UPCALL_MILLIS),
-                            // |&mut pending| {
-                            //     pending > 0 && !REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst)
-                            // },
-                        )
-                        .unwrap();
-
-                    if result.1.timed_out() {
-                        error!("An event handler in a Lua script timed out");
-
-                        // REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
-                    }
+                    // let result = UPCALL_COMPLETED_ON_MOUSE_MOVE
+                    //     .1
+                    //     .wait_timeout_while(
+                    //         UPCALL_COMPLETED_ON_MOUSE_MOVE.0.lock().unwrap(),
+                    //         Duration::from_millis(constants::TIMEOUT_UPCALL_MILLIS),
+                    //         |&mut pending| {
+                    //             pending > 0 && !REQUEST_FAILSAFE_MODE.load(Ordering::SeqCst)
+                    //         },
+                    //     )
+                    //     .unwrap();
+                    //
+                    // if result.1.timed_out() {
+                    //     error!("An event handler in a Lua script timed out");
+                    //
+                    //     // REQUEST_FAILSAFE_MODE.store(true, Ordering::SeqCst);
+                    // }
                 }
 
                 events::notify_observers(events::Event::MouseMove(direction, raw_event.value))

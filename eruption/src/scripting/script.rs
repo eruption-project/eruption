@@ -40,6 +40,7 @@ use tracing::*;
 use tracing_mutex::stdsync::RwLock;
 
 use crate::hwdevices::DeviceClass;
+use crate::util::ratelimited;
 use crate::{
     constants, hwdevices, hwdevices::KeyboardHidEvent, hwdevices::MouseHidEvent, hwdevices::RGBA,
     scripting::callbacks, scripting::constants::*,
@@ -412,7 +413,10 @@ fn continue_if_ok(
 ) -> Result<RunningScriptResult> {
     match call_result {
         Ok(_r) => Ok(RunningScriptResult::Continue),
-        Err(_e) => Ok(RunningScriptResult::TerminateWithErrors),
+        Err(_e) => {
+            ratelimited::error!("Error in an event handler occurred");
+            Ok(RunningScriptResult::TerminateWithErrors)
+        }
     }
 }
 

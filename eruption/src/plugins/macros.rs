@@ -591,6 +591,10 @@ impl MacrosPlugin {
                 Self::initialize_thread_locals()?;
 
                 loop {
+                    if crate::QUIT.load(Ordering::SeqCst) {
+                        break Ok(());
+                    }
+
                     let message = uinput_rx.recv()?;
 
                     match message {
