@@ -692,7 +692,7 @@ impl DeviceExt for RoccatVulcanProTKL {
 
                             let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
-                            let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
+                            let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Catrom)?;
                             resizer.resize(canvas.as_slice().unwrap(), &mut led_map)?;
 
                             // Colors are in breads of 12 keys (2 columns). Color parts are sorted by color e.g. the red

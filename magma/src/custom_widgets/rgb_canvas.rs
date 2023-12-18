@@ -70,7 +70,7 @@ impl RgbCanvas {
         let canvas = canvas.map(|v| RGB8::new(v.r, v.g, v.b));
         let mut result = vec![RGB8::new(0, 0, 0); w2 * h2];
 
-        let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point).unwrap();
+        let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Catrom).unwrap();
         resizer
             .resize(canvas.as_slice().unwrap(), &mut result)
             .unwrap();

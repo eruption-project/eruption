@@ -750,7 +750,7 @@ impl DeviceExt for WootingTwoHeArm {
                             let canvas = canvas.map(|v| RGB8::new(v.r, v.g, v.b));
                             let mut led_map = vec![RGB8::new(0, 0, 0); w2 * h2];
 
-                            let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Point)?;
+                            let mut resizer = resize::new(w1, h1, w2, h2, RGB8, Type::Catrom)?;
                             resizer.resize(canvas.as_slice().unwrap(), &mut led_map)?;
 
                             const BUFFER_SIZE: usize =
