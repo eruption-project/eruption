@@ -155,11 +155,10 @@ fn get_device_status_property(
     let device_status = device_status
         .iter()
         .map(|(k, v)| {
-            let (usb_vid, usb_pid) =
-                get_device_specific_ids(&DeviceHandle::from(*k)).unwrap_or_default();
+            let (usb_vid, usb_pid) = get_device_specific_ids(k).unwrap_or_default();
 
             DeviceStatus {
-                index: *k,
+                index: (*k).into(),
                 usb_vid,
                 usb_pid,
                 status: v.clone(),
@@ -205,17 +204,17 @@ fn get_device_status(m: &MethodInfo) -> MethodResult {
 
     trace!("Querying device [{}] status", device);
 
-    let result =
-        query_device_specific_status(device).map_err(|e| MethodErr::failed(&format!("{e}")))?;
+    let result = query_device_specific_status(&DeviceHandle::from(device))
+        .map_err(|e| MethodErr::failed(&format!("{e}")))?;
 
     Ok(vec![m.msg.method_return().append1(result)])
 }
 
 /// Query the device specific status from the global status store
-fn query_device_specific_status(device: u64) -> Result<String> {
+fn query_device_specific_status(device: &DeviceHandle) -> Result<String> {
     let device_status = crate::DEVICE_STATUS.as_ref().read().unwrap();
 
-    match device_status.get(&device) {
+    match device_status.get(device) {
         Some(status) => Ok(serde_json::to_string_pretty(&status.0)?),
         None => Err(DbusApiError::InvalidDevice {}.into()),
     }

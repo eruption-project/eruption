@@ -30,7 +30,7 @@ use std::sync::Arc;
 use tracing::*;
 
 use self::convenience::TreeAdd;
-use crate::hwdevices::{self, DeviceHandle};
+use crate::hwdevices;
 
 pub type Factory = dbus_tree::Factory<MTFn<()>, ()>;
 pub type Interface = dbus_tree::Interface<MTFn<()>, ()>;
@@ -171,11 +171,10 @@ impl DbusApi {
         let device_status = device_status
             .iter()
             .map(|(k, v)| {
-                let (usb_vid, usb_pid) =
-                    devices::get_device_specific_ids(&DeviceHandle::from(*k)).unwrap_or_default();
+                let (usb_vid, usb_pid) = (0, 0); // devices::get_device_specific_ids(k).unwrap_or_default();
 
                 DeviceStatus {
-                    index: *k,
+                    index: (*k).into(),
                     usb_vid,
                     usb_pid,
                     status: v.clone(),

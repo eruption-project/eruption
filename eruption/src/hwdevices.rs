@@ -1809,7 +1809,6 @@ pub fn get_device_info(usb_vid: u16, usb_pid: u16) -> Option<(&'static str, &'st
     metadata.map(|metadata| (metadata.get_device_make(), metadata.get_device_model()))
 }
 
-#[allow(dead_code)]
 #[inline]
 pub fn find_device_by_handle(handle: &DeviceHandle) -> Option<Device> {
     crate::DEVICES.read().unwrap().get(handle).cloned()

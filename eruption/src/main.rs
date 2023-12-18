@@ -149,8 +149,8 @@ lazy_static! {
     pub static ref DEVICE_NAMES: Arc<RwLock<IndexMap<DeviceHandle, String>>> = Arc::new(RwLock::new(IndexMap::new()));
 
     /// Holds device status information, like e.g: current signal strength or battery levels
-    pub static ref DEVICE_STATUS: Arc<RwLock<HashMap<u64, DeviceStatus>>> =
-        Arc::new(RwLock::new(HashMap::new()));
+    pub static ref DEVICE_STATUS: Arc<RwLock<IndexMap<DeviceHandle, DeviceStatus>>> =
+        Arc::new(RwLock::new(IndexMap::new()));
 
     /// The currently active slot (1-4)
     pub static ref ACTIVE_SLOT: AtomicUsize = AtomicUsize::new(0);
@@ -1125,28 +1125,23 @@ fn run_main_loop(
             #[cfg(feature = "profiling")]
             coz::scope!("device status polling");
 
-            let saved_status = { crate::DEVICE_STATUS.as_ref().read().unwrap().clone() };
+            let (current_status, saved_status) = {
+                let saved_status = crate::DEVICE_STATUS.as_ref().read().unwrap().clone();
 
-            /* let device_status = device.device_status()?;
+                for (handle, device) in devices.iter() {
+                    let device_status = device.read().unwrap().device_status()?;
 
-            DEVICE_STATUS
-                .write()
-                .unwrap()
-                .insert(Into::<u64>::into(handle), device_status); */
+                    DEVICE_STATUS
+                        .write()
+                        .unwrap()
+                        .insert(*handle, device_status);
+                }
 
-            /* if let Err(_e) = events::process_timer_event(handle, device) {
-                /* do nothing  */
+                last_status_poll = Instant::now();
 
-                // if e.type_id() == (HwDeviceError::NoOpResult {}).type_id() {
-                //   error!("Could not process a timer event: {}", e);
-                // } else {
-                //   trace!("Result is a NoOp");
-                // }
-            } */
-
-            last_status_poll = Instant::now();
-
-            let current_status = crate::DEVICE_STATUS.read().unwrap().clone();
+                let current_status = crate::DEVICE_STATUS.read().unwrap().clone();
+                (current_status, saved_status)
+            };
 
             if current_status != saved_status {
                 dbus_api_tx
