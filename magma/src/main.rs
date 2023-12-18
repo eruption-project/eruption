@@ -22,9 +22,6 @@
 use clap::Parser;
 use config::Config;
 use constants::CANVAS_SIZE;
-use crossterm::event::{
-    KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
-};
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
@@ -394,12 +391,12 @@ fn init_terminal() -> Result<()> {
 
     stdout().execute(EnterAlternateScreen)?;
     // stdout().execute(EnableMouseCapture)?;
-    stdout().execute(PushKeyboardEnhancementFlags(
-        KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES,
-    ))?;
-    stdout().execute(PushKeyboardEnhancementFlags(
-        KeyboardEnhancementFlags::REPORT_ALTERNATE_KEYS,
-    ))?;
+    // stdout().execute(PushKeyboardEnhancementFlags(
+    //     KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES,
+    // ))?;
+    // stdout().execute(PushKeyboardEnhancementFlags(
+    //     KeyboardEnhancementFlags::REPORT_ALTERNATE_KEYS,
+    // ))?;
 
     Ok(())
 }
@@ -407,9 +404,9 @@ fn init_terminal() -> Result<()> {
 fn restore_terminal() -> Result<()> {
     disable_raw_mode()?;
 
-    stdout().execute(PopKeyboardEnhancementFlags)?;
-    stdout().execute(LeaveAlternateScreen)?;
+    // stdout().execute(PopKeyboardEnhancementFlags)?;
     // stdout().execute(DisableMouseCapture)?;
+    stdout().execute(LeaveAlternateScreen)?;
 
     Ok(())
 }
