@@ -69,7 +69,7 @@ ctrlc = { version = "3.4.1", features = ["termination"] }
 clap = "4.4.8"
 hotwatch = "0.4.6"
 config = "0.13.3"
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = [
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "main", default-features = false, features = [
   "linux-static-libusb",
 ] }
 udev = "0.8.0"

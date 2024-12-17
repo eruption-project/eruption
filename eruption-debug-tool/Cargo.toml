@@ -58,7 +58,7 @@ thiserror = "1.0.50"
 eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "master", default-features = false, features = [
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", branch = "main", default-features = false, features = [
     "linux-static-libusb",
 ] }
 bitvec = "1.0.1"
