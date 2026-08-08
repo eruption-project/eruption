@@ -45,7 +45,7 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 - [ ] New hardware support batch shipped with regression tests.
 - [x] SDK examples expanded for connect/query/update/error flows.
 - [ ] Translation expansion for top-priority locales completed.
-- [ ] CI quality metrics tightened (faster failure signal, clearer logs).
+- [x] CI quality metrics tightened (faster failure signal, clearer logs).
 
 ### M3 Desktop Ecosystem
 

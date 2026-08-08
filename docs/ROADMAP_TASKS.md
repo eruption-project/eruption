@@ -43,6 +43,8 @@ Status: completed (connect/query/update/error flow examples and docs baseline ad
   - failures identify root area (build, docs, i18n, tests)
   - CI runtime remains acceptable for PR workflow
 
+Status: completed (preflight/docs+i18n, static analysis, and workspace build phases split in CI)
+
 ## M3 Desktop Ecosystem
 
 ### M3-01 KDE Plasma Widget Beta
