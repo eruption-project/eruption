@@ -28,6 +28,7 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 - [x] M2/M3 roadmap split into execution-ready tasks.
 - [x] KDE Plasma widget MVP scaffold implemented (template + backend + installer).
 - [x] MATE companion indicator MVP scaffold implemented (indicator + installer).
+- [x] Headless-friendly Pyroclasm smoke coverage added to CI.
 
 ## Milestone Checklist
 
@@ -57,5 +58,4 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 
 1. Convert roadmap workstreams into GitHub issues with owners and acceptance criteria.
 2. Extend i18n checks with per-key placeholder parity instead of file-level parity.
-3. Add headless-friendly Pyroclasm startup smoke coverage in CI.
-4. Create implementation branches for M3-01 (KDE) and M3-02 (MATE).
+3. Create implementation branches for M3-01 (KDE) and M3-02 (MATE).

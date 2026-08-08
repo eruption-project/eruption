@@ -84,3 +84,6 @@ jobs:
         run: cargo check --workspace --all-targets
       - name: Cargo build
         run: cargo build --workspace
+      - name: Pyroclasm smoke tests (headless)
+        if: matrix.rust == 'stable'
+        run: cargo test -p pyroclasm --tests
