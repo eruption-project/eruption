@@ -2,6 +2,8 @@
 
 This file tracks execution status for items defined in TODO.md.
 
+Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
+
 ## Snapshot (2026-08-08)
 
 - M1 Foundation: In progress
@@ -21,6 +23,9 @@ This file tracks execution status for items defined in TODO.md.
 - [x] SDK compatibility policy documented.
 - [x] i18n quality gate added and wired into CI.
 - [x] Existing Pyroclasm smoke test retained and validated.
+- [x] KDE Plasma widget technical design notes drafted.
+- [x] MATE applet technical design notes drafted.
+- [x] M2/M3 roadmap split into execution-ready tasks.
 
 ## Milestone Checklist
 
@@ -51,4 +56,4 @@ This file tracks execution status for items defined in TODO.md.
 1. Convert roadmap workstreams into GitHub issues with owners and acceptance criteria.
 2. Extend i18n checks with per-key placeholder parity instead of file-level parity.
 3. Add headless-friendly Pyroclasm startup smoke coverage in CI.
-4. Draft widget/applet technical design notes before implementation.
+4. Create implementation branches for M3-01 (KDE) and M3-02 (MATE).

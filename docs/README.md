@@ -5,6 +5,7 @@
     - [Features Overview (a.k.a The Eruption Handbook)](#features-overview-aka-the-eruption-handbook)
     - [General Overview](#general-overview)
     - [Roadmap Status](#roadmap-status)
+    - [Roadmap Execution Tasks](#roadmap-execution-tasks)
     - [Hardware Support Planning Matrix](#hardware-support-planning-matrix)
     - [HOWTOs](#howtos)
     - [Systems Architecture](#systems-architecture)
@@ -42,6 +43,12 @@ General overview
 Execution tracking of roadmap milestones and progress
 
 [ROADMAP_STATUS.md](ROADMAP_STATUS.md)
+
+### Roadmap Execution Tasks
+
+Implementation-ready backlog for M2 and M3 milestones
+
+[ROADMAP_TASKS.md](ROADMAP_TASKS.md)
 
 ### Hardware Support Planning Matrix
 
