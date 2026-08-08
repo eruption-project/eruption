@@ -16,15 +16,20 @@ This file tracks execution status for items defined in TODO.md.
 - [x] Pyroclasm egui compatibility fixes applied.
 - [x] Documentation redirect files standardized.
 - [x] Canonical docs location clarified in docs/README.md.
+- [x] Hardware support planning matrix added.
+- [x] New-device bring-up checklist added and linked from CONTRIBUTING.
+- [x] SDK compatibility policy documented.
+- [x] i18n quality gate added and wired into CI.
+- [x] Existing Pyroclasm smoke test retained and validated.
 
 ## Milestone Checklist
 
 ### M1 Foundation
 
-- [ ] Hardware support matrix curated from issue demand.
-- [ ] New-device bring-up checklist committed and referenced by CONTRIBUTING docs.
-- [ ] SDK docs baseline refreshed with compatibility policy section.
-- [ ] i18n quality gate automation added in CI.
+- [x] Hardware support matrix curated from issue demand.
+- [x] New-device bring-up checklist committed and referenced by CONTRIBUTING docs.
+- [x] SDK docs baseline refreshed with compatibility policy section.
+- [x] i18n quality gate automation added in CI.
 - [x] Initial GTK3 style refresh and consistency pass.
 - [ ] Pyroclasm UX pass with screenshots and manual test notes.
 
@@ -44,6 +49,6 @@ This file tracks execution status for items defined in TODO.md.
 ## Immediate Next Actions
 
 1. Convert roadmap workstreams into GitHub issues with owners and acceptance criteria.
-2. Add i18n validation script and wire it into CI.
-3. Add Pyroclasm smoke test for startup and core navigation.
+2. Extend i18n checks with per-key placeholder parity instead of file-level parity.
+3. Add headless-friendly Pyroclasm startup smoke coverage in CI.
 4. Draft widget/applet technical design notes before implementation.

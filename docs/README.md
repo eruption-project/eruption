@@ -4,6 +4,8 @@
   - [Welcome to the Eruption Documentation](#welcome-to-the-eruption-documentation)
     - [Features Overview (a.k.a The Eruption Handbook)](#features-overview-aka-the-eruption-handbook)
     - [General Overview](#general-overview)
+    - [Roadmap Status](#roadmap-status)
+    - [Hardware Support Planning Matrix](#hardware-support-planning-matrix)
     - [HOWTOs](#howtos)
     - [Systems Architecture](#systems-architecture)
     - [Macros Documentation](#macros-documentation)
@@ -34,6 +36,18 @@ Read this first to get a quick introduction!
 General overview
 
 [DOCUMENTATION.md](DOCUMENTATION.md)
+
+### Roadmap Status
+
+Execution tracking of roadmap milestones and progress
+
+[ROADMAP_STATUS.md](ROADMAP_STATUS.md)
+
+### Hardware Support Planning Matrix
+
+Operational planning matrix for hardware support priorities
+
+[HARDWARE_SUPPORT_MATRIX.md](HARDWARE_SUPPORT_MATRIX.md)
 
 ### HOWTOs
 
