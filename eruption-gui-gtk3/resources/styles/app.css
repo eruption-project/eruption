@@ -21,34 +21,39 @@
 
 
 .client {
-    margin: 18px;
+    margin: 20px;
 }
 
 .heading {
-    font-size: xx-large;
+    font-size: 2.1em;
     font-weight: bold;
-    margin-left: 8px;
+    margin: 0 0 6px 8px;
+    letter-spacing: 0.02em;
 }
 
 .notification {
     font-style: italic;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    color: alpha(currentColor, 0.85);
 }
 
 .small-font {
-    font-size: small;
+    font-size: 0.92em;
 }
 
 box .slot_indicator {
-    border-radius: 8px;
-    border: 4px dotted gray;
+    border-radius: 10px;
+    border: 3px dotted rgba(128, 128, 128, 0.85);
+    padding: 4px;
+    transition: 120ms ease-in-out;
 }
 
 box .slot_indicator.active {
-    /* background: linear-gradient(0deg, rgba(105, 105, 105, 0.70), rgba(105, 105, 105, 0.15)); */
-    border: 4px solid rgba(128, 128, 128, 0.5);
+    border: 3px solid rgba(52, 133, 210, 0.70);
+    background: alpha(rgba(52, 133, 210, 1.0), 0.10);
+    box-shadow: 0 0 0 2px alpha(rgba(52, 133, 210, 1.0), 0.16);
 }
 
 .slot_indicator combobox {
-    font-size: small;
+    font-size: 0.92em;
 }

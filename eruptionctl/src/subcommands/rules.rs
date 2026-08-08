@@ -401,7 +401,7 @@ async fn set_rules(rules: &IndexMap<Selector, (RuleMetadata, Action)>) -> Result
         "/org/eruption/process_monitor/rules",
     )
     .await?
-    .method_call(
+    .method_call::<(), _, _, _>(
         "org.eruption.process_monitor.Rules",
         "SetRules",
         (generated_rules,),

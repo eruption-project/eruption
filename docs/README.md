@@ -19,6 +19,9 @@
 
 Here you find an overview of the documentation available for the Eruption project
 
+The `docs/` directory is the canonical location for project documentation.
+Some similarly named files in the repository root are compatibility redirects.
+
 ### Features Overview (a.k.a The Eruption Handbook)
 
 A general overview over the features of Eruption and how to use them.
@@ -88,6 +91,6 @@ Privacy considerations
 
 ### FAQs
 
-FAQs - Freuqently asked questions
+FAQs - Frequently asked questions
 
 [FAQs.md](FAQs.md)
