@@ -43,7 +43,7 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 ### M2 Expansion
 
 - [ ] New hardware support batch shipped with regression tests.
-- [ ] SDK examples expanded for connect/query/update/error flows.
+- [x] SDK examples expanded for connect/query/update/error flows.
 - [ ] Translation expansion for top-priority locales completed.
 - [ ] CI quality metrics tightened (faster failure signal, clearer logs).
 

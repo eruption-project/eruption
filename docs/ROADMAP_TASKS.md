@@ -23,6 +23,8 @@ This file breaks down M2 and M3 roadmap items into implementation-ready tasks.
   - all documented examples compile/run in CI where applicable
   - migration guidance added for changed APIs
 
+Status: completed (connect/query/update/error flow examples and docs baseline added)
+
 ### M2-03 Translation Expansion
 
 - Scope: close high-priority locale gaps for release-critical UI strings.
