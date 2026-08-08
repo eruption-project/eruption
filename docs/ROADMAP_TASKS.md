@@ -75,6 +75,8 @@ This file breaks down M2 and M3 roadmap items into implementation-ready tasks.
   - documented runtime dependencies
   - versioning strategy documented
 
+Status: completed (local-install and documentation baseline delivered)
+
 ## Sequencing Recommendation
 
 1. M2-03 i18n expansion baseline.

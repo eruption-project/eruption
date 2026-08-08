@@ -7,6 +7,7 @@
     - [Roadmap Status](#roadmap-status)
     - [Roadmap Execution Tasks](#roadmap-execution-tasks)
     - [Hardware Support Planning Matrix](#hardware-support-planning-matrix)
+    - [Desktop Integrations Install Guide](#desktop-integrations-install-guide)
     - [HOWTOs](#howtos)
     - [Systems Architecture](#systems-architecture)
     - [Macros Documentation](#macros-documentation)
@@ -55,6 +56,12 @@ Implementation-ready backlog for M2 and M3 milestones
 Operational planning matrix for hardware support priorities
 
 [HARDWARE_SUPPORT_MATRIX.md](HARDWARE_SUPPORT_MATRIX.md)
+
+### Desktop Integrations Install Guide
+
+Install/uninstall steps, dependencies, and packaging notes for KDE and MATE integrations
+
+[howtos/DESKTOP_INTEGRATIONS_INSTALL.md](howtos/DESKTOP_INTEGRATIONS_INSTALL.md)
 
 ### HOWTOs
 

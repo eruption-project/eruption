@@ -51,7 +51,7 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 
 - [ ] KDE Plasma widget beta finalized and packaged.
 - [ ] MATE applet beta finalized and packaged.
-- [ ] Packaging and install docs finalized for desktop integrations.
+- [x] Packaging and install docs finalized for desktop integrations.
 
 ## Immediate Next Actions
 
