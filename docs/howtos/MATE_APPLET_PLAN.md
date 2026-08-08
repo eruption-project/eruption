@@ -42,3 +42,8 @@ Provide lightweight panel integration with minimal dependencies:
 - D-Bus reconnect works after daemon restart
 - Slot/brightness actions reflect in running daemon
 - Degraded mode remains usable when daemon is offline
+
+## Current Implementation Baseline
+
+- Indicator helper: support/integrations/mate/eruption-mate-indicator.py
+- Local installer helper: support/integrations/mate/install-local.sh

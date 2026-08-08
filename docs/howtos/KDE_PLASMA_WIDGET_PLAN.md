@@ -42,3 +42,9 @@ Provide lightweight desktop access to Eruption state and quick actions:
 - Reconnect after daemon restart
 - State updates reflected within refresh interval
 - No crash loop on malformed D-Bus responses
+
+## Current Implementation Baseline
+
+- Widget template UI: support/templates/kde-plasma-widget/contents/ui/main.qml
+- Local backend bridge: support/integrations/kde-plasma/eruption-plasma-backend.sh
+- Local installer helper: support/integrations/kde-plasma/install-local.sh

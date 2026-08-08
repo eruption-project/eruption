@@ -26,6 +26,8 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 - [x] KDE Plasma widget technical design notes drafted.
 - [x] MATE applet technical design notes drafted.
 - [x] M2/M3 roadmap split into execution-ready tasks.
+- [x] KDE Plasma widget MVP scaffold implemented (template + backend + installer).
+- [x] MATE companion indicator MVP scaffold implemented (indicator + installer).
 
 ## Milestone Checklist
 
@@ -47,8 +49,8 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 
 ### M3 Desktop Ecosystem
 
-- [ ] KDE Plasma widget beta implemented and packaged.
-- [ ] MATE applet beta implemented and packaged.
+- [ ] KDE Plasma widget beta finalized and packaged.
+- [ ] MATE applet beta finalized and packaged.
 - [ ] Packaging and install docs finalized for desktop integrations.
 
 ## Immediate Next Actions
