@@ -14,6 +14,8 @@ This file breaks down M2 and M3 roadmap items into implementation-ready tasks.
   - hotplug and resume path validated
   - release notes include support scope and limitations
 
+Status: completed for registry regression baseline (priority mappings and maturity metadata validated in tests; docs updated in DEVICES.md and HARDWARE_SUPPORT_MATRIX.md).
+
 ### M2-02 SDK Examples and Migration Baseline
 
 - Scope: extend SDK examples for connect/query/update/error handling flows.
@@ -60,6 +62,8 @@ Status: completed (preflight/docs+i18n, static analysis, and workspace build pha
   - brightness adjustment
   - reconnect/error handling
 
+Status: completed (backend bridge and QML widget paths include profile/slot/brightness controls with disconnected/reconnect handling and install/uninstall docs)
+
 ### M3-02 MATE Applet Beta
 
 - Scope: implement applet based on docs/howtos/MATE_APPLET_PLAN.md.
@@ -70,6 +74,8 @@ Status: completed (preflight/docs+i18n, static analysis, and workspace build pha
   - slot switch action
   - brightness adjustment
   - reconnect/error handling
+
+Status: completed (indicator helper includes profile/slot status, slot/brightness actions, and explicit offline/error state handling)
 
 ### M3-03 Packaging and Distribution
 

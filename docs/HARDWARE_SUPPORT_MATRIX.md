@@ -15,10 +15,10 @@ It complements the capability details in DEVICES.md.
 | --- | --- | --- | --- | --- |
 | P1 | ROCCAT Vulcan II Max | Work in progress | Driver maturity, test coverage, hotplug validation | Stable hotplug, profile switching, release notes and docs |
 | P1 | ROCCAT Pyro | Work in progress | Protocol completeness, key mapping edge cases | Full key map validation and runtime stability |
-| P1 | ROCCAT Kone XP | Work in progress | Device parameters and profile behavior | Device config parity with supported ROCCAT mice |
-| P2 | ROCCAT Kone Pro | Work in progress | DPI and polling controls, robustness | No critical regressions in daemon restart and reconnect |
-| P2 | ROCCAT Kone Aimo Remastered | Experimental | Feature completion and long-run reliability | Capability matrix updated and stress-tested |
-| P2 | ROCCAT Vulcan TKL / Pro | Experimental / untested | Validation depth and test automation | Regression tests and documented known limitations |
+| P1 | ROCCAT Kone XP | Registry baseline completed | Device parameters and profile behavior | Device config parity with supported ROCCAT mice |
+| P2 | ROCCAT Kone Pro | Registry baseline completed | DPI and polling controls, robustness | No critical regressions in daemon restart and reconnect |
+| P2 | ROCCAT Kone Aimo Remastered | Experimental with registry coverage | Feature completion and long-run reliability | Capability matrix updated and stress-tested |
+| P2 | ROCCAT Vulcan TKL / Pro | Experimental with registry coverage | Validation depth and hotplug depth | Runtime regression tests and documented known limitations |
 | P3 | Corsair Strafe (non-RGB) | Partial | Input-path consistency and maintenance confidence | Clear support scope and CI coverage for basic flows |
 
 ## Triage Workflow
@@ -32,3 +32,4 @@ It complements the capability details in DEVICES.md.
 
 - Canonical feature coverage remains in DEVICES.md.
 - This file is intentionally operational and release-planning oriented.
+- M2-01 baseline (2026-08): regression tests now enforce registry uniqueness and priority-device metadata presence for Vulcan Pro, Vulcan TKL, Kone XP, Kone Pro, and Kone Aimo Remastered.

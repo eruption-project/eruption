@@ -33,6 +33,23 @@
 - You may want to set a different profile for each slot (`F1`-`F4`).
 - Some keyboards may get into an inconsistent state when Eruption terminates while `Game Mode` is enabled. The state may be fixed manually or by a reboot/device hotplug
 
+## M2-01 Hardware Batch (2026-08)
+
+This batch focuses on high-demand devices that are already present in the driver registry:
+
+- ROCCAT Vulcan Pro (`0x1e7d:0x30f7`)
+- ROCCAT Vulcan TKL (`0x1e7d:0x2fee`)
+- ROCCAT Kone XP (`0x1e7d:0x2c8b`)
+- ROCCAT Kone Pro (`0x1e7d:0x2c88`)
+- ROCCAT Kone Aimo Remastered (`0x1e7d:0x2e2c`)
+
+Regression coverage was added for:
+
+- uniqueness of registry mappings by class + USB VID/PID
+- presence and maturity-level metadata for all devices in the M2-01 batch
+
+See test module in `eruption/src/hwdevices/mod.rs`.
+
 ## Feature Matrix
 
 ### Keyboard Devices

@@ -41,8 +41,7 @@ Installed artifacts:
 ### KDE Local Uninstall
 
 ```bash
-rm -rf ~/.local/share/plasma/plasmoids/org.eruption.widget
-rm -f ~/.local/bin/eruption-plasma-backend
+bash support/integrations/kde-plasma/uninstall-local.sh
 ```
 
 ## MATE: Local Install
@@ -61,8 +60,7 @@ Installed artifacts:
 ### MATE Local Uninstall
 
 ```bash
-rm -f ~/.local/bin/eruption-mate-indicator
-rm -f ~/.config/autostart/eruption-mate-indicator.desktop
+bash support/integrations/mate/uninstall-local.sh
 ```
 
 ## Troubleshooting
@@ -103,3 +101,9 @@ Install at least one of them or adjust launcher command in helper scripts.
 - [ ] runtime dependencies validated in clean environment
 - [ ] reconnect behavior validated after daemon restart
 - [ ] docs links and local scripts smoke-tested
+
+## Validation Notes
+
+Operational validation notes for beta baseline are tracked in:
+
+- `docs/howtos/DESKTOP_INTEGRATIONS_VALIDATION.md`

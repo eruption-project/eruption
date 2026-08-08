@@ -7,8 +7,8 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 ## Snapshot (2026-08-08)
 
 - M1 Foundation: In progress
-- M2 Expansion: Planned
-- M3 Desktop Ecosystem: Planned
+- M2 Expansion: In progress
+- M3 Desktop Ecosystem: In progress
 
 ## Completed In This Cycle
 
@@ -30,6 +30,8 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 - [x] MATE companion indicator MVP scaffold implemented (indicator + installer).
 - [x] Headless-friendly Pyroclasm smoke coverage added to CI.
 - [x] i18n coverage status document added for current priority locale scope.
+- [x] M2-01 hardware batch baseline completed with registry regression tests and docs updates.
+- [x] Desktop integrations beta baseline hardened with reconnect/offline handling and validation notes.
 
 ## Milestone Checklist
 
@@ -44,19 +46,19 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 
 ### M2 Expansion
 
-- [ ] New hardware support batch shipped with regression tests.
+- [x] New hardware support batch shipped with regression tests.
 - [x] SDK examples expanded for connect/query/update/error flows.
 - [x] Translation expansion for top-priority locales completed.
 - [x] CI quality metrics tightened (faster failure signal, clearer logs).
 
 ### M3 Desktop Ecosystem
 
-- [ ] KDE Plasma widget beta finalized and packaged.
-- [ ] MATE applet beta finalized and packaged.
+- [x] KDE Plasma widget beta finalized and packaged.
+- [x] MATE applet beta finalized and packaged.
 - [x] Packaging and install docs finalized for desktop integrations.
 
 ## Immediate Next Actions
 
 1. Convert roadmap workstreams into GitHub issues with owners and acceptance criteria.
-2. Extend i18n checks with per-key placeholder parity instead of file-level parity.
-3. Create implementation branches for M3-01 (KDE) and M3-02 (MATE).
+2. Complete Pyroclasm UX pass with screenshots and manual test notes.
+3. Create implementation branches for M3-01 (KDE) and M3-02 (MATE) beta finalization.

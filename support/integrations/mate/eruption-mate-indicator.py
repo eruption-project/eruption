@@ -5,6 +5,7 @@ Provides quick slot switching and brightness control using eruptionctl.
 """
 
 import subprocess
+import shutil
 from typing import Optional
 
 import gi
@@ -30,6 +31,8 @@ def run_cmd_silent(args):
 
 class EruptionIndicator:
     def __init__(self):
+        self.last_error: Optional[str] = None
+
         self.status_icon = Gtk.StatusIcon.new_from_icon_name("applications-system")
         self.status_icon.set_visible(True)
         self.status_icon.set_tooltip_text("Eruption")
@@ -72,15 +75,64 @@ class EruptionIndicator:
         self.refresh_status()
         GLib.timeout_add_seconds(8, self.refresh_status)
 
+    def is_eruptionctl_available(self) -> bool:
+        return shutil.which("eruptionctl") is not None
+
+    def parse_prefixed_value(self, raw: str, prefix: str) -> str:
+        if not raw or raw == "unavailable":
+            return ""
+
+        if raw.startswith(prefix):
+            return raw.replace(prefix, "", 1).strip()
+
+        return ""
+
+    def get_state(self):
+        if not self.is_eruptionctl_available():
+            self.last_error = "eruptionctl not found"
+            return {
+                "connected": False,
+                "profile": "unavailable",
+                "slot": "?",
+                "brightness": "?",
+            }
+
+        profile_raw = run_cmd(["eruptionctl", "status", "profile"])
+        slot_raw = run_cmd(["eruptionctl", "status", "slot"])
+        brightness_raw = run_cmd(["eruptionctl", "config", "brightness"])
+
+        profile = self.parse_prefixed_value(profile_raw, "Current profile:")
+        slot = self.parse_prefixed_value(slot_raw, "Current slot:")
+        brightness = self.parse_prefixed_value(brightness_raw, "Global brightness:")
+
+        connected = bool(profile and slot and brightness)
+        if connected:
+            self.last_error = None
+        else:
+            self.last_error = "daemon unavailable or no response"
+
+        return {
+            "connected": connected,
+            "profile": profile or "unavailable",
+            "slot": slot or "?",
+            "brightness": brightness or "?",
+        }
+
+    def run_action(self, args) -> bool:
+        ok = run_cmd_silent(args)
+        if not ok:
+            self.last_error = "action failed"
+        return ok
+
     def on_popup_menu(self, _icon, button, activate_time):
         self.menu.popup(None, None, None, None, button, activate_time)
 
     def on_set_slot(self, _item, slot):
-        run_cmd_silent(["eruptionctl", "switch", "slot", str(slot)])
+        self.run_action(["eruptionctl", "switch", "slot", str(slot)])
         self.refresh_status()
 
     def on_set_brightness(self, _item, brightness):
-        run_cmd_silent(["eruptionctl", "config", "brightness", str(brightness)])
+        self.run_action(["eruptionctl", "config", "brightness", str(brightness)])
         self.refresh_status()
 
     def on_refresh(self, _item):
@@ -92,22 +144,28 @@ class EruptionIndicator:
             return
         if run_cmd_silent(["sh", "-c", "command -v eruption-gui-gtk3 >/dev/null"]):
             subprocess.Popen(["eruption-gui-gtk3"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return
+
+        self.last_error = "no UI executable found"
+        self.refresh_status()
 
     def on_quit(self, _item):
         Gtk.main_quit()
 
     def refresh_status(self):
-        profile = run_cmd(["eruptionctl", "status", "profile"])
-        slot = run_cmd(["eruptionctl", "status", "slot"])
-        brightness = run_cmd(["eruptionctl", "config", "brightness"])
+        state = self.get_state()
 
-        profile = profile.replace("Current profile:", "").strip()
-        slot = slot.replace("Current slot:", "").strip()
-        brightness = brightness.replace("Global brightness:", "").strip()
+        label = f"Status: slot={state['slot']} brightness={state['brightness']}"
+        if not state["connected"] and self.last_error:
+            label += f" ({self.last_error})"
 
-        label = f"Status: slot={slot or '?'} brightness={brightness or '?'}"
         self.item_status.set_label(label)
-        self.status_icon.set_tooltip_text(f"Eruption | profile={profile or 'unavailable'} | slot={slot or '?'}")
+
+        tooltip = f"Eruption | profile={state['profile']} | slot={state['slot']}"
+        if self.last_error:
+            tooltip += f" | {self.last_error}"
+        self.status_icon.set_tooltip_text(tooltip)
+
         return True
 
 

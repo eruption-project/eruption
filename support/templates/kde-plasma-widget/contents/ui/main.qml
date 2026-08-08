@@ -11,6 +11,7 @@ Item {
     property string activeProfile: "unavailable"
     property int activeSlot: 0
     property int brightness: 0
+    property bool connected: false
     property string statusText: "ready"
 
     function backendCommand(args) {
@@ -33,20 +34,24 @@ Item {
 
             if (sourceName.indexOf(" status") >= 0) {
                 if (code !== 0) {
+                    root.connected = false
                     root.statusText = err.length > 0 ? err : "backend unavailable"
                     return
                 }
 
                 try {
                     var s = JSON.parse(out)
-                    root.activeProfile = s.profile
-                    root.activeSlot = s.slot
-                    root.brightness = s.brightness
-                    root.statusText = "ok"
+                    root.connected = !!s.connected
+                    root.activeProfile = s.profile || "unavailable"
+                    root.activeSlot = Number(s.slot || 0)
+                    root.brightness = Number(s.brightness || 0)
+                    root.statusText = root.connected ? "ok" : (s.error || "disconnected")
                 } catch (e) {
+                    root.connected = false
                     root.statusText = "parse error"
                 }
             } else if (code !== 0) {
+                root.connected = false
                 root.statusText = err.length > 0 ? err : "command failed"
             } else {
                 root.statusText = "ok"
@@ -89,6 +94,7 @@ Item {
             from: 0
             to: 100
             value: root.brightness
+            enabled: root.connected
             onMoved: {
                 executableSource.connectSource(backendCommand("set-brightness " + Math.round(value)))
             }
@@ -99,6 +105,7 @@ Item {
                 model: [1, 2, 3, 4]
                 delegate: Button {
                     text: "S" + modelData
+                    enabled: root.connected
                     onClicked: executableSource.connectSource(backendCommand("set-slot " + modelData))
                 }
             }
@@ -113,7 +120,15 @@ Item {
             }
 
             Button {
+                text: "Reconnect"
+                onClicked: {
+                    refreshState()
+                }
+            }
+
+            Button {
                 text: "Open UI"
+                enabled: root.connected
                 onClicked: {
                     executableSource.connectSource(backendCommand("open-ui"))
                 }
@@ -122,7 +137,7 @@ Item {
 
         Label {
             text: "Status: " + root.statusText
-            color: root.statusText === "ok" ? "#3a7" : "#c84"
+            color: root.connected ? "#3a7" : "#c84"
         }
     }
 }
