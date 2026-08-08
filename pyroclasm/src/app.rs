@@ -22,9 +22,9 @@
 use std::ops::RangeInclusive;
 
 use egui::{
-    epaint::Shadow, style::Margin, warn_if_debug_build, Align, Button, ComboBox, Direction,
-    FontFamily, FontId, Frame, Id, Layout, RichText, Sense, Slider, TextStyle, TopBottomPanel,
-    Widget,
+    epaint::Shadow, style::Margin, warn_if_debug_build, Align, Align2, Button, ComboBox,
+    Direction, FontFamily, FontId, Frame, Id, Layout, RichText, Sense, Slider, TextStyle,
+    TopBottomPanel, Widget,
 };
 use tracing::error;
 
@@ -40,7 +40,7 @@ pub struct Pyroclasm {
     pub toasts: egui_notify::Toasts,
 
     #[serde(skip)]
-    pub modal_quit: Option<egui_modal::Modal>,
+    pub show_quit_dialog: bool,
 }
 
 impl Pyroclasm {
@@ -123,35 +123,39 @@ impl Pyroclasm {
         Default::default()
     }
 
-    fn setup_modals(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        let modal = egui_modal::Modal::new(ctx, "quit_dialog");
+    fn render_quit_dialog(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        if !self.show_quit_dialog {
+            return;
+        }
 
-        modal.show(|ui| {
-            ui.spacing_mut().button_padding = egui::vec2(20.0_f32, 12.0_f32);
+        let mut keep_open = true;
 
-            modal.title(ui, "Quit Pyroclasm?");
+        egui::Window::new("Quit Pyroclasm?")
+            .id(Id::new("quit_dialog"))
+            .collapsible(false)
+            .resizable(false)
+            .anchor(Align2::CENTER_CENTER, egui::vec2(0.0_f32, 0.0_f32))
+            .open(&mut keep_open)
+            .show(ctx, |ui| {
+                ui.label("Do you really want to quit the Pyroclasm UI?");
+                ui.add_space(12.0_f32);
 
-            modal.frame(ui, |ui| {
-                modal.body_and_icon(
-                    ui,
-                    "Do you really want to quit the Pyroclasm UI?",
-                    egui_modal::Icon::Info,
-                );
+                ui.horizontal(|ui| {
+                    if ui.button("Quit").clicked() {
+                        self.show_quit_dialog = false;
+                        frame.set_visible(false);
+                        frame.close();
+                    }
+
+                    if ui.button("Cancel").clicked() {
+                        self.show_quit_dialog = false;
+                    }
+                });
             });
 
-            modal.buttons(ui, |ui| {
-                // After clicking, the modal is automatically closed
-                if modal.suggested_button(ui, "Quit").clicked() {
-                    frame.set_visible(false);
-                    frame.close();
-                };
-
-                // After clicking, the modal is automatically closed
-                if modal.caution_button(ui, "Cancel").clicked() {};
-            });
-        });
-
-        self.modal_quit = Some(modal);
+        if !keep_open {
+            self.show_quit_dialog = false;
+        }
     }
 
     /// Render the window title bar
@@ -206,9 +210,7 @@ impl Pyroclasm {
                                     .on_hover_text("Close")
                                     .clicked()
                                 {
-                                    if let Some(f) = self.modal_quit.as_ref() {
-                                        f.open()
-                                    }
+                                    self.show_quit_dialog = true;
                                 };
                             });
 
@@ -262,10 +264,7 @@ impl Pyroclasm {
 
                                             if ui.button("Quit").clicked() {
                                                 ui.close_menu();
-
-                                                if let Some(f) = self.modal_quit.as_ref() {
-                                                    f.open()
-                                                }
+                                                self.show_quit_dialog = true;
                                             }
                                         })
                                     },
@@ -628,7 +627,7 @@ impl eframe::App for Pyroclasm {
         // extra functionality
         self.toasts.show(ctx);
 
-        self.setup_modals(ctx, frame);
+        self.render_quit_dialog(ctx, frame);
 
         // render title area
         self.title_bar(ctx, frame);

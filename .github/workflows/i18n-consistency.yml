@@ -1,0 +1,25 @@
+name: i18n Consistency
+
+on:
+  pull_request:
+    paths:
+      - '**/i18n/**/*.ftl'
+      - 'support/tests/check-i18n.sh'
+      - '.github/workflows/i18n-consistency.yml'
+  push:
+    branches:
+      - master
+    paths:
+      - '**/i18n/**/*.ftl'
+      - 'support/tests/check-i18n.sh'
+      - '.github/workflows/i18n-consistency.yml'
+
+jobs:
+  i18n-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run i18n consistency checks
+        run: bash support/tests/check-i18n.sh

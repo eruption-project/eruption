@@ -19,7 +19,7 @@
     Copyright (c) 2019-2022, The Eruption Development Team
 */
 
-use egui::CentralPanel;
+use egui::{CentralPanel, ScrollArea};
 
 #[derive(Default)]
 pub struct LogsPage {}
@@ -31,7 +31,13 @@ impl LogsPage {
 
     pub fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         CentralPanel::default().show(ctx, |ui| {
-            egui_logger::logger_ui(ui);
+            ui.heading("Logs");
+            ui.add_space(8.0_f32);
+
+            ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
+                ui.label("Live log widget is temporarily unavailable due to egui API drift.");
+                ui.label("Use terminal output or system logs while the logging panel is migrated.");
+            });
         });
     }
 }

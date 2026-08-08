@@ -2,6 +2,8 @@
 
 - [Table of Contents](#table-of-contents)
   - [Documentation](#documentation)
+  - [Compatibility Policy](#compatibility-policy)
+  - [Example Flows](#example-flows)
   - [FAQs](#faqs)
     - [Q: What is the Software Development Kit for?](#q-what-is-the-software-development-kit-for)
     - [Q: What can be done with the Eruption SDK?](#q-what-can-be-done-with-the-eruption-sdk)
@@ -14,6 +16,18 @@
 | Python 3 | `eruption` Python 3 module                           | [PYTHON.md](PYTHON.md)           |
 | C/C++    | `liberuption.so` C/C++ compatible dynamic library    | [CPP.md](CXX.md)                 |
 | Shell    | `eruption-cmd` companion utility                     | [SHELL.md](SHELL.md)             |
+
+## Compatibility Policy
+
+SDK compatibility, deprecation windows, and migration expectations:
+
+[COMPATIBILITY_POLICY.md](COMPATIBILITY_POLICY.md)
+
+## Example Flows
+
+- Shell workflows: [SHELL.md](SHELL.md)
+- Python examples: `sdk/examples/python/`
+- Rust examples: `sdk/examples/rust/`
 
 ## FAQs
 

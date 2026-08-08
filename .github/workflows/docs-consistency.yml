@@ -1,0 +1,25 @@
+name: Docs Consistency
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - 'support/tests/check-docs.sh'
+      - '.github/workflows/docs-consistency.yml'
+  push:
+    branches:
+      - master
+    paths:
+      - '**/*.md'
+      - 'support/tests/check-docs.sh'
+      - '.github/workflows/docs-consistency.yml'
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run docs consistency checks
+        run: bash support/tests/check-docs.sh

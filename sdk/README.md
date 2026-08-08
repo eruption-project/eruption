@@ -3,6 +3,7 @@
 - [Table of Contents](#table-of-contents)
   - [Welcome to the `Eruption Software Development Kit (SDK)` documentation](#welcome-to-the-eruption-software-development-kit-sdk-documentation)
   - [Supported Programming Languages](#supported-programming-languages)
+  - [SDK Flow Examples](#sdk-flow-examples)
 
 ## Welcome to the `Eruption Software Development Kit (SDK)` documentation
 
@@ -25,3 +26,11 @@ The Eruption SDK currently supports the following programming languages and envi
 | Shell    | `eruption-cmd` companion utility                     | [docs/SHELL.md](docs/SHELL.md)   |
 
 For further reading please refer to [docs/README.md](docs/README.md).
+
+## SDK Flow Examples
+
+Operational examples for connect/query/update/error workflows are available in:
+
+- `sdk/examples/python/`
+- `sdk/examples/rust/simple/`
+- `sdk/examples/shell/`

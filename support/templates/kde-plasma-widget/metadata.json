@@ -1,0 +1,17 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Id": "org.eruption.widget",
+    "Name": "Eruption",
+    "Description": "Quick controls for Eruption profiles and brightness",
+    "Version": "0.1.0",
+    "Category": "System Information",
+    "Authors": [
+      {
+        "Name": "Eruption Development Team"
+      }
+    ],
+    "License": "GPL-3.0-or-later"
+  },
+  "X-Plasma-API-Minimum-Version": "6.0"
+}

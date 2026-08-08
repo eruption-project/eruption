@@ -1832,3 +1832,93 @@ pub fn get_usb_device_class(usb_vid: u16, usb_pid: u16) -> Result<DeviceClass> {
         Err(_e) => Err(HwDeviceError::UdevError {}.into()),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn class_tag(driver: &Box<dyn DriverMetadata + Sync + Send>) -> &'static str {
+        if driver.as_any().downcast_ref::<KeyboardDriver>().is_some() {
+            "keyboard"
+        } else if driver.as_any().downcast_ref::<MouseDriver>().is_some() {
+            "mouse"
+        } else if driver.as_any().downcast_ref::<MiscDriver>().is_some() {
+            "misc"
+        } else if driver.as_any().downcast_ref::<MiscSerialDriver>().is_some() {
+            "misc-serial"
+        } else {
+            "unknown"
+        }
+    }
+
+    fn driver_maturity(
+        driver: &Box<dyn DriverMetadata + Sync + Send>,
+    ) -> Option<MaturityLevel> {
+        if let Some(d) = driver.as_any().downcast_ref::<KeyboardDriver>() {
+            Some(d.status)
+        } else if let Some(d) = driver.as_any().downcast_ref::<MouseDriver>() {
+            Some(d.status)
+        } else if let Some(d) = driver.as_any().downcast_ref::<MiscDriver>() {
+            Some(d.status)
+        } else {
+            None
+        }
+    }
+
+    fn find_driver(vid: u16, pid: u16) -> Option<(String, MaturityLevel)> {
+        DRIVERS
+            .lock()
+            .iter()
+            .find(|d| d.get_usb_vid() == vid && d.get_usb_pid() == pid)
+            .and_then(|d| driver_maturity(d).map(|m| (class_tag(d).to_string(), m)))
+    }
+
+    #[test]
+    fn hwdevices_registry_has_unique_vid_pid_per_class() {
+        let mut seen = HashSet::new();
+
+        for driver in DRIVERS.lock().iter() {
+            let key = (
+                class_tag(driver),
+                driver.get_usb_vid(),
+                driver.get_usb_pid(),
+            );
+
+            assert!(
+                seen.insert(key),
+                "duplicate driver mapping for class={} vid={:#06x} pid={:#06x}",
+                key.0,
+                key.1,
+                key.2
+            );
+        }
+    }
+
+    #[test]
+    fn hwdevices_priority_batch_drivers_are_registered() {
+        let expected = [
+            (0x1e7d, 0x30f7, "keyboard", MaturityLevel::Experimental), // Vulcan Pro
+            (0x1e7d, 0x2fee, "keyboard", MaturityLevel::Experimental), // Vulcan TKL
+            (0x1e7d, 0x2c8b, "mouse", MaturityLevel::Experimental),    // Kone XP
+            (0x1e7d, 0x2c88, "mouse", MaturityLevel::Experimental),    // Kone Pro
+            (0x1e7d, 0x2e2c, "mouse", MaturityLevel::Experimental),    // Kone Aimo Remastered
+        ];
+
+        for (vid, pid, class, maturity) in expected {
+            let (actual_class, actual_maturity) = find_driver(vid, pid)
+                .unwrap_or_else(|| panic!("missing driver mapping vid={:#06x} pid={:#06x}", vid, pid));
+
+            assert_eq!(
+                actual_class, class,
+                "unexpected class for vid={:#06x} pid={:#06x}",
+                vid, pid
+            );
+
+            assert_eq!(
+                actual_maturity, maturity,
+                "unexpected maturity for vid={:#06x} pid={:#06x}",
+                vid, pid
+            );
+        }
+    }
+}

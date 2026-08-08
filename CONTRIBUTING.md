@@ -23,6 +23,23 @@ Every contribution counts!
 * Run `cargo fmt`
 * Please submit your pull request
 
+### Device Support Contributions
+
+If your change adds support for new hardware, please follow the checklist in
+[docs/howtos/NEW_DEVICE_BRINGUP_CHECKLIST.md](docs/howtos/NEW_DEVICE_BRINGUP_CHECKLIST.md)
+and include validation notes in the PR.
+
+### Documentation and i18n Checks
+
+Before opening a PR, run:
+
+* `bash support/tests/check-docs.sh`
+* `bash support/tests/check-i18n.sh`
+
+Translation process and review checklist:
+
+* [docs/howtos/I18N_TRANSLATION_WORKFLOW.md](docs/howtos/I18N_TRANSLATION_WORKFLOW.md)
+
 ### Styleguides
 
 * Use rustfmt
