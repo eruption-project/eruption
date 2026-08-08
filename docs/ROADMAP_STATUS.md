@@ -29,6 +29,7 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 - [x] KDE Plasma widget MVP scaffold implemented (template + backend + installer).
 - [x] MATE companion indicator MVP scaffold implemented (indicator + installer).
 - [x] Headless-friendly Pyroclasm smoke coverage added to CI.
+- [x] i18n coverage status document added for current priority locale scope.
 
 ## Milestone Checklist
 
@@ -45,7 +46,7 @@ Execution backlog details are tracked in [ROADMAP_TASKS.md](ROADMAP_TASKS.md).
 
 - [ ] New hardware support batch shipped with regression tests.
 - [x] SDK examples expanded for connect/query/update/error flows.
-- [ ] Translation expansion for top-priority locales completed.
+- [x] Translation expansion for top-priority locales completed.
 - [x] CI quality metrics tightened (faster failure signal, clearer logs).
 
 ### M3 Desktop Ecosystem

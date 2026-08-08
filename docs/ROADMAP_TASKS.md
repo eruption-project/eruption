@@ -34,6 +34,8 @@ Status: completed (connect/query/update/error flow examples and docs baseline ad
   - key parity check passes across en-US/de-DE files
   - no missing keys in critical paths
 
+Status: completed for current priority locale scope (`en-US` + `de-DE`) with CI validation.
+
 ### M2-04 CI Signal Quality
 
 - Scope: reduce noise and improve actionable failure diagnostics.

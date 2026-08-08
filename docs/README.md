@@ -8,6 +8,7 @@
     - [Roadmap Execution Tasks](#roadmap-execution-tasks)
     - [Hardware Support Planning Matrix](#hardware-support-planning-matrix)
     - [Desktop Integrations Install Guide](#desktop-integrations-install-guide)
+    - [i18n Status](#i18n-status)
     - [HOWTOs](#howtos)
     - [Systems Architecture](#systems-architecture)
     - [Macros Documentation](#macros-documentation)
@@ -62,6 +63,12 @@ Operational planning matrix for hardware support priorities
 Install/uninstall steps, dependencies, and packaging notes for KDE and MATE integrations
 
 [howtos/DESKTOP_INTEGRATIONS_INSTALL.md](howtos/DESKTOP_INTEGRATIONS_INSTALL.md)
+
+### i18n Status
+
+Localization coverage and validation status
+
+[I18N_STATUS.md](I18N_STATUS.md)
 
 ### HOWTOs
 
