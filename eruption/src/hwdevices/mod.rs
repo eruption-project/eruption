@@ -54,7 +54,11 @@ mod roccat_kova_aimo;
 mod roccat_magma;
 mod roccat_nyth;
 mod roccat_vulcan_1xx;
+mod roccat_vulcan_2;
+mod roccat_vulcan_2_layout;
 mod roccat_vulcan_2_max;
+mod roccat_vulcan_2_protocol;
+mod roccat_vulcan_2_session;
 mod roccat_vulcan_pro;
 mod roccat_vulcan_pro_tkl;
 mod roccat_vulcan_tkl;
@@ -85,7 +89,7 @@ pub type Result<T> = std::result::Result<T, eyre::Error>;
 #[rustfmt::skip]
 lazy_static! {
     // List of supported devices
-    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 30]>> = Arc::new(Mutex::new([
+    pub static ref DRIVERS: Arc<Mutex<[Box<(dyn DriverMetadata + Sync + Send + 'static)>; 31]>> = Arc::new(Mutex::new([
         // Supported keyboards
 
         // Wooting
@@ -95,7 +99,8 @@ lazy_static! {
 
         // ROCCAT
 
-        // Vulcan II Max
+        // Vulcan II / II Max
+        KeyboardDriver::register("ROCCAT", "Vulcan II",  0x1e7d, 0x2f4e, &roccat_vulcan_2::bind_hiddev, MaturityLevel::Experimental),
         KeyboardDriver::register("ROCCAT", "Vulcan II Max",  0x1e7d, 0x2ee2, &roccat_vulcan_2_max::bind_hiddev, MaturityLevel::Experimental),
 
         // Vulcan 100/12x/Pro (TKL) series
