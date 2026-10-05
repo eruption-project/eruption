@@ -69,7 +69,7 @@ eyre = "0.6.8"
 color-eyre = "0.6.2"
 hexdump = "0.1.1"
 chrono = { version = "0.4.31", features = ["serde"] }
-hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "78f2738", default-features = false, features = [
+hidapi = { git = "https://github.com/ruabmbua/hidapi-rs.git", rev = "d2c41b32da041c250318fe438de352e8ad9e8a4a", default-features = false, features = [
   "linux-native",
 ] }
 mlua = { version = "0.9.1", features = ["luajit52"] }
